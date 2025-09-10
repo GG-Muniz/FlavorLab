@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  foodb-scraper:
+    build: .
+    container_name: foodb_scraper
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    environment:
+      - PYTHONPATH=/app
+    networks:
+      - scraper_network
+
+networks:
+  scraper_network:
+    driver: bridge
