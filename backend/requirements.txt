@@ -1,0 +1,44 @@
+# FlavorLab Backend Dependencies (Python 3.12)
+
+# Core FastAPI and web framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Database and ORM
+sqlalchemy==2.0.23
+alembic==1.12.1
+
+# Data validation and settings
+pydantic==2.5.0
+pydantic-settings==2.1.0
+email-validator==2.1.0
+
+# Authentication and security
+python-jose[cryptography]==3.3.0
+PyJWT==2.9.0
+bcrypt==4.2.0
+python-multipart==0.0.6
+
+# HTTP client (optional)
+httpx==0.25.2
+requests==2.31.0
+
+# Development and testing
+pytest==8.4.2
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+black==23.11.0
+isort==5.12.0
+flake8==6.1.0
+
+# Environment and configuration
+python-dotenv==1.0.0
+
+# Optional: For future PostgreSQL support
+# psycopg2-binary==2.9.9
+
+# Optional: For Redis caching (future feature)
+# redis==5.0.1
+
+# Optional: For background tasks (future feature)
+# celery==5.3.4
