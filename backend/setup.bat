@@ -1,4 +1,4 @@
-@echo off
+source@echo off
 echo FlavorLab Backend Setup
 echo ======================
 
