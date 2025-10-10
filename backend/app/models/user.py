@@ -71,10 +71,10 @@ class User(Base):
     def to_dict(self, include_sensitive: bool = False) -> dict:
         """
         Convert user to dictionary representation.
-        
+
         Args:
             include_sensitive: Whether to include sensitive information like hashed_password
-            
+
         Returns:
             Dictionary representation of the user
         """
@@ -86,13 +86,13 @@ class User(Base):
             "is_verified": self.is_verified,
             "first_name": self.first_name,
             "last_name": self.last_name,
+            "preferences": self.preferences,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "last_login": self.last_login.isoformat() if self.last_login else None
         }
-        
+
         if include_sensitive:
             data["hashed_password"] = self.hashed_password
-            data["preferences"] = self.preferences
-        
+
         return data

@@ -10,7 +10,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import health, users, entities, relationships, flavor
+from .api import health, users, entities, relationships, flavor, nutrition
 from .database import engine, Base, SessionLocal
 from .config import get_settings
 
@@ -54,6 +54,7 @@ app.add_middleware(
 # API Routers
 app.include_router(health.router, prefix=settings.api_prefix, tags=["Health"])
 app.include_router(users.router, prefix=settings.api_prefix, tags=["Users", "Authentication"])
+app.include_router(nutrition.router, prefix=settings.api_prefix, tags=["Nutrition"])
 app.include_router(entities.router, prefix=settings.api_prefix, tags=["Entities"])
 app.include_router(relationships.router, prefix=settings.api_prefix, tags=["Relationships"])
 app.include_router(flavor.router, prefix=settings.api_prefix, tags=["Flavor"])

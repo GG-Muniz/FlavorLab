@@ -18,10 +18,17 @@ from ..schemas.user import (
     UserUpdate,
     UserProfileResponse,
     ChangePasswordRequest,
+    HealthGoalsUpdate,
     Token,
     TokenData,
     UserStatsResponse,
     UserLogin,
+)
+from ..schemas.meal_plan import (
+    MealPlanResponse,
+    MealPlanRequest,
+    MealItem,
+    DailyMealPlan,
 )
 from ..services.auth import AuthService, get_current_active_user, get_current_verified_user
 from ..database import get_db
@@ -202,12 +209,12 @@ async def change_password(
 ):
     """
     Change current user's password.
-    
+
     Args:
         password_data: Password change data
         db: Database session
         current_user: Current authenticated user
-        
+
     Returns:
         Dict with success message
     """
@@ -218,14 +225,14 @@ async def change_password(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Current password is incorrect"
             )
-        
+
         # Change password
         AuthService.change_password(db, current_user, password_data.new_password)
-        
+
         return {
             "message": "Password changed successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -233,6 +240,163 @@ async def change_password(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error changing password: {str(e)}"
+        )
+
+
+@router.post("/me/health-goals", response_model=UserProfileResponse)
+async def update_health_goals(
+    health_goals: HealthGoalsUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
+    """
+    Update current user's health goals.
+
+    This endpoint allows users to save their selected health goals (8 pillars).
+    The goals are stored in the user's preferences under the 'health_goals' key.
+
+    Args:
+        health_goals: Health goals update data with selectedGoals array
+        db: Database session
+        current_user: Current authenticated user
+
+    Returns:
+        UserProfileResponse: Updated user profile with new health goals
+
+    Raises:
+        HTTPException: If update fails
+    """
+    try:
+        # Get current preferences or initialize empty dict
+        preferences = current_user.preferences or {}
+
+        # Update health_goals in preferences
+        preferences["health_goals"] = health_goals.selectedGoals
+
+        # Save updated preferences (create new dict to trigger SQLAlchemy update detection)
+        current_user.preferences = dict(preferences)
+
+        # Mark the field as modified to ensure SQLAlchemy detects the change
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(current_user, "preferences")
+
+        # Commit changes
+        db.commit()
+        db.refresh(current_user)
+
+        return UserProfileResponse.model_validate(current_user)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error updating health goals: {str(e)}"
+        )
+
+
+@router.post("/me/meal-plan", response_model=MealPlanResponse)
+async def generate_meal_plan(
+    request: Optional[MealPlanRequest] = None,
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Generate a personalized meal plan for the current user.
+
+    This endpoint creates a multi-day meal plan based on the user's preferences,
+    health goals, and nutritional targets. For MVP, it returns a mock meal plan.
+    In production, this will integrate with LLM-based meal planning algorithms.
+
+    Args:
+        request: Optional meal plan generation parameters
+        current_user: Currently authenticated user
+        db: Database session
+
+    Returns:
+        MealPlanResponse: Generated meal plan with daily meals
+
+    Raises:
+        HTTPException: If generation fails
+    """
+    try:
+        # Get user preferences for future LLM integration
+        preferences = current_user.preferences or {}
+        health_goals = preferences.get("health_goals", [])
+        calorie_target = preferences.get("calorie_goal", 2000)
+
+        # Determine number of days (default to 7)
+        num_days = 7
+        if request and request.num_days:
+            num_days = request.num_days
+
+        # Generate mock meal plan
+        # TODO: Replace with LLM-based generation using health_goals and preferences
+        days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+        meal_plan = []
+        total_calories = 0
+
+        for day_index in range(num_days):
+            day_name = days_of_week[day_index % 7]
+
+            # Mock meals for each day
+            daily_meals = [
+                MealItem(
+                    type="breakfast",
+                    name=f"Healthy Breakfast Bowl",
+                    calories=400,
+                    description="Greek yogurt with granola, fresh berries, and honey"
+                ),
+                MealItem(
+                    type="snack",
+                    name="Morning Snack",
+                    calories=150,
+                    description="Apple slices with almond butter"
+                ),
+                MealItem(
+                    type="lunch",
+                    name="Grilled Chicken Salad",
+                    calories=550,
+                    description="Mixed greens with grilled chicken, vegetables, and balsamic vinaigrette"
+                ),
+                MealItem(
+                    type="snack",
+                    name="Afternoon Snack",
+                    calories=200,
+                    description="Hummus with carrot and cucumber sticks"
+                ),
+                MealItem(
+                    type="dinner",
+                    name="Salmon with Quinoa",
+                    calories=650,
+                    description="Baked salmon fillet with quinoa and roasted vegetables"
+                ),
+            ]
+
+            daily_plan = DailyMealPlan(day=day_name, meals=daily_meals)
+            meal_plan.append(daily_plan)
+
+            # Calculate total calories for this day
+            day_calories = sum(meal.calories for meal in daily_meals)
+            total_calories += day_calories
+
+        # Calculate average calories per day
+        avg_calories = total_calories // num_days
+
+        return MealPlanResponse(
+            plan=meal_plan,
+            total_days=num_days,
+            average_calories_per_day=avg_calories
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating meal plan: {str(e)}"
         )
 
 
