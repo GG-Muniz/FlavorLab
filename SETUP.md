@@ -1,219 +1,293 @@
-# FlavorLab Frontend Setup Guide
+# FlavorLab Development Setup Guide
 
-## Prerequisites
+This guide walks you through setting up the FlavorLab development environment after the recent project restructuring.
 
-Before running this project, ensure you have the following installed:
+## 📁 New Project Structure
 
-### Frontend Requirements
-- **Node.js** (v18 or higher) - [Download here](https://nodejs.org/)
-- **npm** (comes with Node.js) or **yarn**
-
-Check your versions:
-```bash
-node --version
-npm --version
+```
+FlavorLab/
+├── backend/                    # FastAPI backend application
+│   ├── app/
+│   │   ├── api/               # API route handlers
+│   │   ├── models/            # SQLAlchemy models
+│   │   ├── schemas/           # Pydantic schemas
+│   │   ├── services/          # Business logic services
+│   │   ├── config.py          # App configuration
+│   │   ├── database.py        # Database setup
+│   │   └── main.py            # FastAPI entry point (runs on port 8000)
+│   ├── scripts/               # Utility scripts
+│   ├── tests/                 # Backend tests
+│   └── requirements.txt       # Python dependencies
+│
+├── frontend/                   # React + Vite frontend application
+│   ├── src/
+│   │   ├── components/        # React components
+│   │   │   ├── auth/
+│   │   │   ├── calendar/
+│   │   │   ├── modals/
+│   │   │   ├── notifications/
+│   │   │   └── onboarding/
+│   │   ├── App.jsx            # Main App component
+│   │   └── main.jsx           # Vite entry point
+│   ├── public/                # Static assets
+│   ├── index.html             # HTML entry point
+│   ├── vite.config.js         # Vite configuration
+│   ├── package.json           # NPM dependencies
+│   └── .env.example           # Environment variables template
+│
+├── .gitignore                 # Git ignore rules
+├── README.md                  # Project overview
+└── SETUP.md                   # This file
 ```
 
-### Backend Requirements (if running locally)
-- **Python** (v3.9 or higher) - [Download here](https://www.python.org/)
-- **pip** (comes with Python)
+## 🚀 Getting Started
 
-Check your versions:
-```bash
-python --version
-pip --version
-```
+### Prerequisites
+
+- **Python 3.9+** (for backend)
+- **Node.js 16+** (for frontend)
+- **npm** or **yarn** (for frontend package management)
+- **PostgreSQL** or **SQLite** (for database)
 
 ---
 
-## Installation
+## Backend Setup
 
-### 1. Clone the repository
+### 1. Navigate to backend directory
+
 ```bash
-git clone <repository-url>
-cd flavorlab-app
+cd backend
 ```
 
-### 2. Install Frontend Dependencies
+### 2. Create a virtual environment
+
+```bash
+python -m venv venv
+```
+
+### 3. Activate the virtual environment
+
+**On Linux/macOS:**
+```bash
+source venv/bin/activate
+```
+
+**On Windows:**
+```bash
+venv\Scripts\activate
+```
+
+### 4. Install Python dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 5. Configure environment variables (optional)
+
+Create a `.env` file in the `backend/` directory:
+
+```bash
+# backend/.env
+DATABASE_URL=sqlite:///./flavorlab.db
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+CORS_ORIGINS=["http://localhost:5173", "http://localhost:3000"]
+```
+
+### 6. Run the backend server
+
+```bash
+# From the backend/ directory
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+The backend API will be available at: **http://localhost:8000**
+API documentation (Swagger UI): **http://localhost:8000/docs**
+
+---
+
+## Frontend Setup
+
+### 1. Navigate to frontend directory
+
+```bash
+cd frontend
+```
+
+### 2. Install Node.js dependencies
+
 ```bash
 npm install
 ```
 
-or if you use yarn:
-```bash
-yarn install
-```
-
-### 3. Install Backend Dependencies (Python)
-If you're also running the backend locally:
+**Note:** If you encounter issues, you may need to reinstall dependencies since `node_modules/` was moved:
 
 ```bash
-pip install -r requirements.txt
-```
-
-**Note:** It's recommended to use a virtual environment:
-```bash
-# Create virtual environment
-python -m venv venv
-
-# Activate it
-# On Mac/Linux:
-source venv/bin/activate
-# On Windows:
-venv\Scripts\activate
-
-# Then install dependencies
-pip install -r requirements.txt
-```
-
----
-
-## Running the Application
-
-### Development Mode
-Start the development server with hot-reload:
-```bash
-npm run dev
-```
-
-The application will be available at: **http://localhost:5173**
-
-### Production Build
-Create an optimized production build:
-```bash
-npm run build
-```
-
-### Preview Production Build
-Preview the production build locally:
-```bash
-npm run preview
-```
-
-### Linting
-Run ESLint to check code quality:
-```bash
-npm run lint
-```
-
----
-
-## Project Dependencies
-
-### Core Dependencies
-- **React 19.1.1** - UI library
-- **React DOM 19.1.1** - React rendering
-- **Lucide React 0.544.0** - Icon library
-- **Tailwind CSS 4.1.13** - Utility-first CSS framework
-- **Vite 7.1.6** - Build tool and dev server
-
-### Development Dependencies
-- **ESLint** - Code linting
-- **@vitejs/plugin-react** - React plugin for Vite
-- TypeScript type definitions for React
-
----
-
-## Environment Variables
-
-Currently, the app uses mock data. When integrating with the backend, create a `.env` file:
-
-```env
-VITE_API_BASE_URL=http://localhost:3001
-```
-
-Access in code:
-```javascript
-const apiUrl = import.meta.env.VITE_API_BASE_URL;
-```
-
----
-
-## Project Structure
-
-```
-flavorlab-app/
-├── public/              # Static assets
-├── src/
-│   ├── components/      # React components
-│   │   ├── auth/       # Login components
-│   │   ├── calendar/   # Calendar component
-│   │   ├── modals/     # Modal components
-│   │   ├── notifications/ # Notifications panel
-│   │   └── onboarding/ # NutriTest onboarding
-│   ├── App.jsx         # Main app component
-│   └── main.jsx        # Entry point
-├── package.json        # Dependencies and scripts
-└── vite.config.js      # Vite configuration
-```
-
----
-
-## Backend Integration Notes
-
-### API Endpoints to Implement
-
-The frontend is ready to integrate with the following endpoints:
-
-#### User Authentication
-- `POST /api/auth/login`
-- `POST /api/auth/register`
-
-#### User Profile & Goals
-- `GET /api/user/:userId/profile`
-- `POST /api/user/:userId/nutritest` - Save NutriTest results
-- `GET /api/user/:userId/health-goals`
-
-#### Nutrition Data
-- `GET /api/user/:userId/nutrition/daily` - Daily calories, macros, water
-- `POST /api/user/:userId/nutrition/log-meal`
-- `GET /api/user/:userId/nutrition/history`
-
-#### Calendar & Events
-- `GET /api/user/:userId/events/upcoming`
-- `POST /api/user/:userId/events`
-
-#### Health Tips
-- `GET /api/user/:userId/health-tips/daily` - Personalized based on goals
-
-#### Notifications
-- `GET /api/user/:userId/notifications`
-- `PUT /api/user/:userId/notifications/:notificationId/read`
-
-See `API-INTEGRATION-PLAN.md` for detailed endpoint specifications.
-
----
-
-## Troubleshooting
-
-### Port already in use
-If port 5173 is occupied:
-```bash
-# Kill the process using port 5173
-lsof -ti:5173 | xargs kill -9
-
-# Or specify a different port
-npm run dev -- --port 3000
-```
-
-### Module not found errors
-```bash
-# Clear node_modules and reinstall
 rm -rf node_modules package-lock.json
 npm install
 ```
 
-### Build errors
+### 3. Configure environment variables (optional)
+
+Copy the example environment file:
+
 ```bash
-# Clear Vite cache
-rm -rf node_modules/.vite
+cp .env.example .env
+```
+
+Edit `frontend/.env` if you need to customize the API URL:
+
+```bash
+# frontend/.env
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+```
+
+### 4. Run the frontend development server
+
+```bash
 npm run dev
+```
+
+The frontend will be available at: **http://localhost:5173** (Vite's default port)
+
+---
+
+## 🔧 Development Workflow
+
+### Running Both Servers Concurrently
+
+**Terminal 1 - Backend:**
+```bash
+cd backend
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+uvicorn app.main:app --reload --port 8000
+```
+
+**Terminal 2 - Frontend:**
+```bash
+cd frontend
+npm run dev
+```
+
+### API Configuration
+
+The frontend is configured to connect to the backend at:
+- **Default:** `http://localhost:8000/api/v1`
+- **Configurable via:** `VITE_API_BASE_URL` environment variable in `frontend/.env`
+
+The API base URL is set in [frontend/src/App.jsx:52](frontend/src/App.jsx#L52):
+```javascript
+this.baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 ```
 
 ---
 
-## Contact
+## 📝 Available Scripts
 
-For questions about the frontend, contact the frontend development team.
+### Frontend Scripts
 
-For backend integration questions, refer to `API-INTEGRATION-PLAN.md`.
+From the `frontend/` directory:
+
+```bash
+npm run dev      # Start development server (Vite)
+npm run build    # Build for production
+npm run preview  # Preview production build
+npm run lint     # Run ESLint
+```
+
+### Backend Scripts
+
+From the `backend/` directory:
+
+```bash
+# Start server
+uvicorn app.main:app --reload
+
+# Run tests
+pytest
+
+# Run with specific port
+uvicorn app.main:app --reload --port 8000
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Frontend Issues
+
+**Issue:** "Cannot find module" errors after moving files
+```bash
+cd frontend
+rm -rf node_modules package-lock.json
+npm install
+```
+
+**Issue:** API requests failing
+- Verify backend is running on port 8000
+- Check `VITE_API_BASE_URL` in `frontend/.env`
+- Ensure CORS is configured correctly in `backend/app/config.py`
+
+### Backend Issues
+
+**Issue:** Database errors
+```bash
+# Reset database (SQLite)
+cd backend
+rm -f flavorlab.db
+# Restart the server - tables will be recreated
+```
+
+**Issue:** Module import errors
+```bash
+# Ensure virtual environment is activated
+source venv/bin/activate  # or venv\Scripts\activate on Windows
+pip install -r requirements.txt
+```
+
+---
+
+## 🔒 Environment Variables
+
+### Backend (`backend/.env`)
+```env
+APP_NAME=FlavorLab
+DEBUG=True
+DATABASE_URL=sqlite:///./flavorlab.db
+SECRET_KEY=your-secret-key-change-in-production
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+CORS_ORIGINS=["http://localhost:5173", "http://localhost:3000"]
+```
+
+### Frontend (`frontend/.env`)
+```env
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+```
+
+---
+
+## 📚 Next Steps
+
+1. ✅ Backend and frontend are now in separate directories
+2. ✅ API base URL has been updated to use port 8000
+3. ✅ Environment variable support added
+4. ⏳ Implement missing API endpoints (see API-INTEGRATION-PLAN.md)
+5. ⏳ Set up proper authentication flow
+6. ⏳ Connect frontend components to real API endpoints
+
+---
+
+## 🤝 Contributing
+
+When making changes:
+1. Keep backend and frontend code separate
+2. Update environment variable examples when adding new configs
+3. Run linters before committing (`npm run lint` for frontend)
+4. Ensure both servers run without errors
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.

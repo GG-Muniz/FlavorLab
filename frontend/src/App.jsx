@@ -48,7 +48,8 @@ const iconConfig = {
 // Service classes
 class ApiService {
   constructor() {
-    this.baseURL = 'http://localhost:3001';
+    // Use environment variable or default to backend port 8000 with API prefix
+    this.baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
   }
 
   async fetchNutritionData(userId) {
