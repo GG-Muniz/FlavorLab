@@ -1,24 +1,79 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Calculator, Target, Flame, TrendingUp, Plus, ChevronDown } from 'lucide-react';
+import { updateDailyCalorieGoal, logCalorieIntake, getDailyCalorieSummary } from '../../services/calorieApi';
 
-const CalorieCounter = ({ isOpen, onClose }) => {
+const CalorieCounter = ({ isOpen, onClose, onDataUpdate }) => {
   const [calorieGoal, setCalorieGoal] = useState('');
   const [calorieIntake, setCalorieIntake] = useState('');
   const [mealName, setMealName] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [savedGoal, setSavedGoal] = useState(null);
   const [intakeHistory, setIntakeHistory] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const mealOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
+  // Load initial data when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      loadCalorieSummary();
+    }
+  }, [isOpen]);
+
+  const loadCalorieSummary = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const summary = await getDailyCalorieSummary();
+
+      // Set goal if it exists
+      if (summary.goal_calories) {
+        setSavedGoal(summary.goal_calories);
+      }
+
+      // Transform entries to match frontend format
+      const transformedEntries = summary.entries.map(entry => ({
+        id: entry.id,
+        meal: entry.meal_type,
+        calories: entry.calories_consumed,
+        timestamp: new Date(entry.created_at).toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      }));
+
+      setIntakeHistory(transformedEntries);
+    } catch (err) {
+      console.error('Error loading calorie summary:', err);
+      setError('Failed to load calorie data. Using offline mode.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
-  const handleSaveGoal = () => {
+  const handleSaveGoal = async () => {
     if (calorieGoal && !isNaN(calorieGoal)) {
-      setSavedGoal(Number(calorieGoal));
-      // TODO: Send to API endpoint
-      // await apiService.saveCalorieGoal({ userId, goal: calorieGoal });
-      console.log('Saving calorie goal:', calorieGoal);
+      try {
+        setIsLoading(true);
+        setError(null);
+        await updateDailyCalorieGoal(Number(calorieGoal));
+        setSavedGoal(Number(calorieGoal));
+        setCalorieGoal('');
+        console.log('Calorie goal saved successfully');
+
+        // Notify parent component to refresh dashboard
+        if (onDataUpdate) {
+          onDataUpdate();
+        }
+      } catch (err) {
+        console.error('Error saving calorie goal:', err);
+        setError('Failed to save calorie goal. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -27,25 +82,45 @@ const CalorieCounter = ({ isOpen, onClose }) => {
     setIsDropdownOpen(false);
   };
 
-  const handleAddIntake = () => {
+  const handleAddIntake = async () => {
     if (calorieIntake && !isNaN(calorieIntake) && mealName.trim()) {
-      const newIntake = {
-        id: Date.now(),
-        meal: mealName,
-        calories: Number(calorieIntake),
-        timestamp: new Date().toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit'
-        })
-      };
-      setIntakeHistory([...intakeHistory, newIntake]);
-      // TODO: Send to API endpoint
-      // await apiService.logCalorieIntake({ userId, intake: newIntake });
-      console.log('Adding calorie intake:', newIntake);
+      try {
+        setIsLoading(true);
+        setError(null);
 
-      // Reset inputs
-      setCalorieIntake('');
-      setMealName('');
+        // Log intake to backend
+        const response = await logCalorieIntake(mealName, Number(calorieIntake));
+
+        // Transform the new entry
+        const newIntake = {
+          id: response.entry.id,
+          meal: response.entry.meal_type,
+          calories: response.entry.calories_consumed,
+          timestamp: new Date(response.entry.created_at).toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        };
+
+        // Update local state with new entry at the beginning
+        setIntakeHistory([newIntake, ...intakeHistory]);
+
+        // Reset inputs
+        setCalorieIntake('');
+        setMealName('');
+
+        console.log('Calorie intake logged successfully');
+
+        // Notify parent component to refresh dashboard
+        if (onDataUpdate) {
+          onDataUpdate();
+        }
+      } catch (err) {
+        console.error('Error logging calorie intake:', err);
+        setError('Failed to log calorie intake. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -165,6 +240,21 @@ const CalorieCounter = ({ isOpen, onClose }) => {
           borderBottomRightRadius: '24px',
           overflowY: 'auto'
         }}>
+          {/* Error Message */}
+          {error && (
+            <div style={{
+              padding: '12px 16px',
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '12px',
+              marginBottom: '16px',
+              color: '#991b1b',
+              fontSize: '14px'
+            }}>
+              {error}
+            </div>
+          )}
+
           {/* Progress Summary */}
           {savedGoal && (
             <div style={{
@@ -306,27 +396,33 @@ const CalorieCounter = ({ isOpen, onClose }) => {
               />
               <button
                 onClick={handleSaveGoal}
+                disabled={isLoading}
                 style={{
                   padding: '12px 24px',
-                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  background: isLoading ? '#9ca3af' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '12px',
                   fontSize: '14px',
                   fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s',
+                  opacity: isLoading ? 0.7 : 1
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)';
+                  if (!isLoading) {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
+                  if (!isLoading) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
                 }}
               >
-                Set Goal
+                {isLoading ? 'Saving...' : 'Set Goal'}
               </button>
             </div>
           </div>
@@ -471,31 +567,37 @@ const CalorieCounter = ({ isOpen, onClose }) => {
                 />
                 <button
                   onClick={handleAddIntake}
+                  disabled={isLoading}
                   style={{
                     padding: '12px 24px',
-                    background: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
+                    background: isLoading ? '#9ca3af' : 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
                     color: '#ffffff',
                     border: 'none',
                     borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: '600',
-                    cursor: 'pointer',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
                     transition: 'all 0.2s',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px'
+                    gap: '8px',
+                    opacity: isLoading ? 0.7 : 1
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(234, 88, 12, 0.3)';
+                    if (!isLoading) {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(234, 88, 12, 0.3)';
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
+                    if (!isLoading) {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }
                   }}
                 >
                   <Plus width={16} height={16} />
-                  Add
+                  {isLoading ? 'Adding...' : 'Add'}
                 </button>
               </div>
             </div>

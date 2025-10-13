@@ -45,6 +45,10 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.datetime.now(datetime.UTC))
     updated_at = Column(DateTime, default=datetime.datetime.now(datetime.UTC), onupdate=datetime.datetime.now(datetime.UTC))
     last_login = Column(DateTime)
+
+    # Relationships
+    calorie_goal = relationship("DailyCalorieGoal", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    calorie_intakes = relationship("CalorieIntakeEntry", back_populates="user", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}', username='{self.username}')>"
