@@ -5,7 +5,7 @@ This module defines the request/response schemas for meal plan generation
 and management, including meals, daily plans, and weekly meal plans.
 """
 
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -27,11 +27,16 @@ class MealPlanResponse(BaseModel):
     """
     Schema for the complete meal plan response.
 
-    This represents a weekly or multi-day meal plan with all meals organized by day.
+    This represents a weekly or multi-day meal plan with all meals organized by day,
+    optionally including a summary of how the plan addresses user health goals.
     """
     plan: List[DailyMealPlan] = Field(..., description="List of daily meal plans")
     total_days: int = Field(..., description="Total number of days in the plan")
     average_calories_per_day: int = Field(..., description="Average daily calorie intake")
+    health_goal_summary: Optional[str] = Field(
+        None,
+        description="Summary of how this meal plan addresses the user's health goals"
+    )
 
 
 class MealPlanRequest(BaseModel):

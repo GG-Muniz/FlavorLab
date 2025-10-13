@@ -11,9 +11,10 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import Entity
+from ..models.entity import IngredientEntity
 from ..schemas import (
     EntityResponse, EntityListResponse, EntitySearchRequest, EntitySearchResponse,
-    EntityStatsResponse, EntityCreate, EntityUpdate
+    EntityStatsResponse, EntityCreate, EntityUpdate, IngredientEntityResponse
 )
 from ..services.search import SearchService
 from ..services.auth import get_current_user, get_current_active_user
@@ -81,6 +82,176 @@ async def list_entities(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error listing entities: {str(e)}"
+        )
+
+
+@router.get("/ingredients", response_model=List[IngredientEntityResponse])
+async def list_ingredients(
+    page: int = Query(1, ge=1, description="Page number"),
+    size: int = Query(50, ge=1, le=1000, description="Page size"),
+    search: Optional[str] = Query(None, description="Search query"),
+    health_pillars: Optional[str] = Query(
+        None,
+        description="Comma-separated list of health pillar IDs to filter by (e.g., '1,3,8')"
+    ),
+    db: Session = Depends(get_db)
+):
+    """
+    List ingredients with optional filtering by health pillars and pagination.
+
+    Args:
+        page: Page number (1-based)
+        size: Page size
+        search: Search query for ingredient names
+        health_pillars: Comma-separated health pillar IDs (1-8) to filter by
+        db: Database session
+
+    Returns:
+        List[IngredientEntityResponse]: List of ingredients with health outcomes
+
+    Example:
+        GET /entities/ingredients?health_pillars=1,3,8
+        Returns ingredients supporting Energy, Immunity, and Inflammation Reduction
+    """
+    try:
+        # Start with base query for ingredients
+        query = db.query(IngredientEntity)
+
+        # Apply search filter
+        if search:
+            query = query.filter(IngredientEntity.name.ilike(f"%{search}%"))
+
+        # Parse and apply health pillar filter
+        pillar_ids: Optional[List[int]] = None
+        if health_pillars:
+            try:
+                # Parse comma-separated string into list of integers
+                pillar_ids = [int(pid.strip()) for pid in health_pillars.split(",") if pid.strip()]
+
+                # Validate pillar IDs are in range 1-8
+                invalid_ids = [pid for pid in pillar_ids if pid < 1 or pid > 8]
+                if invalid_ids:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Invalid health pillar IDs: {invalid_ids}. Must be between 1-8."
+                    )
+
+                # Apply pillar filter using the model's class method
+                query = IngredientEntity.filter_ingredients_by_pillars(query, pillar_ids)
+
+            except ValueError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invalid health_pillars format. Expected comma-separated integers (e.g., '1,3,8'): {str(e)}"
+                )
+
+        # Get total count before pagination
+        total = query.count()
+
+        # Apply pagination
+        offset = (page - 1) * size
+        ingredients = query.offset(offset).limit(size).all()
+
+        # Additional filtering in Python for SQLite (checking pillar membership)
+        # This is needed because SQLite JSON querying is limited
+        if pillar_ids:
+            filtered_ingredients = []
+            for ingredient in ingredients:
+                if isinstance(ingredient.health_outcomes, list):
+                    # Check if any outcome has a matching pillar
+                    for outcome in ingredient.health_outcomes:
+                        if isinstance(outcome, dict) and "pillars" in outcome:
+                            if any(pid in outcome["pillars"] for pid in pillar_ids):
+                                filtered_ingredients.append(ingredient)
+                                break
+            ingredients = filtered_ingredients
+
+        # Convert to response format
+        ingredient_responses = [
+            IngredientEntityResponse.model_validate(ingredient)
+            for ingredient in ingredients
+        ]
+
+        return ingredient_responses
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error listing ingredients: {str(e)}"
+        )
+
+
+@router.get("/ingredients/{ingredient_id}", response_model=IngredientEntityResponse)
+async def get_ingredient_by_id(
+    ingredient_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get a single ingredient by its ID.
+
+    This endpoint retrieves detailed information about a specific ingredient,
+    including its health outcomes with pillar mappings and compound information.
+
+    **Authentication required** - users must be logged in to view ingredient details.
+
+    Args:
+        ingredient_id: Unique identifier for the ingredient
+        db: Database session
+        current_user: Currently authenticated user
+
+    Returns:
+        IngredientEntityResponse: Detailed ingredient information
+
+    Raises:
+        HTTPException 404: If ingredient with given ID is not found
+        HTTPException 500: If database error occurs
+
+    Example:
+        GET /api/v1/entities/ingredients/garlic
+
+        Response:
+        ```json
+        {
+            "id": "garlic",
+            "name": "Garlic",
+            "primary_classification": "ingredient",
+            "health_outcomes": [
+                {
+                    "outcome": "Garlic",
+                    "confidence": 2,
+                    "added_at": "2025-10-13T15:43:02.734596+00:00",
+                    "pillars": [3, 6, 8]
+                }
+            ],
+            ...
+        }
+        ```
+    """
+    try:
+        # Query for the specific ingredient
+        ingredient = db.query(IngredientEntity).filter(
+            IngredientEntity.id == ingredient_id
+        ).first()
+
+        # Check if ingredient exists
+        if not ingredient:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Ingredient with ID '{ingredient_id}' not found"
+            )
+
+        # Validate and return the ingredient
+        return IngredientEntityResponse.model_validate(ingredient)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving ingredient: {str(e)}"
         )
 
 
