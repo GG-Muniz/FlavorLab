@@ -31,7 +31,8 @@ class UserCreate(UserBase):
     """Schema for user registration."""
     password: str = Field(..., min_length=8, max_length=100)
     is_active: Optional[bool] = True
-    
+    preferences: Optional[Dict[str, Any]] = None
+
     @field_validator('password')
     def validate_password(cls, v):
         """Validate password strength."""
@@ -101,6 +102,32 @@ class ChangePasswordRequest(BaseModel):
         return v
 
 
+class HealthGoalsUpdate(BaseModel):
+    """Schema for updating user's health goals."""
+    selectedGoals: List[int] = Field(
+        ...,
+        description="Array of selected health goal IDs (1-8)",
+        min_length=1,
+        max_length=8
+    )
+
+    @field_validator('selectedGoals')
+    def validate_goal_ids(cls, v):
+        """Validate that all goal IDs are between 1 and 8."""
+        if not v:
+            raise ValueError('At least one health goal must be selected')
+
+        for goal_id in v:
+            if goal_id < 1 or goal_id > 8:
+                raise ValueError(f'Health goal ID must be between 1 and 8, got {goal_id}')
+
+        # Check for duplicates
+        if len(v) != len(set(v)):
+            raise ValueError('Duplicate health goal IDs are not allowed')
+
+        return v
+
+
 class PasswordReset(BaseModel):
     """Schema for password reset requests."""
     email: EmailStr
@@ -162,27 +189,8 @@ def user_to_response(user, include_sensitive: bool = False) -> UserResponse:
 
 def user_to_profile_response(user) -> UserProfileResponse:
     """Convert SQLAlchemy user to detailed profile response."""
-    preferences = None
-    if user.preferences:
-        try:
-            import json
-            preferences = json.loads(user.preferences)
-        except (json.JSONDecodeError, TypeError):
-            preferences = {}
-    
-    return UserProfileResponse(
-        id=user.id,
-        email=user.email,
-        username=user.username,
-        first_name=user.first_name,
-        last_name=user.last_name,
-        is_active=user.is_active,
-        is_verified=user.is_verified,
-        created_at=user.created_at,
-        updated_at=user.updated_at,
-        last_login=user.last_login,
-        preferences=preferences
-    )
+    # SQLAlchemy JSON type handles serialization automatically
+    return UserProfileResponse.model_validate(user)
 
 
 def create_user_from_schema(user_data: UserCreate, hashed_password: str):
