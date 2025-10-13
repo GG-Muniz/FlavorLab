@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NotificationsPanel, NotificationBellButton } from './components/notifications/NotificationsPanel';
 import Login from './components/auth/Login';
 import NutriTest from './components/onboarding/NutriTest';
 import CalorieDetailModal from './components/modals/CalorieDetailModal';
 import CalorieCounter from './components/modals/CalorieCounter';
 import Calendar from './components/calendar/Calendar';
+import { getDailyCalorieSummary } from './services/calorieApi';
 
 import {
   LayoutDashboard,
@@ -217,14 +218,55 @@ function App() {
   const { data: nutritionData, loading } = useNutritionData(user.id);
   const [hoveredNavButton, setHoveredNavButton] = useState(null);
 
+  // Nutrition data state
+  const [nutritionDataState, setNutritionDataState] = useState({
+    calories: { current: 0, target: 2000, percentage: 0 },
+    protein: { current: 0, target: 150, unit: 'g' },
+    carbs: { current: 0, target: 250, unit: 'g' },
+    fat: { current: 0, target: 67, unit: 'g' },
+    water: { current: 0, target: 2000, unit: 'ml' }
+  });
+  const [isLoadingNutrition, setIsLoadingNutrition] = useState(true);
+
+  // Fetch nutrition data from API
+  const fetchNutritionData = async () => {
+    try {
+      setIsLoadingNutrition(true);
+      const summary = await getDailyCalorieSummary();
+
+      // Update nutrition data with API response
+      setNutritionDataState({
+        calories: {
+          current: summary.total_intake || 0,
+          target: summary.goal_calories || 2000,
+          percentage: Math.round(summary.percentage || 0)
+        },
+        // Keep other nutrients as placeholders for now (future enhancement)
+        protein: { current: 0, target: 150, unit: 'g' },
+        carbs: { current: 0, target: 250, unit: 'g' },
+        fat: { current: 0, target: 67, unit: 'g' },
+        water: { current: 0, target: 2000, unit: 'ml' }
+      });
+    } catch (error) {
+      console.error('Error fetching nutrition data:', error);
+      // Keep default values on error
+    } finally {
+      setIsLoadingNutrition(false);
+    }
+  };
+
+  // Fetch nutrition data on login
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchNutritionData();
+    }
+  }, [isLoggedIn]);
+
   // Handle login
   const handleLogin = () => {
     setIsLoggedIn(true);
     // Trigger entrance animation - small delay to ensure DOM is ready
     setTimeout(() => setIsAnimating(true), 50);
-    // TODO: Store authentication token/session
-    // TODO: Fetch user data from backend
-    // TODO: Check from backend if user has completed NutriTest
   };
 
   // Handle NutriTest completion
@@ -234,13 +276,6 @@ function App() {
     // TODO: Send results to backend to create user profile and meal plan
     // Switch back to dashboard
     setActiveTab('dashboard');
-  };
-  const mockNutritionData = {
-    calories: { current: 1247, target: 2000, percentage: 62 },
-    protein: { current: 45, target: 150, unit: 'g' },
-    carbs: { current: 156, target: 250, unit: 'g' },
-    fat: { current: 42, target: 67, unit: 'g' },
-    water: { current: 1200, target: 2000, unit: 'ml' }
   };
 
   const apiService = new ApiService();
@@ -615,7 +650,7 @@ const HealthTipOfTheDay = () => {
     // Service integration would go here
   };
 
-  const currentNutritionData = nutritionData || mockNutritionData;
+  const currentNutritionData = nutritionData || nutritionDataState;
 
   // Show login page if not logged in
   if (!isLoggedIn) {
@@ -1325,6 +1360,7 @@ const HealthTipOfTheDay = () => {
       <CalorieCounter
         isOpen={showCalorieCounter}
         onClose={() => setShowCalorieCounter(false)}
+        onDataUpdate={fetchNutritionData}
       />
     </div>
   );
