@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { NotificationsPanel, NotificationBellButton } from './components/notifications/NotificationsPanel';
 import Login from './components/auth/Login';
 import NutriTest from './components/onboarding/NutriTest';
 import CalorieDetailModal from './components/modals/CalorieDetailModal';
 import CalorieCounter from './components/modals/CalorieCounter';
 import Calendar from './components/calendar/Calendar';
+import UpNext from './components/dashboard/UpNext';
 import { getDailyCalorieSummary } from './services/calorieApi';
 
 import {
@@ -25,7 +27,8 @@ import {
   Zap,
   FlaskConical,
   Clock,
-  Lightbulb
+  Lightbulb,
+  Plus
 } from 'lucide-react';
 
 // Icon configuration
@@ -106,29 +109,29 @@ const IconWrapper = ({ iconKey, category = 'navigation', size = 'default' }) => 
 
 const Card = ({ children, gradient, style = {} }) => {
   const cardStyle = {
-    background: gradient || '#ffffff',
+    background: gradient || 'rgba(255, 255, 255, 0.7)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     borderRadius: '24px',
     padding: '32px',
-    boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-    border: '1px solid #f3f4f6',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
     position: 'relative',
     overflow: 'hidden',
-    transition: 'box-shadow 0.3s ease',
     ...style
   };
 
   return (
-    <div
+    <motion.div
       style={cardStyle}
-      onMouseOver={(e) => {
-        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgb(0 0 0 / 0.1)';
+      whileHover={{
+        scale: 1.02,
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.15)'
       }}
-      onMouseOut={(e) => {
-        e.currentTarget.style.boxShadow = '0 1px 3px 0 rgb(0 0 0 / 0.1)';
-      }}
+      transition={{ duration: 0.2 }}
     >
       {children}
-    </div>
+    </motion.div>
   );
 };
 
@@ -288,10 +291,12 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
   const offset = circumference - (percentage / 100) * circumference;
 
   return (
-    <button
+    <motion.button
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      whileHover={{ scale: 1.08 }}
+      whileTap={{ scale: 0.95 }}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -300,21 +305,24 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
         background: 'transparent',
         border: 'none',
         cursor: 'pointer',
-        padding: 0,
-        transition: 'transform 0.3s ease',
-        transform: isHovered ? 'scale(1.08)' : 'scale(1)'
+        padding: 0
       }}
     >
       {/* Outer glow ring when hovered */}
       {isHovered && (
-        <div style={{
-          position: 'absolute',
-          width: size + 16,
-          height: size + 16,
-          borderRadius: '50%',
-          background: `radial-gradient(circle, ${color}15 0%, transparent 70%)`,
-          animation: 'pulse 2s infinite'
-        }} />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          style={{
+            position: 'absolute',
+            width: size + 16,
+            height: size + 16,
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${color}15 0%, transparent 70%)`,
+            animation: 'pulse 2s infinite'
+          }}
+        />
       )}
 
       <svg
@@ -344,8 +352,8 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
           fill="none"
         />
 
-        {/* Progress circle with gradient */}
-        <circle
+        {/* Progress circle with gradient - animated */}
+        <motion.circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
@@ -354,9 +362,12 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
           fill="none"
           strokeLinecap="round"
           strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          style={{
-            transition: 'stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{
+            duration: 1.5,
+            delay: 0.2,
+            ease: [0.4, 0, 0.2, 1]
           }}
         />
       </svg>
@@ -394,144 +405,7 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
           </span>
         )}
       </div>
-    </button>
-  );
-};
-
-// Upcoming Events Widget Component
-const UpcomingEventsWidget = () => {
-  // Mock upcoming events data
-  const upcomingEvents = [
-    {
-      id: 1,
-      title: 'Lunch with Team',
-      time: 'Today, 1:00 PM',
-      type: 'meal',
-      color: '#ea580c'
-    },
-    {
-      id: 2,
-      title: 'Evening Workout',
-      time: 'Today, 6:30 PM',
-      type: 'activity',
-      color: '#8b5cf6'
-    },
-    {
-      id: 3,
-      title: 'Meal Prep Sunday',
-      time: 'Tomorrow, 10:00 AM',
-      type: 'meal',
-      color: '#22c55e'
-    },
-    {
-      id: 4,
-      title: 'Nutrition Consultation',
-      time: 'Friday, 3:00 PM',
-      type: 'appointment',
-      color: '#0891b2'
-    }
-  ];
-
-  return (
-    <Card>
-      <div style={{ position: 'relative' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              width: 32,
-              height: 32,
-              background: '#f0fdf4',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <CalendarIcon width={20} height={20} color="#22c55e" />
-            </div>
-            <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#374151', margin: 0 }}>
-              Upcoming Events
-            </h3>
-          </div>
-          <button
-            onClick={() => {}}
-            style={{
-              padding: '6px 12px',
-              background: '#f0fdf4',
-              border: '1px solid #bbf7d0',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: '600',
-              color: '#16a34a',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#dcfce7';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#f0fdf4';
-            }}
-          >
-            View Calendar
-          </button>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {upcomingEvents.map((event) => (
-            <div
-              key={event.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '16px',
-                background: '#f9fafb',
-                borderRadius: '12px',
-                transition: 'all 0.2s',
-                cursor: 'pointer',
-                border: '1px solid transparent'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#f3f4f6';
-                e.currentTarget.style.borderColor = '#e5e7eb';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#f9fafb';
-                e.currentTarget.style.borderColor = 'transparent';
-              }}
-            >
-              <div style={{
-                width: 4,
-                height: 48,
-                background: event.color,
-                borderRadius: '2px',
-                marginRight: '16px'
-              }}></div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '14px', fontWeight: '600', color: '#111827', marginBottom: '4px' }}>
-                  {event.title}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Clock width={14} height={14} color="#6b7280" />
-                  <span style={{ fontSize: '12px', color: '#6b7280' }}>{event.time}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Empty state - show when no events */}
-        {upcomingEvents.length === 0 && (
-          <div style={{
-            textAlign: 'center',
-            padding: '32px',
-            color: '#9ca3af'
-          }}>
-            <CalendarIcon width={48} height={48} color="#d1d5db" style={{ margin: '0 auto 12px' }} />
-            <p style={{ fontSize: '14px', margin: 0 }}>No upcoming events</p>
-          </div>
-        )}
-      </div>
-    </Card>
+    </motion.button>
   );
 };
 
@@ -964,13 +838,33 @@ const HealthTipOfTheDay = () => {
 
         {/* Dashboard Content */}
         {activeTab === 'dashboard' && hasCompletedNutriTest && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.1,
+                  delayChildren: 0.1
+                }
+              }
+            }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}
+          >
             {/* Stats Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '24px'
-            }}>
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: '24px'
+              }}
+            >
             {/* Calories Card - REPLACE YOUR EXISTING ONE WITH THIS */}
             <Card>
               <div style={{
@@ -1038,6 +932,38 @@ const HealthTipOfTheDay = () => {
                         {currentNutritionData.calories.target - currentNutritionData.calories.current} kcal remaining
                       </p>
                     </div>
+
+                    {/* Log Meal Quick Action Button */}
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setShowCalorieCounter(true)}
+                      style={{
+                        marginTop: '16px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '12px 20px',
+                        background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                        border: 'none',
+                        borderRadius: '12px',
+                        fontSize: '14px',
+                        fontWeight: '700',
+                        color: '#ffffff',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 6px -1px rgba(34, 197, 94, 0.2)',
+                        transition: 'box-shadow 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(34, 197, 94, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(34, 197, 94, 0.2)';
+                      }}
+                    >
+                      <Plus width={18} height={18} />
+                      <span>Log Meal</span>
+                    </motion.button>
                   </div>
                 </div>
               </div>
@@ -1086,13 +1012,20 @@ const HealthTipOfTheDay = () => {
                         {Array.from({ length: 10 }).map((_, i) => {
                           const filled = i < Math.floor((currentNutritionData.protein.current / currentNutritionData.protein.target) * 10);
                           return (
-                            <div
+                            <motion.div
                               key={i}
+                              initial={{ scaleX: 0 }}
+                              animate={{ scaleX: 1 }}
+                              transition={{
+                                duration: 0.6,
+                                delay: i * 0.05,
+                                ease: 'easeOut'
+                              }}
                               style={{
                                 flex: 1,
                                 background: filled ? '#ef4444' : '#f3f4f6',
                                 borderRadius: '4px',
-                                transition: 'background 0.3s ease'
+                                transformOrigin: 'left'
                               }}
                             />
                           );
@@ -1112,13 +1045,20 @@ const HealthTipOfTheDay = () => {
                         {Array.from({ length: 10 }).map((_, i) => {
                           const filled = i < Math.floor((currentNutritionData.carbs.current / currentNutritionData.carbs.target) * 10);
                           return (
-                            <div
+                            <motion.div
                               key={i}
+                              initial={{ scaleX: 0 }}
+                              animate={{ scaleX: 1 }}
+                              transition={{
+                                duration: 0.6,
+                                delay: i * 0.05 + 0.15,
+                                ease: 'easeOut'
+                              }}
                               style={{
                                 flex: 1,
                                 background: filled ? '#fbbf24' : '#f3f4f6',
                                 borderRadius: '4px',
-                                transition: 'background 0.3s ease'
+                                transformOrigin: 'left'
                               }}
                             />
                           );
@@ -1138,13 +1078,20 @@ const HealthTipOfTheDay = () => {
                         {Array.from({ length: 10 }).map((_, i) => {
                           const filled = i < Math.floor((currentNutritionData.fat.current / currentNutritionData.fat.target) * 10);
                           return (
-                            <div
+                            <motion.div
                               key={i}
+                              initial={{ scaleX: 0 }}
+                              animate={{ scaleX: 1 }}
+                              transition={{
+                                duration: 0.6,
+                                delay: i * 0.05 + 0.3,
+                                ease: 'easeOut'
+                              }}
                               style={{
                                 flex: 1,
                                 background: filled ? '#8b5cf6' : '#f3f4f6',
                                 borderRadius: '4px',
-                                transition: 'background 0.3s ease'
+                                transformOrigin: 'left'
                               }}
                             />
                           );
@@ -1281,19 +1228,36 @@ const HealthTipOfTheDay = () => {
                   </div>
                 </div>
               </Card>
-            </div>
+            </motion.div>
 
-            {/* Calendar Events and Health Tip Section */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-              gap: '24px'
-            }}>
-              <UpcomingEventsWidget />
+            {/* Up Next and Health Tip Section */}
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+                gap: '24px'
+              }}
+            >
+              <UpNext onAction={(actionId) => {
+                console.log('Action triggered:', actionId);
+                if (actionId === 'breakfast' || actionId === 'lunch' || actionId === 'dinner') {
+                  setShowCalorieCounter(true);
+                } else if (actionId === 'water') {
+                  // TODO: Add water logging functionality
+                  console.log('Log water intake');
+                } else if (actionId === 'plan-tomorrow') {
+                  // TODO: Navigate to meal planning
+                  console.log('Plan tomorrow\'s meals');
+                }
+              }} />
               <HealthTipOfTheDay />
-            </div>
+            </motion.div>
 
-          </div>
+          </motion.div>
         )}
 
         {/* NutriTest Tab */}
