@@ -1,0 +1,38 @@
+/**
+ * MealDetailModal Styles
+ *
+ * Styles for the meal detail modal component.
+ * Ensures proper scrolling behavior and responsive design.
+ */
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* Custom scrollbar for modal content */
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 640px) {
+  .modal-content {
+    margin: 10px;
+    max-height: 95vh;
+  }
+}

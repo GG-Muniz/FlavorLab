@@ -8,6 +8,9 @@ import CalorieCounter from './components/modals/CalorieCounter';
 import Calendar from './components/calendar/Calendar';
 import CalendarPage from './pages/CalendarPage';
 import { useAuth } from './context/AuthContext';
+import UpNext from './components/dashboard/UpNext';
+import { getDailyCalorieSummary } from './services/calorieApi';
+import MealPlanShowcase from './components/mealplan/MealPlanShowcase';
 
 import {
   LayoutDashboard,
@@ -35,7 +38,7 @@ const iconConfig = {
   navigation: {
     dashboard: { icon: LayoutDashboard, label: 'Dashboard' },
     nutritest: { icon: FlaskConical, label: 'NutriTest' },
-    recipes: { icon: ChefHat, label: 'Recipe Generator' },
+    mealplans: { icon: ChefHat, label: 'Meal Plans' },
     history: { icon: History, label: 'Meal History' },
     calendar: { icon: CalendarIcon, label: 'Calendar' }
   },
@@ -246,9 +249,8 @@ function App() {
   const handleNutriTestComplete = (testResults) => {
     console.log('NutriTest completed:', testResults);
     setHasCompletedNutriTest(true);
-    // TODO: Send results to backend to create user profile and meal plan
-    // Switch back to dashboard
-    setActiveTab('dashboard');
+    // Redirect to meal plans tab to show AI-generated meal plan
+    setActiveTab('mealplans');
   };
   const mockNutritionData = {
     calories: { current: 1247, target: 2000, percentage: 62 },
@@ -1229,8 +1231,13 @@ const HealthTipOfTheDay = () => {
           <CalendarPage />
         )}
 
+        {/* Meal Plans */}
+        {activeTab === 'mealplans' && (
+          <MealPlanShowcase />
+        )}
+
         {/* Other Tabs */}
-        {activeTab !== 'dashboard' && activeTab !== 'nutritest' && activeTab !== 'calendar' && (
+        {activeTab !== 'dashboard' && activeTab !== 'nutritest' && activeTab !== 'calendar' && activeTab !== 'mealplans' && (
           <Card>
             <div style={{ textAlign: 'center' }}>
               <div style={{
