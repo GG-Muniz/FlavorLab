@@ -4,6 +4,7 @@ import HealthPillarsSelector from './HealthPillarsSelector';
 import PreferencesSelector from './PreferencesSelector';
 import FinalPreferences from './FinalPreferences';
 import LoadingOverlay from './LoadingOverlay';
+import { submitSurvey } from '../../services/mealPlanApi';
 
 const NutriTest = ({ onComplete }) => {
   // Master state object - holds all data from the entire flow
@@ -12,7 +13,7 @@ const NutriTest = ({ onComplete }) => {
     allergies: [],
     diets: [],
     // Step 3 fields
-    mealsPerDay: '3-meals', // '3-meals', '3-meals-2-snacks', or '5-6-smaller'
+    mealsPerDay: '3', // '3', '3-meals-2-snacks', or '6'
     dislikedIngredients: []
   });
 
@@ -49,12 +50,20 @@ const NutriTest = ({ onComplete }) => {
     setIsLoading(true);
     console.log('SENDING THIS TO THE LLM:', formData);
 
-    // Simulate API call delay (replace with actual API call)
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      // Submit survey data to backend
+      await submitSurvey(formData);
+      console.log('Survey submitted successfully!');
 
-    // TODO: Add actual API call to the meal plan endpoint here
-    setIsLoading(false);
-    handleComplete();
+      // Complete the NutriTest flow
+      setIsLoading(false);
+      handleComplete();
+    } catch (error) {
+      console.error('Error submitting survey:', error);
+      setIsLoading(false);
+      // TODO: Show error message to user
+      alert(`Failed to submit survey: ${error.message}`);
+    }
   };
 
   // Page transition variants

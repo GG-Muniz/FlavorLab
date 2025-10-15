@@ -142,8 +142,8 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
 
         <div className="meals-grid">
           <motion.div
-            className={`selectable-card meal-option-card ${initialData.mealsPerDay === '3-meals' ? 'selected' : ''}`}
-            onClick={() => handleMealsPerDayChange('3-meals')}
+            className={`selectable-card meal-option-card ${initialData.mealsPerDay === '3' ? 'selected' : ''}`}
+            onClick={() => handleMealsPerDayChange('3')}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -156,7 +156,7 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
             <h4 style={{
               fontSize: '16px',
               fontWeight: '700',
-              color: initialData.mealsPerDay === '3-meals' ? '#16a34a' : '#111827',
+              color: initialData.mealsPerDay === '3' ? '#16a34a' : '#111827',
               margin: 0
             }}>
               3 Meals
@@ -186,8 +186,8 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
           </motion.div>
 
           <motion.div
-            className={`selectable-card meal-option-card ${initialData.mealsPerDay === '5-6-smaller' ? 'selected' : ''}`}
-            onClick={() => handleMealsPerDayChange('5-6-smaller')}
+            className={`selectable-card meal-option-card ${initialData.mealsPerDay === '6' ? 'selected' : ''}`}
+            onClick={() => handleMealsPerDayChange('6')}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -200,7 +200,7 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
             <h4 style={{
               fontSize: '16px',
               fontWeight: '700',
-              color: initialData.mealsPerDay === '5-6-smaller' ? '#16a34a' : '#111827',
+              color: initialData.mealsPerDay === '6' ? '#16a34a' : '#111827',
               margin: 0
             }}>
               5-6 Smaller Meals

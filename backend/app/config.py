@@ -58,6 +58,9 @@ class Settings(BaseSettings):
     # Script settings
     batch_size: int = Field(default=100, json_schema_extra={"env": "BATCH_SIZE"})
 
+    # LLM settings
+    anthropic_api_key: str = Field(..., json_schema_extra={"env": "ANTHROPIC_API_KEY"})
+
 
 # Global settings instance
 _settings: Optional[Settings] = None
