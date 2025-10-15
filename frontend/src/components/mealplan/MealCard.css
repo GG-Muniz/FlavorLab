@@ -1,0 +1,202 @@
+/**
+ * MealCard Component Styles
+ *
+ * CSS styles for the MealCard component with hover effects,
+ * transitions, and responsive design considerations.
+ */
+
+/* ============================================================================
+ * Base Card Styles
+ * ============================================================================ */
+
+.meal-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 300px;
+}
+
+/* Hover state - border color change */
+.meal-card:hover {
+  border-color: #22c55e !important;
+  box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.2) !important;
+}
+
+/* Active state - slight press effect */
+.meal-card:active {
+  transform: scale(0.98) !important;
+}
+
+/* ============================================================================
+ * Meal Type Badge Styles
+ * ============================================================================ */
+
+.meal-type-badge {
+  transition: transform 0.2s ease;
+}
+
+.meal-card:hover .meal-type-badge {
+  transform: translateY(-2px);
+}
+
+/* ============================================================================
+ * Meal Name Styles
+ * ============================================================================ */
+
+.meal-name {
+  transition: color 0.2s ease;
+}
+
+.meal-card:hover .meal-name {
+  color: #16a34a;
+}
+
+/* ============================================================================
+ * Calories Section Styles
+ * ============================================================================ */
+
+.meal-calories {
+  transition: all 0.2s ease;
+}
+
+.meal-card:hover .meal-calories {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  transform: translateX(2px);
+}
+
+/* ============================================================================
+ * Description Styles
+ * ============================================================================ */
+
+.meal-description {
+  transition: color 0.2s ease;
+}
+
+.meal-card:hover .meal-description {
+  color: #374151;
+}
+
+/* ============================================================================
+ * Click Hint Styles
+ * ============================================================================ */
+
+.meal-click-hint span {
+  transition: all 0.2s ease;
+}
+
+.meal-card:hover .meal-click-hint span {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+/* ============================================================================
+ * Responsive Design
+ * ============================================================================ */
+
+/* Tablet and smaller */
+@media (max-width: 768px) {
+  .meal-card {
+    padding: 20px;
+    min-height: 280px;
+  }
+
+  .meal-name {
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  .meal-description {
+    font-size: 13px;
+    min-height: 56px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .meal-card {
+    padding: 16px;
+    min-height: 260px;
+  }
+
+  .meal-name {
+    font-size: 15px;
+    min-height: 40px;
+  }
+
+  .meal-calories {
+    padding: 8px 10px;
+  }
+
+  .meal-description {
+    font-size: 12px;
+    min-height: 52px;
+  }
+}
+
+/* ============================================================================
+ * Accessibility
+ * ============================================================================ */
+
+/* Focus styles for keyboard navigation */
+.meal-card:focus {
+  outline: 2px solid #22c55e;
+  outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .meal-card,
+  .meal-type-badge,
+  .meal-name,
+  .meal-calories,
+  .meal-description,
+  .meal-click-hint span {
+    transition: none;
+  }
+}
+
+/* ============================================================================
+ * Dark Mode Support (Future Enhancement)
+ * ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  .meal-card {
+    background: rgba(31, 41, 55, 0.9) !important;
+    border-color: #374151 !important;
+  }
+
+  .meal-card:hover {
+    border-color: #22c55e !important;
+  }
+
+  .meal-name {
+    color: #f3f4f6 !important;
+  }
+
+  .meal-card:hover .meal-name {
+    color: #22c55e !important;
+  }
+
+  .meal-description {
+    color: #9ca3af !important;
+  }
+
+  .meal-card:hover .meal-description {
+    color: #d1d5db !important;
+  }
+}
+
+/* ============================================================================
+ * Print Styles
+ * ============================================================================ */
+
+@media print {
+  .meal-card {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #d1d5db !important;
+  }
+
+  .meal-click-hint {
+    display: none !important;
+  }
+}
