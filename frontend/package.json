@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -k -n FRONTEND,BACKEND -c green,cyan \"npm:dev:frontend\" \"npm:dev:backend\"",
+    "dev:frontend": "vite",
+    "dev:backend": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"cd ..\\backend; if(!(Test-Path venv)) { py -m venv venv }; .\\venv\\Scripts\\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -17,9 +19,11 @@
     "react": "^19.1.1",
     "react-big-calendar": "^1.19.4",
     "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.4",
     "tailwindcss": "^4.1.13"
   },
   "devDependencies": {
+    "concurrently": "^9.0.1",
     "@eslint/js": "^9.35.0",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",

@@ -6,12 +6,14 @@ This is the main entry point for the FlavorLab backend API.
 
 import logging
 from contextlib import asynccontextmanager
+import os
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from .api import health, users, entities, relationships, flavor, calorie_tracker, nutrition
-from .database import engine, Base, SessionLocal
+from .database import engine, Base, SessionLocal, ensure_user_columns
 from .config import get_settings
 
 
@@ -28,6 +30,10 @@ async def lifespan(app: FastAPI):
     logger.info("Application startup...")
     # Create database tables
     Base.metadata.create_all(bind=engine)
+    # Ensure new columns exist (SQLite lightweight migration)
+    ensure_user_columns()
+    # Ensure static directories exist for avatar uploads
+    os.makedirs("static/avatars", exist_ok=True)
     logger.info("Database tables created.")
     yield
     logger.info("Application shutdown...")
@@ -58,6 +64,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Static file serving for avatars and other assets (allow start even if dir absent)
+app.mount("/static", StaticFiles(directory="static", check_dir=False), name="static")
 
 # API Routers
 app.include_router(health.router, prefix=settings.api_prefix, tags=["Health"])
