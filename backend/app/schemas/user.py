@@ -196,6 +196,17 @@ class UserPreferences(BaseModel):
     privacy_settings: Optional[Dict[str, bool]] = None
 
 
+class UserSurveyData(BaseModel):
+    """Schema for complete user survey data from onboarding flow."""
+    healthPillars: List[str] = Field(..., description="Selected health pillar names")
+    dietaryRestrictions: List[str] = Field(default_factory=list, description="Dietary restrictions (vegetarian, vegan, gluten-free, etc.)")
+    mealComplexity: str = Field(..., description="Preferred meal complexity (simple, moderate, complex)")
+    dislikedIngredients: List[str] = Field(default_factory=list, description="Ingredients to avoid")
+    mealsPerDay: str = Field(..., description="Preferred meal structure (3, 3-meals-2-snacks, 6, etc.)")
+    allergies: List[str] = Field(default_factory=list, description="Food allergies")
+    primaryGoal: str = Field(..., description="Primary health/wellness goal")
+
+
 class UserStatsResponse(BaseModel):
     """Schema for user statistics."""
     total_users: int
