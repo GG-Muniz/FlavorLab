@@ -128,6 +128,72 @@ class HealthGoalsUpdate(BaseModel):
         return v
 
 
+class UserSurveyData(BaseModel):
+    """
+    Schema for complete user survey submission from the onboarding flow.
+
+    This schema captures the full survey data from the frontend for future LLM use
+    while also providing the data needed to integrate with the existing meal planner.
+
+    Fields match the frontend formData structure exactly.
+    """
+    healthPillars: List[str] = Field(
+        ...,
+        description="List of selected health pillar names (e.g., 'Increased Energy')",
+        min_length=1
+    )
+    dietaryRestrictions: List[str] = Field(
+        default_factory=list,
+        description="List of dietary restrictions (e.g., 'vegetarian', 'vegan', 'gluten-free')"
+    )
+    mealComplexity: str = Field(
+        ...,
+        description="Preferred meal complexity level (e.g., 'simple', 'moderate', 'complex')"
+    )
+    dislikedIngredients: List[str] = Field(
+        default_factory=list,
+        description="List of ingredients the user dislikes"
+    )
+    mealsPerDay: str = Field(
+        ...,
+        description="Number of meals per day (e.g., '3', '4', '5')"
+    )
+    allergies: List[str] = Field(
+        default_factory=list,
+        description="List of food allergies"
+    )
+    primaryGoal: str = Field(
+        ...,
+        description="Primary health or fitness goal"
+    )
+
+    @field_validator('healthPillars')
+    def validate_health_pillars(cls, v):
+        """Validate that health pillars list is not empty."""
+        if not v:
+            raise ValueError('At least one health pillar must be selected')
+        return v
+
+    @field_validator('mealComplexity')
+    def validate_meal_complexity(cls, v):
+        """Validate meal complexity value."""
+        valid_complexities = ['simple', 'moderate', 'complex']
+        if v.lower() not in valid_complexities:
+            raise ValueError(f'Meal complexity must be one of: {", ".join(valid_complexities)}')
+        return v.lower()
+
+    @field_validator('mealsPerDay')
+    def validate_meals_per_day(cls, v):
+        """Validate meals per day is a valid number."""
+        try:
+            meals = int(v)
+            if meals < 1 or meals > 10:
+                raise ValueError('Meals per day must be between 1 and 10')
+        except ValueError:
+            raise ValueError('Meals per day must be a valid number')
+        return v
+
+
 class PasswordReset(BaseModel):
     """Schema for password reset requests."""
     email: EmailStr

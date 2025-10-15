@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     secret_key: str = Field(default="your-secret-key-change-in-production", json_schema_extra={"env": "SECRET_KEY"})
     access_token_expire_minutes: int = Field(default=30, json_schema_extra={"env": "ACCESS_TOKEN_EXPIRE_MINUTES"})
 
+    # LLM/AI settings
+    anthropic_api_key: Optional[str] = Field(default=None, json_schema_extra={"env": "ANTHROPIC_API_KEY"})
+
     # Data settings
     json_data_path: str = Field(default="../", json_schema_extra={"env": "JSON_DATA_PATH"})
     entities_file: str = Field(default="entities.json", json_schema_extra={"env": "ENTITIES_FILE"})

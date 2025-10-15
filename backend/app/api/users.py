@@ -7,6 +7,7 @@ registration, authentication, and profile management.
 
 from fastapi import APIRouter, Depends, HTTPException, status, Body, Request
 import datetime
+import logging
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -21,6 +22,7 @@ from ..schemas.user import (
     UserProfileResponse,
     ChangePasswordRequest,
     HealthGoalsUpdate,
+    UserSurveyData,
     Token,
     TokenData,
     UserStatsResponse,
@@ -31,11 +33,16 @@ from ..schemas.meal_plan import (
     MealPlanRequest,
     MealItem,
     DailyMealPlan,
+    LLMMealPlanResponse,
 )
 from ..services.auth import AuthService, get_current_active_user, get_current_verified_user
+from ..services.llm_service import generate_llm_meal_plan, LLMResponseError
 from ..database import get_db
 
 router = APIRouter(prefix="/users", tags=["Users"])
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 @router.post("/register", response_model=UserResponse)
@@ -295,6 +302,101 @@ async def update_health_goals(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error updating health goals: {str(e)}"
+        )
+
+
+@router.post("/me/survey", response_model=UserProfileResponse)
+async def submit_user_survey(
+    survey_data: UserSurveyData,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
+    """
+    Submit complete user survey data from the onboarding flow.
+
+    This endpoint serves as an "MVP bridge" that:
+    1. Translates health pillar names to IDs for the existing meal planner
+    2. Stores the complete survey data for future LLM-based personalization
+
+    The survey data includes health pillars, dietary restrictions, meal complexity,
+    disliked ingredients, meals per day, allergies, and primary goal.
+
+    Args:
+        survey_data: Complete survey data from frontend
+        db: Database session
+        current_user: Current authenticated user
+
+    Returns:
+        UserProfileResponse: Updated user profile with survey data
+
+    Raises:
+        HTTPException: If survey submission fails
+
+    Example:
+        POST /api/v1/users/me/survey
+        {
+            "healthPillars": ["Increased Energy", "Better Sleep"],
+            "dietaryRestrictions": ["vegetarian"],
+            "mealComplexity": "moderate",
+            "dislikedIngredients": ["mushrooms"],
+            "mealsPerDay": "3",
+            "allergies": ["peanuts"],
+            "primaryGoal": "lose weight"
+        }
+    """
+    try:
+        # Create reverse mapping from pillar names to IDs
+        pillar_name_to_id = {
+            pillar_data["name"]: pillar_id
+            for pillar_id, pillar_data in HEALTH_PILLARS.items()
+        }
+
+        # Translate health pillar names to IDs
+        pillar_ids = []
+        for pillar_name in survey_data.healthPillars:
+            pillar_id = pillar_name_to_id.get(pillar_name)
+            if pillar_id is not None:
+                pillar_ids.append(pillar_id)
+            else:
+                # Log warning but continue - don't fail the entire request
+                print(f"Warning: Unknown health pillar name: {pillar_name}")
+
+        # Ensure at least one valid pillar ID was found
+        if not pillar_ids:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No valid health pillars found in survey data"
+            )
+
+        # Get current preferences or initialize empty dict
+        preferences = current_user.preferences or {}
+
+        # Update health_goals for MVP meal planner compatibility
+        preferences["health_goals"] = pillar_ids
+
+        # Store complete survey data for future LLM use
+        preferences["survey_data"] = survey_data.model_dump()
+
+        # Save updated preferences
+        current_user.preferences = dict(preferences)
+
+        # Mark the field as modified to ensure SQLAlchemy detects the change
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(current_user, "preferences")
+
+        # Commit changes
+        db.commit()
+        db.refresh(current_user)
+
+        return UserProfileResponse.model_validate(current_user)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error submitting survey: {str(e)}"
         )
 
 
@@ -646,11 +748,11 @@ async def verify_user_account(
         
         user.is_verified = True
         db.commit()
-        
+
         return {
             "message": f"User account '{user_id}' verified successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -658,5 +760,90 @@ async def verify_user_account(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error verifying user account: {str(e)}"
+        )
+
+
+@router.post("/me/llm-meal-plan", response_model=LLMMealPlanResponse)
+async def generate_llm_meal_plan_endpoint(
+    request: Optional[MealPlanRequest] = None,
+    include_recipes: bool = False,
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Generate a personalized meal plan using Claude Haiku LLM.
+
+    This endpoint leverages AI to create highly personalized meal plans based on
+    the user's complete survey data, including health goals, dietary restrictions,
+    allergies, and preferences. The LLM generates meal plans that are:
+    - Tailored to user's health pillars and primary goals
+    - Strictly adherent to dietary restrictions and allergies (with derivative awareness)
+    - Explicitly structured according to user's meal-per-day preference
+    - Optimized for meal complexity preferences
+    - Balanced for nutrition and calorie targets
+    - Optionally includes detailed recipes with ingredients and instructions
+
+    Args:
+        request: Optional meal plan generation parameters (num_days)
+        include_recipes: If True, generate detailed recipes with ingredients, servings,
+                        prep/cook times, step-by-step instructions, and nutrition info.
+                        Default: False (overview mode only)
+        current_user: Currently authenticated user
+        db: Database session
+
+    Returns:
+        LLMMealPlanResponse: AI-generated meal plan with health goal summary
+
+    Raises:
+        HTTPException: If LLM generation fails or user lacks survey data
+    """
+    try:
+        # Determine number of days (default to 7)
+        num_days = 7
+        if request and request.num_days:
+            num_days = request.num_days
+
+        # Generate meal plan using LLM service
+        try:
+            validated_plan = await generate_llm_meal_plan(current_user, num_days, include_recipes)
+        except LLMResponseError as e:
+            logger.error(f"LLM meal plan generation failed: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Could not generate meal plan at this time. Please try again later."
+            )
+
+        # Generate health goal summary
+        preferences = current_user.preferences or {}
+        user_health_goals = preferences.get("health_goals", [])
+        health_goal_summary = None
+
+        if user_health_goals:
+            pillar_names = [get_pillar_name(pid) for pid in user_health_goals if get_pillar_name(pid)]
+            if pillar_names:
+                if len(pillar_names) == 1:
+                    health_goal_summary = f"This meal plan prioritizes ingredients for {pillar_names[0]}."
+                elif len(pillar_names) == 2:
+                    health_goal_summary = f"This meal plan prioritizes ingredients for {pillar_names[0]} and {pillar_names[1]}."
+                else:
+                    last_goal = pillar_names[-1]
+                    other_goals = ", ".join(pillar_names[:-1])
+                    health_goal_summary = f"This meal plan prioritizes ingredients for {other_goals}, and {last_goal}."
+        else:
+            health_goal_summary = "This AI-generated meal plan is based on your survey preferences."
+
+        # Return LLM-generated meal plan response
+        return LLMMealPlanResponse(
+            plan=validated_plan,
+            health_goal_summary=health_goal_summary
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error in LLM meal plan endpoint: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating meal plan: {str(e)}"
         )
 
