@@ -6,7 +6,7 @@ and session management for the FlavorLab application.
 """
 
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from typing import Generator
 from .config import get_settings
@@ -61,6 +61,40 @@ def create_tables() -> None:
     
     # Create all tables
     Base.metadata.create_all(bind=engine)
+
+
+def ensure_user_columns() -> None:
+    """
+    Lightweight migration helper for SQLite: ensure newly added user columns exist.
+    Safe to run repeatedly.
+    """
+    try:
+        with engine.begin() as conn:
+            # Check existing columns
+            result = conn.execute(text("PRAGMA table_info(users)"))
+            existing = {row[1] for row in result.fetchall()}  # column names
+
+            if "age" not in existing:
+                conn.execute(text("ALTER TABLE users ADD COLUMN age INTEGER"))
+            if "height_cm" not in existing:
+                conn.execute(text("ALTER TABLE users ADD COLUMN height_cm INTEGER"))
+            if "weight_kg" not in existing:
+                conn.execute(text("ALTER TABLE users ADD COLUMN weight_kg FLOAT"))
+            if "avatar_url" not in existing:
+                conn.execute(text("ALTER TABLE users ADD COLUMN avatar_url VARCHAR(512)"))
+            if "date_of_birth" not in existing:
+                conn.execute(text("ALTER TABLE users ADD COLUMN date_of_birth DATE"))
+            if "gender" not in existing:
+                conn.execute(text("ALTER TABLE users ADD COLUMN gender VARCHAR(32)"))
+            if "activity_level" not in existing:
+                conn.execute(text("ALTER TABLE users ADD COLUMN activity_level VARCHAR(32)"))
+            if "health_goals" not in existing:
+                conn.execute(text("ALTER TABLE users ADD COLUMN health_goals JSON"))
+            if "dietary_preferences" not in existing:
+                conn.execute(text("ALTER TABLE users ADD COLUMN dietary_preferences JSON"))
+    except Exception as e:
+        # Non-fatal; log to console for dev visibility
+        print(f"ensure_user_columns error: {e}")
 
 
 def drop_tables() -> None:

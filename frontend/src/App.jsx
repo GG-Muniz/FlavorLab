@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { NotificationsPanel, NotificationBellButton } from './components/notifications/NotificationsPanel';
 import Login from './components/auth/Login';
 import NutriTest from './components/onboarding/NutriTest';
 import CalorieDetailModal from './components/modals/CalorieDetailModal';
 import CalorieCounter from './components/modals/CalorieCounter';
 import Calendar from './components/calendar/Calendar';
+import { useAuth } from './context/AuthContext';
 
 import {
   LayoutDashboard,
@@ -88,7 +90,7 @@ const useNutritionData = (userId) => {
 };
 
 // Components
-const IconWrapper = ({ iconKey, category = 'navigation', size = 'default' }) => {
+const IconWrapper = ({ iconKey, category = 'navigation', size = 'default', color }) => {
   const sizeMap = {
     small: { width: 16, height: 16 },
     default: { width: 20, height: 20 },
@@ -100,7 +102,7 @@ const IconWrapper = ({ iconKey, category = 'navigation', size = 'default' }) => 
   if (!iconData) return null;
 
   const IconComponent = iconData.icon;
-  return <IconComponent {...sizeMap[size]} strokeWidth={2} />;
+  return <IconComponent {...sizeMap[size]} strokeWidth={2} color={color} />;
 };
 
 const Card = ({ children, gradient, style = {} }) => {
@@ -200,11 +202,15 @@ const QuickActionButton = ({ actionKey, action, onClick }) => {
 };
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user: authUser } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isAnimating, setIsAnimating] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [user] = useState({ id: '123', name: 'Sarah' });
+  const user = authUser || { id: '123', name: 'User' };
   const [hasCompletedNutriTest, setHasCompletedNutriTest] = useState(false);
+  // Disable auto-rendering NutriTest on the dashboard; keep it in its own tab
+  const showNutriOnDashboard = false;
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]); //Despues va a venir del API
@@ -217,15 +223,23 @@ function App() {
   const { data: nutritionData, loading } = useNutritionData(user.id);
   const [hoveredNavButton, setHoveredNavButton] = useState(null);
 
-  // Handle login
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-    // Trigger entrance animation - small delay to ensure DOM is ready
-    setTimeout(() => setIsAnimating(true), 50);
-    // TODO: Store authentication token/session
-    // TODO: Fetch user data from backend
-    // TODO: Check from backend if user has completed NutriTest
-  };
+  // Trigger entrance animation once mounted (avoid state updates before mount)
+  useEffect(() => {
+    const id = setTimeout(() => setIsAnimating(true), 50);
+    return () => clearTimeout(id);
+  }, []);
+
+  // Sync active tab from URL (e.g., /?tab=dashboard)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    const validTabs = Object.keys(iconConfig.navigation);
+    if (tab && validTabs.includes(tab)) {
+      setActiveTab(tab);
+    } else if (location.pathname === '/' && activeTab !== 'dashboard') {
+      setActiveTab('dashboard');
+    }
+  }, [location.search, location.pathname]);
 
   // Handle NutriTest completion
   const handleNutriTestComplete = (testResults) => {
@@ -617,10 +631,7 @@ const HealthTipOfTheDay = () => {
 
   const currentNutritionData = nutritionData || mockNutritionData;
 
-  // Show login page if not logged in
-  if (!isLoggedIn) {
-    return <Login onLogin={handleLogin} />;
-  }
+  // App is only rendered behind a ProtectedRoute; no local login gate needed
 
   if (loading) {
     return (
@@ -653,75 +664,12 @@ const HealthTipOfTheDay = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#f9fafb',
+      background: 'var(--color-gray-50)',
       opacity: isAnimating ? 1 : 0,
       transform: isAnimating ? 'translateY(0)' : 'translateY(20px)',
       transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
     }}>
-      {/* Header */}
-      <header style={{
-        background: '#ffffff',
-        boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-        borderBottom: '1px solid #f3f4f6'
-      }}>
-        <div style={{
-          maxWidth: '80rem',
-          margin: '0 auto',
-          padding: '0 16px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          height: '64px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              width: 40,
-              height: 40,
-              background: '#22c55e',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
-            }}>
-              <Apple width={24} height={24} color="#ffffff" strokeWidth={2.5} />
-            </div>
-
-            <h1 style={{
-              fontSize: '24px',
-              fontWeight: '700',
-              color: '#111827',
-              letterSpacing: '-0.025em',
-              margin: 0
-            }}>
-              HealthLab
-            </h1>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <NotificationBellButton
-            unreadCount={unreadNotifications}
-            onClick={() => setShowNotifications(!showNotifications)}
-         />
-            <div style={{ fontSize: '14px', color: '#6b7280' }}>
-              Hello, <span style={{ fontWeight: '600', color: '#374151' }}>{user.name}</span>
-              <span style={{ marginLeft: '4px' }}>👋</span>
-            </div>
-            <div style={{
-              width: 36,
-              height: 36,
-              background: '#f0fdf4',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '2px solid #bbf7d0'
-            }}>
-              <User width={20} height={20} color="#15803d" />
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Header moved to AppLayout */}
 
       {/* Main Content */}
       <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '32px 16px' }}>
@@ -731,18 +679,18 @@ const HealthTipOfTheDay = () => {
           flexWrap: 'wrap',
           gap: '12px',
           marginBottom: '32px',
-          background: '#ffffff',
+          background: 'var(--color-gray-100)',
           padding: '12px',
           borderRadius: '16px',
           boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-          border: '1px solid #f3f4f6',
+          border: '2px solid var(--color-gray-200)',
           alignItems: 'center'
         }}>
 
           {Object.entries(iconConfig.navigation).map(([key, navItem]) => (
             <button
               key={key}
-              onClick={() => setActiveTab(key)}
+              onClick={() => { setActiveTab(key); navigate(`/?tab=${key}`, { replace: true }); }}
               onMouseEnter={() => setHoveredNavButton(key)}
               onMouseLeave={() => setHoveredNavButton(null)}
               style={{
@@ -754,11 +702,11 @@ const HealthTipOfTheDay = () => {
                 fontWeight: '500',
                 fontSize: '14px',
                 transition: 'all 0.2s',
-                border: 'none',
+                border: activeTab === key ? 'none' : '2px solid var(--color-gray-200)',
                 cursor: 'pointer',
                 background: activeTab === key ? '#22c55e' :
-                           hoveredNavButton === key ? '#f0fdf4' : 'transparent',
-                color: activeTab === key ? '#ffffff' : '#6b7280',
+                           hoveredNavButton === key ? 'rgba(34, 197, 94, 0.12)' : 'transparent',
+                color: activeTab === key ? '#ffffff' : 'var(--text-secondary)',
                 boxShadow: activeTab === key ? '0 10px 15px -3px rgb(34 197 94 / 0.3)' : 'none',
                 transform: activeTab === key ?  'scale(1.05)' :
                            hoveredNavButton === key ? 'scale(1.02' : 'scale(1)'
@@ -768,6 +716,7 @@ const HealthTipOfTheDay = () => {
                 iconKey={key}
                 category="navigation"
                 size="small"
+                color={activeTab === key ? '#ffffff' : undefined}
               />
               <span>{navItem.label}</span>
             </button>
@@ -801,7 +750,7 @@ const HealthTipOfTheDay = () => {
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              <Zap width={16} height={16} />
+              <Zap width={16} height={16} color="#ffffff" />
               <span>Quick Actions</span>
             </button>
 
@@ -827,10 +776,10 @@ const HealthTipOfTheDay = () => {
                   top: 'calc(100% + 8px)',
                   right: 0,
                   minWidth: '320px',
-                  background: '#ffffff',
+                  background: 'var(--color-gray-100)',
                   borderRadius: '16px',
-                  boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.2)',
-                  border: '1px solid #f3f4f6',
+                  boxShadow: '0 24px 48px -12px rgba(0,0,0,0.6)',
+                  border: '2px solid var(--color-gray-200)',
                   padding: '8px',
                   zIndex: 20,
                   animation: 'slideDown 0.2s ease-out'
@@ -879,7 +828,7 @@ const HealthTipOfTheDay = () => {
                           textAlign: 'left'
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = colors.hover;
+                          e.currentTarget.style.background = 'var(--menu-hover-bg)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = 'transparent';
@@ -899,8 +848,8 @@ const HealthTipOfTheDay = () => {
                         </div>
                         <span style={{
                           fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#374151'
+                          fontWeight: '700',
+                          color: 'var(--text-primary)'
                         }}>
                           {action.label}
                         </span>
@@ -914,7 +863,7 @@ const HealthTipOfTheDay = () => {
         </div>
 
         {/* Auto-show NutriTest for new users */}
-        {activeTab === 'dashboard' && !hasCompletedNutriTest && (
+        {activeTab === 'dashboard' && showNutriOnDashboard && !hasCompletedNutriTest && (
           <div style={{
             background: '#ffffff',
             borderRadius: '24px',
@@ -928,7 +877,7 @@ const HealthTipOfTheDay = () => {
         )}
 
         {/* Dashboard Content */}
-        {activeTab === 'dashboard' && hasCompletedNutriTest && (
+        {activeTab === 'dashboard' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
             {/* Stats Grid */}
             <div style={{

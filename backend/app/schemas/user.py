@@ -6,7 +6,10 @@ This module defines the request/response schemas for user-related API endpoints.
 
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
-from datetime import datetime
+from pydantic import FieldValidationInfo
+import re
+from ..config import get_settings
+from datetime import datetime, date
 
 
 class Token(BaseModel):
@@ -33,8 +36,23 @@ class UserCreate(UserBase):
     is_active: Optional[bool] = True
     
     @field_validator('password')
-    def validate_password(cls, v):
+    def validate_password(cls, v, info: FieldValidationInfo):
         """Validate password strength."""
+        email = ((info.data.get('email') if info and info.data else None) or "").strip().lower()
+        settings = get_settings()
+        demo_email = (getattr(settings, 'demo_email', 'demo@flavorlab.com') or "").strip().lower()
+
+        # Allow demo email (+ tag variants) with relaxed rules (length only)
+        if email:
+            demo_local, _, demo_domain = demo_email.partition('@')
+            pat_main = rf"^{re.escape(demo_local)}(\+[^@]+)?@{re.escape(demo_domain)}$"
+            pat_local = rf"^{re.escape(demo_local)}(\+[^@]+)?@flavorlab\.local$"
+            if re.fullmatch(pat_main, email) or re.fullmatch(pat_local, email):
+                if len(v) < 8:
+                    raise ValueError('Password must be at least 8 characters long')
+                return v
+
+        # Default strong policy
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
         if not any(c.isupper() for c in v):
@@ -51,7 +69,15 @@ class UserUpdate(BaseModel):
     username: Optional[str] = Field(None, min_length=3, max_length=100)
     first_name: Optional[str] = Field(None, min_length=1, max_length=100)
     last_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    age: Optional[int] = Field(None, ge=0, le=130)
+    height_cm: Optional[int] = Field(None, ge=0, le=300)
+    weight_kg: Optional[float] = Field(None, ge=0, le=700)
     preferences: Optional[Dict[str, Any]] = Field(None, description="User's preferences")
+    date_of_birth: Optional[date] = Field(None, description="DOB (YYYY-MM-DD)")
+    gender: Optional[str] = Field(None)
+    activity_level: Optional[str] = Field(None)
+    health_goals: Optional[Dict[str, Any]] = None
+    dietary_preferences: Optional[Dict[str, Any]] = None
 
 
 class UserResponse(UserBase):
@@ -64,6 +90,15 @@ class UserResponse(UserBase):
     created_at: datetime
     updated_at: datetime
     last_login: Optional[datetime] = None
+    age: Optional[int] = None
+    height_cm: Optional[int] = None
+    weight_kg: Optional[float] = None
+    avatar_url: Optional[str] = None
+    date_of_birth: Optional[date] = None
+    gender: Optional[str] = None
+    activity_level: Optional[str] = None
+    health_goals: Optional[Dict[str, Any]] = None
+    dietary_preferences: Optional[Dict[str, Any]] = None
     
 
 class UserProfileResponse(UserResponse):
