@@ -27,9 +27,14 @@ pip-delete-this-directory.txt
 
 # Virtual environments
 venv/
+venv.old/
 ENV/
 env/
 .venv
+backend/venv/
+backend/venv.old/
+backend/ENV/
+backend/env/
 
 # Backend specific
 backend/__pycache__/
@@ -103,3 +108,8 @@ Thumbs.db
 *.tmp
 *.temp
 .cache/
+
+# Root level patterns (from old structure)
+/node_modules/
+/.vite/
+/dist/

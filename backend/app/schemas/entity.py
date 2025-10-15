@@ -56,11 +56,35 @@ class EntityListResponse(BaseModel):
     has_prev: bool
 
 
+class HealthOutcomeSchema(BaseModel):
+    """Schema for health outcome information with health pillar mappings."""
+    outcome: str
+    confidence: int = Field(ge=1, le=5)
+    added_at: datetime
+    updated_at: Optional[datetime] = None
+    pillars: List[int] = Field(default_factory=list, description="Health pillar IDs (1-8) associated with this outcome")
+
+
+class CompoundInfo(BaseModel):
+    """Schema for compound information."""
+    compound_id: str
+    quantity: Optional[str] = None
+    unit: Optional[str] = None
+    added_at: datetime
+    updated_at: Optional[datetime] = None
+
+
 class IngredientEntityResponse(EntityResponse):
-    """Schema for ingredient entity responses."""
+    """Schema for ingredient entity responses with structured health outcomes."""
     foodb_priority: Optional[str] = None
-    health_outcomes: List[Dict[str, Any]] = Field(default_factory=list)
-    compounds: List[Dict[str, Any]] = Field(default_factory=list)
+    health_outcomes: List[HealthOutcomeSchema] = Field(
+        default_factory=list,
+        description="Health outcomes with pillar mappings"
+    )
+    compounds: List[CompoundInfo] = Field(
+        default_factory=list,
+        description="Compound information"
+    )
 
 
 class NutrientEntityResponse(EntityResponse):
@@ -109,21 +133,10 @@ class EntityStatsResponse(BaseModel):
     last_updated: Optional[datetime] = None
 
 
-class HealthOutcomeInfo(BaseModel):
-    """Schema for health outcome information."""
-    outcome: str
-    confidence: int = Field(ge=1, le=5)
-    added_at: datetime
-    updated_at: Optional[datetime] = None
-
-
-class CompoundInfo(BaseModel):
-    """Schema for compound information."""
-    compound_id: str
-    quantity: Optional[str] = None
-    unit: Optional[str] = None
-    added_at: datetime
-    updated_at: Optional[datetime] = None
+# Legacy alias for backward compatibility
+class HealthOutcomeInfo(HealthOutcomeSchema):
+    """Legacy schema name for health outcome information."""
+    pass
 
 
 # Utility functions for schema conversion

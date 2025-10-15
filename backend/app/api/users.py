@@ -19,18 +19,27 @@ from sqlalchemy import func
 from typing import List, Optional
 
 from .. import models
+from ..models.entity import IngredientEntity
+from ..models.health_pillars import HEALTH_PILLARS, get_pillar_name
 from ..schemas.user import (
     UserCreate,
     UserResponse,
     UserUpdate,
     UserProfileResponse,
     ChangePasswordRequest,
+    HealthGoalsUpdate,
     Token,
     TokenData,
     UserStatsResponse,
     UserLogin,
     PasswordReset,
     PasswordResetConfirm,
+)
+from ..schemas.meal_plan import (
+    MealPlanResponse,
+    MealPlanRequest,
+    MealItem,
+    DailyMealPlan,
 )
 from ..services.auth import AuthService, get_current_active_user, get_current_verified_user
 from ..database import get_db
@@ -266,12 +275,12 @@ async def change_password(
 ):
     """
     Change current user's password.
-    
+
     Args:
         password_data: Password change data
         db: Database session
         current_user: Current authenticated user
-        
+
     Returns:
         Dict with success message
     """
@@ -282,14 +291,14 @@ async def change_password(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Current password is incorrect"
             )
-        
+
         # Change password
         AuthService.change_password(db, current_user, password_data.new_password)
-        
+
         return {
             "message": "Password changed successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -297,6 +306,217 @@ async def change_password(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error changing password: {str(e)}"
+        )
+
+
+@router.post("/me/health-goals", response_model=UserProfileResponse)
+async def update_health_goals(
+    health_goals: HealthGoalsUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
+    """
+    Update current user's health goals.
+
+    This endpoint allows users to save their selected health goals (8 pillars).
+    The goals are stored in the user's preferences under the 'health_goals' key.
+
+    Args:
+        health_goals: Health goals update data with selectedGoals array
+        db: Database session
+        current_user: Current authenticated user
+
+    Returns:
+        UserProfileResponse: Updated user profile with new health goals
+
+    Raises:
+        HTTPException: If update fails
+    """
+    try:
+        # Get current preferences or initialize empty dict
+        preferences = current_user.preferences or {}
+
+        # Update health_goals in preferences
+        preferences["health_goals"] = health_goals.selectedGoals
+
+        # Save updated preferences (create new dict to trigger SQLAlchemy update detection)
+        current_user.preferences = dict(preferences)
+
+        # Mark the field as modified to ensure SQLAlchemy detects the change
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(current_user, "preferences")
+
+        # Commit changes
+        db.commit()
+        db.refresh(current_user)
+
+        return UserProfileResponse.model_validate(current_user)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error updating health goals: {str(e)}"
+        )
+
+
+@router.post("/me/meal-plan", response_model=MealPlanResponse)
+async def generate_meal_plan(
+    request: Optional[MealPlanRequest] = None,
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Generate a personalized meal plan for the current user.
+
+    This endpoint creates a multi-day meal plan based on the user's preferences,
+    health goals, and nutritional targets. Ingredients are prioritized based on
+    the user's selected health pillars. For MVP, it returns a mock meal plan.
+    In production, this will integrate with LLM-based meal planning algorithms.
+
+    Args:
+        request: Optional meal plan generation parameters
+        current_user: Currently authenticated user
+        db: Database session
+
+    Returns:
+        MealPlanResponse: Generated meal plan with daily meals and health goal summary
+
+    Raises:
+        HTTPException: If generation fails
+    """
+    try:
+        # Get user preferences for ingredient prioritization
+        preferences = current_user.preferences or {}
+        user_health_goals = preferences.get("health_goals", [])
+        calorie_target = preferences.get("calorie_goal", 2000)
+
+        # Determine number of days (default to 7)
+        num_days = 7
+        if request and request.num_days:
+            num_days = request.num_days
+
+        # Prioritized ingredient selection based on user health goals
+        preferred_ingredients = []
+        health_goal_summary = None
+
+        if user_health_goals:
+            # Fetch ingredients that align with user's health goals
+            try:
+                for pillar_id in user_health_goals:
+                    # Get ingredients for each health pillar
+                    pillar_ingredients = IngredientEntity.get_ingredients_by_pillar(
+                        db, pillar_id, skip=0, limit=10
+                    )
+                    preferred_ingredients.extend(pillar_ingredients)
+
+                # Remove duplicates while preserving order
+                seen = set()
+                preferred_ingredients = [
+                    ing for ing in preferred_ingredients
+                    if not (ing.id in seen or seen.add(ing.id))
+                ]
+            except Exception as e:
+                # If ingredient fetching fails, continue with generic plan
+                print(f"Warning: Could not fetch preferred ingredients: {e}")
+                preferred_ingredients = []
+
+            # Generate health goal summary
+            pillar_names = [get_pillar_name(pid) for pid in user_health_goals if get_pillar_name(pid)]
+            if pillar_names:
+                if len(pillar_names) == 1:
+                    health_goal_summary = f"This meal plan prioritizes ingredients for {pillar_names[0]}."
+                elif len(pillar_names) == 2:
+                    health_goal_summary = f"This meal plan prioritizes ingredients for {pillar_names[0]} and {pillar_names[1]}."
+                else:
+                    last_goal = pillar_names[-1]
+                    other_goals = ", ".join(pillar_names[:-1])
+                    health_goal_summary = f"This meal plan prioritizes ingredients for {other_goals}, and {last_goal}."
+        else:
+            health_goal_summary = "This meal plan is generated without specific health goals."
+
+        # Generate mock meal plan with ingredient-aware descriptions
+        days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+        # Mock ingredient names based on preferred ingredients (MVP approach)
+        ingredient_names = []
+        if preferred_ingredients:
+            ingredient_names = [ing.name for ing in preferred_ingredients[:15]]
+
+        # Fallback generic ingredients if no preferred ingredients
+        if not ingredient_names:
+            ingredient_names = [
+                "Greek yogurt", "berries", "granola", "salmon", "quinoa",
+                "chicken breast", "spinach", "broccoli", "sweet potato",
+                "almonds", "avocado", "eggs", "oats", "apples", "carrots"
+            ]
+
+        meal_plan = []
+        total_calories = 0
+
+        for day_index in range(num_days):
+            day_name = days_of_week[day_index % 7]
+
+            # Generate ingredient-aware mock meals
+            # In production, these would be generated by LLM using preferred_ingredients
+            daily_meals = [
+                MealItem(
+                    type="breakfast",
+                    name="Healthy Breakfast Bowl",
+                    calories=400,
+                    description=f"{ingredient_names[0] if len(ingredient_names) > 0 else 'Yogurt'} with {ingredient_names[2] if len(ingredient_names) > 2 else 'granola'}, fresh berries, and honey"
+                ),
+                MealItem(
+                    type="snack",
+                    name="Morning Snack",
+                    calories=150,
+                    description=f"{ingredient_names[13] if len(ingredient_names) > 13 else 'Apple'} slices with {ingredient_names[9] if len(ingredient_names) > 9 else 'almond'} butter"
+                ),
+                MealItem(
+                    type="lunch",
+                    name="Grilled Protein Salad",
+                    calories=550,
+                    description=f"Mixed greens with grilled {ingredient_names[5] if len(ingredient_names) > 5 else 'chicken'}, {ingredient_names[6] if len(ingredient_names) > 6 else 'vegetables'}, and balsamic vinaigrette"
+                ),
+                MealItem(
+                    type="snack",
+                    name="Afternoon Snack",
+                    calories=200,
+                    description=f"Hummus with {ingredient_names[14] if len(ingredient_names) > 14 else 'carrot'} and cucumber sticks"
+                ),
+                MealItem(
+                    type="dinner",
+                    name="Baked Protein with Grains",
+                    calories=650,
+                    description=f"Baked {ingredient_names[3] if len(ingredient_names) > 3 else 'salmon'} with {ingredient_names[4] if len(ingredient_names) > 4 else 'quinoa'} and roasted vegetables"
+                ),
+            ]
+
+            daily_plan = DailyMealPlan(day=day_name, meals=daily_meals)
+            meal_plan.append(daily_plan)
+
+            # Calculate total calories for this day
+            day_calories = sum(meal.calories for meal in daily_meals)
+            total_calories += day_calories
+
+        # Calculate average calories per day
+        avg_calories = total_calories // num_days
+
+        return MealPlanResponse(
+            plan=meal_plan,
+            total_days=num_days,
+            average_calories_per_day=avg_calories,
+            health_goal_summary=health_goal_summary
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating meal plan: {str(e)}"
         )
 
 
