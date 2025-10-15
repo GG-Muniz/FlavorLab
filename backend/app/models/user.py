@@ -57,6 +57,10 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.datetime.now(datetime.UTC))
     updated_at = Column(DateTime, default=datetime.datetime.now(datetime.UTC), onupdate=datetime.datetime.now(datetime.UTC))
     last_login = Column(DateTime)
+
+    # Relationships (from calorie tracking feature)
+    calorie_goal = relationship("DailyCalorieGoal", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    calorie_intakes = relationship("CalorieIntakeEntry", back_populates="user", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}', username='{self.username}')>"
@@ -83,10 +87,10 @@ class User(Base):
     def to_dict(self, include_sensitive: bool = False) -> dict:
         """
         Convert user to dictionary representation.
-        
+
         Args:
             include_sensitive: Whether to include sensitive information like hashed_password
-            
+
         Returns:
             Dictionary representation of the user
         """
@@ -98,6 +102,7 @@ class User(Base):
             "is_verified": self.is_verified,
             "first_name": self.first_name,
             "last_name": self.last_name,
+            # Union of profile fields and preferences
             "age": self.age,
             "height_cm": self.height_cm,
             "weight_kg": self.weight_kg,
@@ -107,13 +112,13 @@ class User(Base):
             "activity_level": self.activity_level,
             "health_goals": self.health_goals,
             "dietary_preferences": self.dietary_preferences,
+            "preferences": self.preferences,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "last_login": self.last_login.isoformat() if self.last_login else None
         }
-        
+
         if include_sensitive:
             data["hashed_password"] = self.hashed_password
-            data["preferences"] = self.preferences
-        
+
         return data

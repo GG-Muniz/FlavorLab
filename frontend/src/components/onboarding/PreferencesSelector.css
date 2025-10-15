@@ -1,0 +1,106 @@
+/* The new background container cards */
+.background-card {
+  padding: 24px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  /* Key effect: The inner shadow makes it look "sunk" or recessed. */
+  box-shadow: inset 0px 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.allergies-card {
+  background-color: #f0f7ff; /* A very light, pastel blue */
+}
+
+.diets-card {
+  background-color: #f0fdf4; /* A very light, pastel green */
+}
+
+/* Style for the section headers */
+.section-header {
+  margin-bottom: 20px;
+}
+
+/* Style for the card grids */
+.card-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.card-grid.allergies-grid {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+.card-grid.diets-grid {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+/* Style for the clickable cards on top */
+.selectable-card {
+  background-color: #ffffff;
+  /* A standard drop shadow makes it "pop" out from the pastel background. */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-in-out;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 12px;
+  border: 2px solid transparent;
+}
+
+.selectable-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.08);
+  border-color: #e5e7eb;
+}
+
+/* The selected state for the top cards */
+.selectable-card.selected {
+  /* Use a border to indicate selection, as it's clearer than changing background. */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05);
+  border: 2px solid #22c55e; /* Your app's primary green color */
+  transform: translateY(-2px);
+}
+
+/* Allergy card specific styles */
+.selectable-card.allergy-card {
+  padding: 20px 12px;
+}
+
+.selectable-card.allergy-card.selected {
+  background: #fff7ed;
+  border-color: #ea580c;
+}
+
+.selectable-card.allergy-card.selected:hover {
+  border-color: #ea580c;
+}
+
+/* Diet card specific styles */
+.selectable-card.diet-card {
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.selectable-card.diet-card.selected {
+  background: #f0fdf4;
+  border-color: #16a34a;
+}
+
+.selectable-card.diet-card.selected:hover {
+  border-color: #16a34a;
+}
+
+/* Check icon positioning */
+.check-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.diet-card .check-icon {
+  top: 12px;
+  right: 12px;
+}

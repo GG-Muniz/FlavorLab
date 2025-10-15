@@ -1,0 +1,93 @@
+/* The background container card for health pillars */
+.background-card {
+  padding: 24px;
+  border-radius: 16px;
+  margin-bottom: 32px;
+  /* Key effect: The inner shadow makes it look "sunk" or recessed. */
+  box-shadow: inset 0px 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.health-pillars-card {
+  background-color: #faf5ff; /* A very light, pastel purple */
+}
+
+/* Style for the section header */
+.section-header {
+  margin-bottom: 20px;
+}
+
+/* Style for the health goals grid */
+.health-goals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* Style for the clickable health pillar cards on top */
+.health-pillar-card {
+  position: relative;
+  background-color: #ffffff;
+  /* A standard drop shadow makes it "pop" out from the pastel background. */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease-in-out;
+  border-radius: 20px;
+  padding: 28px;
+  cursor: pointer;
+  text-align: left;
+  border: 2px solid transparent;
+}
+
+.health-pillar-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.08);
+  border-color: #e5e7eb;
+}
+
+/* The selected state for health pillar cards */
+.health-pillar-card.selected {
+  box-shadow: 0px 10px 25px -5px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px) scale(1.02);
+  /* Border color will be set dynamically based on pillar color */
+}
+
+/* Icon container styling */
+.pillar-icon-container {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  transition: all 0.3s;
+}
+
+/* Check icon positioning */
+.pillar-check-icon {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+/* Title and description styling */
+.pillar-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.pillar-description {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Navigation button container */
+.health-pillars-nav {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
+}
