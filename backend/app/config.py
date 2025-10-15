@@ -39,6 +39,17 @@ class Settings(BaseSettings):
     secret_key: str = Field(default="your-secret-key-change-in-production", json_schema_extra={"env": "SECRET_KEY"})
     access_token_expire_minutes: int = Field(default=30, json_schema_extra={"env": "ACCESS_TOKEN_EXPIRE_MINUTES"})
 
+    # Email/SMTP settings
+    email_host: str = Field(default="localhost", json_schema_extra={"env": "EMAIL_HOST"})
+    email_port: int = Field(default=25, json_schema_extra={"env": "EMAIL_PORT"})
+    email_user: Optional[str] = Field(default=None, json_schema_extra={"env": "EMAIL_USER"})
+    email_password: Optional[str] = Field(default=None, json_schema_extra={"env": "EMAIL_PASSWORD"})
+    email_from: str = Field(default="noreply@flavorlab.local", json_schema_extra={"env": "EMAIL_FROM"})
+    email_tls: bool = Field(default=False, json_schema_extra={"env": "EMAIL_TLS"})
+
+    # Demo/testing settings
+    demo_email: str = Field(default="demo@flavorlab.local", json_schema_extra={"env": "DEMO_EMAIL"})
+
     # Data settings
     json_data_path: str = Field(default="../", json_schema_extra={"env": "JSON_DATA_PATH"})
     entities_file: str = Field(default="entities.json", json_schema_extra={"env": "ENTITIES_FILE"})

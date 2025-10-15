@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { NotificationsPanel, NotificationBellButton } from './components/notifications/NotificationsPanel';
 import Login from './components/auth/Login';
 import NutriTest from './components/onboarding/NutriTest';
 import CalorieDetailModal from './components/modals/CalorieDetailModal';
 import CalorieCounter from './components/modals/CalorieCounter';
+import Calendar from './components/calendar/Calendar';
 import CalendarPage from './pages/CalendarPage';
-import SmartActionStack from './components/dashboard/SmartActionStack';
-import { getDailyCalorieSummary } from './services/calorieApi';
+import { useAuth } from './context/AuthContext';
 
 import {
   LayoutDashboard,
@@ -27,8 +27,7 @@ import {
   Zap,
   FlaskConical,
   Clock,
-  Lightbulb,
-  Plus
+  Lightbulb
 } from 'lucide-react';
 
 // Icon configuration
@@ -92,7 +91,7 @@ const useNutritionData = (userId) => {
 };
 
 // Components
-const IconWrapper = ({ iconKey, category = 'navigation', size = 'default' }) => {
+const IconWrapper = ({ iconKey, category = 'navigation', size = 'default', color }) => {
   const sizeMap = {
     small: { width: 16, height: 16 },
     default: { width: 20, height: 20 },
@@ -104,34 +103,34 @@ const IconWrapper = ({ iconKey, category = 'navigation', size = 'default' }) => 
   if (!iconData) return null;
 
   const IconComponent = iconData.icon;
-  return <IconComponent {...sizeMap[size]} strokeWidth={2} />;
+  return <IconComponent {...sizeMap[size]} strokeWidth={2} color={color} />;
 };
 
 const Card = ({ children, gradient, style = {} }) => {
   const cardStyle = {
-    background: gradient || 'rgba(255, 255, 255, 0.7)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
+    background: gradient || '#ffffff',
     borderRadius: '24px',
     padding: '32px',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
+    boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+    border: '1px solid #f3f4f6',
     position: 'relative',
     overflow: 'hidden',
+    transition: 'box-shadow 0.3s ease',
     ...style
   };
 
   return (
-    <motion.div
+    <div
       style={cardStyle}
-      whileHover={{
-        scale: 1.02,
-        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.15)'
+      onMouseOver={(e) => {
+        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgb(0 0 0 / 0.1)';
       }}
-      transition={{ duration: 0.2 }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.boxShadow = '0 1px 3px 0 rgb(0 0 0 / 0.1)';
+      }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 };
 
@@ -204,11 +203,15 @@ const QuickActionButton = ({ actionKey, action, onClick }) => {
 };
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user: authUser } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isAnimating, setIsAnimating] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [user] = useState({ id: '123', name: 'Sarah' });
+  const user = authUser || { id: '123', name: 'User' };
   const [hasCompletedNutriTest, setHasCompletedNutriTest] = useState(false);
+  // Disable auto-rendering NutriTest on the dashboard; keep it in its own tab
+  const showNutriOnDashboard = false;
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]); //Despues va a venir del API
@@ -221,56 +224,23 @@ function App() {
   const { data: nutritionData, loading } = useNutritionData(user.id);
   const [hoveredNavButton, setHoveredNavButton] = useState(null);
 
-  // Nutrition data state
-  const [nutritionDataState, setNutritionDataState] = useState({
-    calories: { current: 0, target: 2000, percentage: 0 },
-    protein: { current: 0, target: 150, unit: 'g' },
-    carbs: { current: 0, target: 250, unit: 'g' },
-    fat: { current: 0, target: 67, unit: 'g' },
-    water: { current: 0, target: 2000, unit: 'ml' }
-  });
-  const [isLoadingNutrition, setIsLoadingNutrition] = useState(true);
-
-  // Fetch nutrition data from API
-  const fetchNutritionData = async () => {
-    try {
-      setIsLoadingNutrition(true);
-      const summary = await getDailyCalorieSummary();
-
-      // Update nutrition data with API response
-      setNutritionDataState({
-        calories: {
-          current: summary.total_intake || 0,
-          target: summary.goal_calories || 2000,
-          percentage: Math.round(summary.percentage || 0)
-        },
-        // Keep other nutrients as placeholders for now (future enhancement)
-        protein: { current: 0, target: 150, unit: 'g' },
-        carbs: { current: 0, target: 250, unit: 'g' },
-        fat: { current: 0, target: 67, unit: 'g' },
-        water: { current: 0, target: 2000, unit: 'ml' }
-      });
-    } catch (error) {
-      console.error('Error fetching nutrition data:', error);
-      // Keep default values on error
-    } finally {
-      setIsLoadingNutrition(false);
-    }
-  };
-
-  // Fetch nutrition data on login
+  // Trigger entrance animation once mounted (avoid state updates before mount)
   useEffect(() => {
-    if (isLoggedIn) {
-      fetchNutritionData();
-    }
-  }, [isLoggedIn]);
+    const id = setTimeout(() => setIsAnimating(true), 50);
+    return () => clearTimeout(id);
+  }, []);
 
-  // Handle login
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-    // Trigger entrance animation - small delay to ensure DOM is ready
-    setTimeout(() => setIsAnimating(true), 50);
-  };
+  // Sync active tab from URL (e.g., /?tab=dashboard)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    const validTabs = Object.keys(iconConfig.navigation);
+    if (tab && validTabs.includes(tab)) {
+      setActiveTab(tab);
+    } else if (location.pathname === '/' && activeTab !== 'dashboard') {
+      setActiveTab('dashboard');
+    }
+  }, [location.search, location.pathname]);
 
   // Handle NutriTest completion
   const handleNutriTestComplete = (testResults) => {
@@ -279,6 +249,13 @@ function App() {
     // TODO: Send results to backend to create user profile and meal plan
     // Switch back to dashboard
     setActiveTab('dashboard');
+  };
+  const mockNutritionData = {
+    calories: { current: 1247, target: 2000, percentage: 62 },
+    protein: { current: 45, target: 150, unit: 'g' },
+    carbs: { current: 156, target: 250, unit: 'g' },
+    fat: { current: 42, target: 67, unit: 'g' },
+    water: { current: 1200, target: 2000, unit: 'ml' }
   };
 
   const apiService = new ApiService();
@@ -291,12 +268,10 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
   const offset = circumference - (percentage / 100) * circumference;
 
   return (
-    <motion.button
+    <button
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      whileHover={{ scale: 1.08 }}
-      whileTap={{ scale: 0.95 }}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -305,24 +280,21 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
         background: 'transparent',
         border: 'none',
         cursor: 'pointer',
-        padding: 0
+        padding: 0,
+        transition: 'transform 0.3s ease',
+        transform: isHovered ? 'scale(1.08)' : 'scale(1)'
       }}
     >
       {/* Outer glow ring when hovered */}
       {isHovered && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          style={{
-            position: 'absolute',
-            width: size + 16,
-            height: size + 16,
-            borderRadius: '50%',
-            background: `radial-gradient(circle, ${color}15 0%, transparent 70%)`,
-            animation: 'pulse 2s infinite'
-          }}
-        />
+        <div style={{
+          position: 'absolute',
+          width: size + 16,
+          height: size + 16,
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${color}15 0%, transparent 70%)`,
+          animation: 'pulse 2s infinite'
+        }} />
       )}
 
       <svg
@@ -352,8 +324,8 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
           fill="none"
         />
 
-        {/* Progress circle with gradient - animated */}
-        <motion.circle
+        {/* Progress circle with gradient */}
+        <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
@@ -362,12 +334,9 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
           fill="none"
           strokeLinecap="round"
           strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{
-            duration: 1.5,
-            delay: 0.2,
-            ease: [0.4, 0, 0.2, 1]
+          strokeDashoffset={offset}
+          style={{
+            transition: 'stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
           }}
         />
       </svg>
@@ -405,7 +374,144 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
           </span>
         )}
       </div>
-    </motion.button>
+    </button>
+  );
+};
+
+// Upcoming Events Widget Component
+const UpcomingEventsWidget = () => {
+  // Mock upcoming events data
+  const upcomingEvents = [
+    {
+      id: 1,
+      title: 'Lunch with Team',
+      time: 'Today, 1:00 PM',
+      type: 'meal',
+      color: '#ea580c'
+    },
+    {
+      id: 2,
+      title: 'Evening Workout',
+      time: 'Today, 6:30 PM',
+      type: 'activity',
+      color: '#8b5cf6'
+    },
+    {
+      id: 3,
+      title: 'Meal Prep Sunday',
+      time: 'Tomorrow, 10:00 AM',
+      type: 'meal',
+      color: '#22c55e'
+    },
+    {
+      id: 4,
+      title: 'Nutrition Consultation',
+      time: 'Friday, 3:00 PM',
+      type: 'appointment',
+      color: '#0891b2'
+    }
+  ];
+
+  return (
+    <Card>
+      <div style={{ position: 'relative' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: 32,
+              height: 32,
+              background: '#f0fdf4',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <CalendarIcon width={20} height={20} color="#22c55e" />
+            </div>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#374151', margin: 0 }}>
+              Upcoming Events
+            </h3>
+          </div>
+          <button
+            onClick={() => {}}
+            style={{
+              padding: '6px 12px',
+              background: '#f0fdf4',
+              border: '1px solid #bbf7d0',
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontWeight: '600',
+              color: '#16a34a',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#dcfce7';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#f0fdf4';
+            }}
+          >
+            View Calendar
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {upcomingEvents.map((event) => (
+            <div
+              key={event.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '16px',
+                background: '#f9fafb',
+                borderRadius: '12px',
+                transition: 'all 0.2s',
+                cursor: 'pointer',
+                border: '1px solid transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#f3f4f6';
+                e.currentTarget.style.borderColor = '#e5e7eb';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#f9fafb';
+                e.currentTarget.style.borderColor = 'transparent';
+              }}
+            >
+              <div style={{
+                width: 4,
+                height: 48,
+                background: event.color,
+                borderRadius: '2px',
+                marginRight: '16px'
+              }}></div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '14px', fontWeight: '600', color: '#111827', marginBottom: '4px' }}>
+                  {event.title}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Clock width={14} height={14} color="#6b7280" />
+                  <span style={{ fontSize: '12px', color: '#6b7280' }}>{event.time}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Empty state - show when no events */}
+        {upcomingEvents.length === 0 && (
+          <div style={{
+            textAlign: 'center',
+            padding: '32px',
+            color: '#9ca3af'
+          }}>
+            <CalendarIcon width={48} height={48} color="#d1d5db" style={{ margin: '0 auto 12px' }} />
+            <p style={{ fontSize: '14px', margin: 0 }}>No upcoming events</p>
+          </div>
+        )}
+      </div>
+    </Card>
   );
 };
 
@@ -524,12 +630,9 @@ const HealthTipOfTheDay = () => {
     // Service integration would go here
   };
 
-  const currentNutritionData = nutritionData || nutritionDataState;
+  const currentNutritionData = nutritionData || mockNutritionData;
 
-  // Show login page if not logged in
-  if (!isLoggedIn) {
-    return <Login onLogin={handleLogin} />;
-  }
+  // App is only rendered behind a ProtectedRoute; no local login gate needed
 
   if (loading) {
     return (
@@ -562,75 +665,12 @@ const HealthTipOfTheDay = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#f9fafb',
+      background: 'var(--color-gray-50)',
       opacity: isAnimating ? 1 : 0,
       transform: isAnimating ? 'translateY(0)' : 'translateY(20px)',
       transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
     }}>
-      {/* Header */}
-      <header style={{
-        background: '#ffffff',
-        boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-        borderBottom: '1px solid #f3f4f6'
-      }}>
-        <div style={{
-          maxWidth: '80rem',
-          margin: '0 auto',
-          padding: '0 16px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          height: '64px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              width: 40,
-              height: 40,
-              background: '#22c55e',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
-            }}>
-              <Apple width={24} height={24} color="#ffffff" strokeWidth={2.5} />
-            </div>
-
-            <h1 style={{
-              fontSize: '24px',
-              fontWeight: '700',
-              color: '#111827',
-              letterSpacing: '-0.025em',
-              margin: 0
-            }}>
-              HealthLab
-            </h1>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <NotificationBellButton
-            unreadCount={unreadNotifications}
-            onClick={() => setShowNotifications(!showNotifications)}
-         />
-            <div style={{ fontSize: '14px', color: '#6b7280' }}>
-              Hello, <span style={{ fontWeight: '600', color: '#374151' }}>{user.name}</span>
-              <span style={{ marginLeft: '4px' }}>👋</span>
-            </div>
-            <div style={{
-              width: 36,
-              height: 36,
-              background: '#f0fdf4',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '2px solid #bbf7d0'
-            }}>
-              <User width={20} height={20} color="#15803d" />
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Header moved to AppLayout */}
 
       {/* Main Content */}
       <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '32px 16px' }}>
@@ -640,18 +680,18 @@ const HealthTipOfTheDay = () => {
           flexWrap: 'wrap',
           gap: '12px',
           marginBottom: '32px',
-          background: '#ffffff',
+          background: 'var(--color-gray-100)',
           padding: '12px',
           borderRadius: '16px',
           boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-          border: '1px solid #f3f4f6',
+          border: '2px solid var(--color-gray-200)',
           alignItems: 'center'
         }}>
 
           {Object.entries(iconConfig.navigation).map(([key, navItem]) => (
             <button
               key={key}
-              onClick={() => setActiveTab(key)}
+              onClick={() => { setActiveTab(key); navigate(`/?tab=${key}`, { replace: true }); }}
               onMouseEnter={() => setHoveredNavButton(key)}
               onMouseLeave={() => setHoveredNavButton(null)}
               style={{
@@ -663,11 +703,11 @@ const HealthTipOfTheDay = () => {
                 fontWeight: '500',
                 fontSize: '14px',
                 transition: 'all 0.2s',
-                border: 'none',
+                border: activeTab === key ? 'none' : '2px solid var(--color-gray-200)',
                 cursor: 'pointer',
                 background: activeTab === key ? '#22c55e' :
-                           hoveredNavButton === key ? '#f0fdf4' : 'transparent',
-                color: activeTab === key ? '#ffffff' : '#6b7280',
+                           hoveredNavButton === key ? 'rgba(34, 197, 94, 0.12)' : 'transparent',
+                color: activeTab === key ? '#ffffff' : 'var(--text-secondary)',
                 boxShadow: activeTab === key ? '0 10px 15px -3px rgb(34 197 94 / 0.3)' : 'none',
                 transform: activeTab === key ?  'scale(1.05)' :
                            hoveredNavButton === key ? 'scale(1.02' : 'scale(1)'
@@ -677,6 +717,7 @@ const HealthTipOfTheDay = () => {
                 iconKey={key}
                 category="navigation"
                 size="small"
+                color={activeTab === key ? '#ffffff' : undefined}
               />
               <span>{navItem.label}</span>
             </button>
@@ -710,7 +751,7 @@ const HealthTipOfTheDay = () => {
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              <Zap width={16} height={16} />
+              <Zap width={16} height={16} color="#ffffff" />
               <span>Quick Actions</span>
             </button>
 
@@ -736,10 +777,10 @@ const HealthTipOfTheDay = () => {
                   top: 'calc(100% + 8px)',
                   right: 0,
                   minWidth: '320px',
-                  background: '#ffffff',
+                  background: 'var(--color-gray-100)',
                   borderRadius: '16px',
-                  boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.2)',
-                  border: '1px solid #f3f4f6',
+                  boxShadow: '0 24px 48px -12px rgba(0,0,0,0.6)',
+                  border: '2px solid var(--color-gray-200)',
                   padding: '8px',
                   zIndex: 20,
                   animation: 'slideDown 0.2s ease-out'
@@ -788,7 +829,7 @@ const HealthTipOfTheDay = () => {
                           textAlign: 'left'
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = colors.hover;
+                          e.currentTarget.style.background = 'var(--menu-hover-bg)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = 'transparent';
@@ -808,8 +849,8 @@ const HealthTipOfTheDay = () => {
                         </div>
                         <span style={{
                           fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#374151'
+                          fontWeight: '700',
+                          color: 'var(--text-primary)'
                         }}>
                           {action.label}
                         </span>
@@ -823,7 +864,7 @@ const HealthTipOfTheDay = () => {
         </div>
 
         {/* Auto-show NutriTest for new users */}
-        {activeTab === 'dashboard' && !hasCompletedNutriTest && (
+        {activeTab === 'dashboard' && showNutriOnDashboard && !hasCompletedNutriTest && (
           <div style={{
             background: '#ffffff',
             borderRadius: '24px',
@@ -837,34 +878,14 @@ const HealthTipOfTheDay = () => {
         )}
 
         {/* Dashboard Content */}
-        {activeTab === 'dashboard' && hasCompletedNutriTest && (
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: {
-                  staggerChildren: 0.1,
-                  delayChildren: 0.1
-                }
-              }
-            }}
-            style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}
-          >
+        {activeTab === 'dashboard' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
             {/* Stats Grid */}
-            <motion.div
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0 }
-              }}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '24px'
-              }}
-            >
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '24px'
+            }}>
             {/* Calories Card - REPLACE YOUR EXISTING ONE WITH THIS */}
             <Card>
               <div style={{
@@ -932,38 +953,6 @@ const HealthTipOfTheDay = () => {
                         {currentNutritionData.calories.target - currentNutritionData.calories.current} kcal remaining
                       </p>
                     </div>
-
-                    {/* Log Meal Quick Action Button */}
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setShowCalorieCounter(true)}
-                      style={{
-                        marginTop: '16px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '12px 20px',
-                        background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                        border: 'none',
-                        borderRadius: '12px',
-                        fontSize: '14px',
-                        fontWeight: '700',
-                        color: '#ffffff',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 6px -1px rgba(34, 197, 94, 0.2)',
-                        transition: 'box-shadow 0.2s'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(34, 197, 94, 0.3)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(34, 197, 94, 0.2)';
-                      }}
-                    >
-                      <Plus width={18} height={18} />
-                      <span>Log Meal</span>
-                    </motion.button>
                   </div>
                 </div>
               </div>
@@ -1012,20 +1001,13 @@ const HealthTipOfTheDay = () => {
                         {Array.from({ length: 10 }).map((_, i) => {
                           const filled = i < Math.floor((currentNutritionData.protein.current / currentNutritionData.protein.target) * 10);
                           return (
-                            <motion.div
+                            <div
                               key={i}
-                              initial={{ scaleX: 0 }}
-                              animate={{ scaleX: 1 }}
-                              transition={{
-                                duration: 0.6,
-                                delay: i * 0.05,
-                                ease: 'easeOut'
-                              }}
                               style={{
                                 flex: 1,
                                 background: filled ? '#ef4444' : '#f3f4f6',
                                 borderRadius: '4px',
-                                transformOrigin: 'left'
+                                transition: 'background 0.3s ease'
                               }}
                             />
                           );
@@ -1045,20 +1027,13 @@ const HealthTipOfTheDay = () => {
                         {Array.from({ length: 10 }).map((_, i) => {
                           const filled = i < Math.floor((currentNutritionData.carbs.current / currentNutritionData.carbs.target) * 10);
                           return (
-                            <motion.div
+                            <div
                               key={i}
-                              initial={{ scaleX: 0 }}
-                              animate={{ scaleX: 1 }}
-                              transition={{
-                                duration: 0.6,
-                                delay: i * 0.05 + 0.15,
-                                ease: 'easeOut'
-                              }}
                               style={{
                                 flex: 1,
                                 background: filled ? '#fbbf24' : '#f3f4f6',
                                 borderRadius: '4px',
-                                transformOrigin: 'left'
+                                transition: 'background 0.3s ease'
                               }}
                             />
                           );
@@ -1078,20 +1053,13 @@ const HealthTipOfTheDay = () => {
                         {Array.from({ length: 10 }).map((_, i) => {
                           const filled = i < Math.floor((currentNutritionData.fat.current / currentNutritionData.fat.target) * 10);
                           return (
-                            <motion.div
+                            <div
                               key={i}
-                              initial={{ scaleX: 0 }}
-                              animate={{ scaleX: 1 }}
-                              transition={{
-                                duration: 0.6,
-                                delay: i * 0.05 + 0.3,
-                                ease: 'easeOut'
-                              }}
                               style={{
                                 flex: 1,
                                 background: filled ? '#8b5cf6' : '#f3f4f6',
                                 borderRadius: '4px',
-                                transformOrigin: 'left'
+                                transition: 'background 0.3s ease'
                               }}
                             />
                           );
@@ -1228,43 +1196,19 @@ const HealthTipOfTheDay = () => {
                   </div>
                 </div>
               </Card>
-            </motion.div>
+            </div>
 
-            {/* Up Next and Health Tip Section */}
-            <motion.div
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0 }
-              }}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-                gap: '24px'
-              }}
-            >
-              <SmartActionStack
-                mealsLoggedToday={{
-                  breakfast: false, // TODO: Track from API
-                  lunch: false,
-                  dinner: false
-                }}
-                onAction={(actionId) => {
-                  console.log('Smart Action triggered:', actionId);
-                  if (actionId === 'breakfast' || actionId === 'lunch' || actionId === 'dinner') {
-                    setShowCalorieCounter(true);
-                  } else if (actionId === 'water') {
-                    // TODO: Add water logging functionality
-                    console.log('Log water intake');
-                  } else if (actionId === 'plan-tomorrow') {
-                    // TODO: Navigate to meal planning
-                    console.log('Plan tomorrow\'s meals');
-                  }
-                }}
-              />
+            {/* Calendar Events and Health Tip Section */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+              gap: '24px'
+            }}>
+              <UpcomingEventsWidget />
               <HealthTipOfTheDay />
-            </motion.div>
+            </div>
 
-          </motion.div>
+          </div>
         )}
 
         {/* NutriTest Tab */}
@@ -1331,7 +1275,6 @@ const HealthTipOfTheDay = () => {
       <CalorieCounter
         isOpen={showCalorieCounter}
         onClose={() => setShowCalorieCounter(false)}
-        onDataUpdate={fetchNutritionData}
       />
     </div>
   );

@@ -24,8 +24,8 @@ body {
   font-family: 'DM Sans', Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #213547;
-  background-color: #f8fafc;
+  color: var(--text-primary);
+  background-color: var(--color-gray-50);
 
   /* Better font rendering */
   -webkit-font-smoothing: antialiased;
@@ -66,6 +66,141 @@ body {
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Text system */
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-accent: #22c55e;
+  --text-placeholder: #6B7280;
+
+  /* Icons */
+  --icon-muted: #9ca3af;
+
+  /* Inputs */
+  --input-bg: #ffffff;
+  --input-border: #e5e7eb;
+  --input-focus-border: #22c55e;
+  --focus-ring: rgba(34, 197, 94, 0.25);
+
+  /* Destructive */
+  --destructive-bg: #fee2e2;          /* light red tint */
+  --destructive-border: #fecaca;      /* red-200 */
+  --destructive-text: #b91c1c;        /* red-700 */
+
+  /* Menu hover backgrounds */
+  --menu-hover-bg: #f3f4f6;
+}
+
+/* Dark theme overrides */
+[data-theme="dark"] {
+  --color-primary: #22c55e;
+  --color-secondary: #fb923c;
+  --color-accent: #facc15;
+  --color-info: #22d3ee;
+
+  --color-gray-50: #0b1220;   /* background */
+  --color-gray-100: #111827;  /* panels - raised for contrast */
+  --color-gray-200: #334155;  /* borders - brighter for stronger outline */
+  --color-gray-600: #94a3b8;  /* muted text */
+  --color-gray-800: #cbd5e1;  /* strong text */
+  --color-gray-900: #e2e8f0;  /* headings */
+
+  color: var(--color-gray-800);
+  background-color: var(--color-gray-50);
+
+  /* Dark text system */
+  --text-primary: #F3F4F6;
+  --text-secondary: #E5E7EB;
+  --text-accent: #34D399;
+  --text-placeholder: #E5E7EB;
+
+  /* Icons */
+  --icon-muted: #A7F3D0;
+
+  /* Dark inputs */
+  --input-bg: #111827;
+  --input-border: #334155;
+  --input-focus-border: #34D399;
+  --focus-ring: rgba(52, 211, 153, 0.25);
+
+  /* Destructive (dark) */
+  --destructive-bg: rgba(239, 68, 68, 0.12);
+  --destructive-border: #ef4444;
+  --destructive-text: #fca5a5;
+
+  /* Menu hover backgrounds (dark) */
+  --menu-hover-bg: rgba(148, 163, 184, 0.22);
+}
+
+[data-theme="dark"] body {
+  color: var(--text-primary);
+  background-color: var(--color-gray-50);
+}
+
+.card {
+  background: var(--card-bg, #ffffff);
+}
+
+[data-theme="dark"] .card {
+  --card-bg: #0f172a;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+}
+
+/* Ensure active green buttons have white text in light theme for contrast */
+.btn-green-active {
+  background: #22c55e;
+  color: #ffffff !important;
+}
+
+/* Typography roles */
+p, span, label {
+  color: var(--text-secondary);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+}
+
+a { color: var(--text-accent); }
+
+/* Form field styling (pop-out) */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  background-color: var(--input-bg);
+  border: 2px solid var(--input-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Selection / highlight colors tuned for dark and light */
+::selection {
+  background: rgba(34, 197, 94, 0.35);
+  color: #ffffff;
+}
+[data-theme="dark"] ::selection {
+  background: rgba(52, 211, 153, 0.45);
+  color: #0b1220;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-placeholder);
 }
 
 /* Custom utility classes for our app */

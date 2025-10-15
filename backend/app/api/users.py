@@ -8,7 +8,14 @@ registration, authentication, and profile management.
 from fastapi import APIRouter, Depends, HTTPException, status, Body, Request
 import datetime
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import UploadFile, File
+import os
+import shutil
+from uuid import uuid4
+import logging
+import re
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Optional
 
 from .. import models
@@ -25,6 +32,8 @@ from ..schemas.user import (
     TokenData,
     UserStatsResponse,
     UserLogin,
+    PasswordReset,
+    PasswordResetConfirm,
 )
 from ..schemas.meal_plan import (
     MealPlanResponse,
@@ -34,8 +43,11 @@ from ..schemas.meal_plan import (
 )
 from ..services.auth import AuthService, get_current_active_user, get_current_verified_user
 from ..database import get_db
+from ..config import get_settings
 
 router = APIRouter(prefix="/users", tags=["Users"])
+settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/register", response_model=UserResponse)
@@ -57,13 +69,42 @@ async def register_user(
         HTTPException: If registration fails
     """
     try:
-        # Check if user already exists
-        existing_user = AuthService.get_user_by_email(db, user_data.email)
-        if existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
+        # Normalize emails for robust comparison
+        input_email = (user_data.email or "").strip().lower()
+        demo_email = (getattr(settings, 'demo_email', 'demo@flavorlab.com') or "").strip().lower()
+        logger.info("/users/register: input_email=%s demo_email=%s", input_email, demo_email)
+
+        # Special case: demo email acts as overwrite (for testing convenience)
+        demo_local, _, demo_domain = demo_email.partition('@')
+        demo_pattern = rf"^{re.escape(demo_local)}(\+[^@]+)?@{re.escape(demo_domain)}$"
+        alt_demo_pattern = rf"^{re.escape(demo_local)}(\+[^@]+)?@flavorlab\.local$"
+        is_demo = bool(re.fullmatch(demo_pattern, input_email) or re.fullmatch(alt_demo_pattern, input_email))
+        if is_demo:
+            # Delete any existing demo user to guarantee a fresh registration
+            deleted = AuthService.delete_user_by_email(db, input_email)
+            if deleted:
+                logger.info("/users/register: demo path - deleted existing demo user for fresh signup")
+            # Create demo user (always active/verified)
+            user = AuthService.create_user(
+                db=db,
+                email=input_email,
+                password=user_data.password,
+                username=user_data.username or 'demo',
+                first_name=user_data.first_name or 'Demo',
+                last_name=user_data.last_name or 'User',
+                is_active=True,
+                is_verified=True
             )
+            return UserResponse.model_validate(user)
+        else:
+            # Check if user already exists (case-insensitive)
+            existing_user = db.query(models.User).filter(func.lower(models.User.email) == input_email).first()
+            if existing_user:
+                logger.info("/users/register: non-demo existing user found, rejecting: %s", input_email)
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Email already registered"
+                )
         
         # Check if username is taken (if provided)
         if user_data.username:
@@ -77,7 +118,7 @@ async def register_user(
         # Create user
         user = AuthService.create_user(
             db=db,
-            email=user_data.email,
+            email=input_email,
             password=user_data.password,
             username=user_data.username,
             first_name=user_data.first_name,
@@ -184,6 +225,29 @@ async def update_current_user_profile(
             current_user.first_name = user_data.first_name
         if user_data.last_name is not None:
             current_user.last_name = user_data.last_name
+        if user_data.age is not None:
+            current_user.age = user_data.age
+        if user_data.height_cm is not None:
+            current_user.height_cm = user_data.height_cm
+        if user_data.weight_kg is not None:
+            current_user.weight_kg = user_data.weight_kg
+        if user_data.date_of_birth is not None:
+            try:
+                # Accept datetime or date string; store date only
+                if isinstance(user_data.date_of_birth, datetime.datetime):
+                    current_user.date_of_birth = user_data.date_of_birth.date()
+                else:
+                    current_user.date_of_birth = user_data.date_of_birth
+            except Exception:
+                pass
+        if user_data.gender is not None:
+            current_user.gender = user_data.gender
+        if user_data.activity_level is not None:
+            current_user.activity_level = user_data.activity_level
+        if user_data.health_goals is not None:
+            current_user.health_goals = user_data.health_goals
+        if user_data.dietary_preferences is not None:
+            current_user.dietary_preferences = user_data.dietary_preferences
         # Update preferences when explicitly provided (including None to clear)
         if 'preferences' in user_data.model_fields_set:
             current_user.preferences = user_data.preferences
@@ -486,6 +550,118 @@ async def deactivate_account(
         )
 
 
+@router.delete("/me")
+async def delete_my_account(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
+    """
+    Soft delete (deactivate) the current user's account.
+    Sets is_active=False to preserve data while disabling access.
+    """
+    try:
+        AuthService.deactivate_user(db, current_user)
+        return {"message": "Account deactivated successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error deactivating account: {str(e)}"
+        )
+
+@router.post("/forgot-password", status_code=status.HTTP_202_ACCEPTED)
+async def forgot_password(
+    payload: PasswordReset,
+    db: Session = Depends(get_db)
+):
+    """
+    Initiate password reset. For MVP, generate a reset token and log the link.
+    """
+    try:
+        token = AuthService.generate_password_reset_token(payload.email)
+        reset_link = f"http://localhost:5173/reset-password?token={token}"
+        import logging
+        logger = logging.getLogger(__name__)
+        # Try to send email; always log the link for dev
+        sent = AuthService.send_email(
+            subject="FlavorLab Password Reset",
+            to_email=payload.email,
+            html_body=f"<p>Click the link to reset your password:</p><p><a href=\"{reset_link}\">Reset Password</a></p>",
+            text_body=f"Reset your password: {reset_link}"
+        )
+        logger.info("Password reset link for %s: %s (email sent=%s)", payload.email, reset_link, sent)
+        return {"message": "If the email exists, a reset link has been sent."}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error initiating password reset: {str(e)}"
+        )
+
+
+@router.post("/reset-password")
+async def reset_password(
+    payload: PasswordResetConfirm,
+    db: Session = Depends(get_db)
+):
+    """
+    Reset password using a token.
+    """
+    try:
+        email = AuthService.validate_password_reset_token(payload.token)
+        if not email:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired token")
+
+        user = AuthService.get_user_by_email(db, email)
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+        AuthService.change_password(db, user, payload.new_password)
+        return {"message": "Password has been reset successfully."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error resetting password: {str(e)}"
+        )
+
+
+@router.put("/me/avatar", response_model=UserProfileResponse)
+async def update_user_avatar(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
+    """
+    Upload and update the current user's avatar image.
+    Stores files under ./static/avatars and returns updated user profile.
+    """
+    try:
+        # Ensure directories exist
+        os.makedirs("static/avatars", exist_ok=True)
+
+        _, ext = os.path.splitext(file.filename)
+        ext = ext.lower()
+        if ext not in {".jpg", ".jpeg", ".png", ".webp"}:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported image type")
+
+        unique_name = f"{uuid4()}{ext}"
+        fs_path = os.path.join("static", "avatars", unique_name)
+
+        with open(fs_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        # Save URL path
+        current_user.avatar_url = f"/static/avatars/{unique_name}"
+        db.add(current_user)
+        db.commit()
+        db.refresh(current_user)
+
+        return UserProfileResponse.model_validate(current_user)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error uploading avatar: {str(e)}")
 @router.get("/stats", response_model=UserStatsResponse)
 async def get_user_statistics(
     db: Session = Depends(get_db),

@@ -1,21 +1,34 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Apple, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const Login = ({ onLogin }) => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [error, setError] = useState('');
+  const formRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // TODO: Integrate with backend API endpoint
-    // const response = await apiService.login({ email, password });
-
-    // For now, just call onLogin to navigate to dashboard
-    console.log('Login attempt:', { email, password });
-    onLogin();
+    setError('');
+    try {
+      // Basic guard: ensure non-empty values before hitting API
+      if (!email || !password) {
+        setError('Please enter email and password');
+        return;
+      }
+      await login(email, password);
+      if (onLogin) onLogin();
+      navigate('/');
+    } catch (e) {
+      setError(e?.message || 'Invalid credentials');
+    }
   };
 
   return (
@@ -100,7 +113,17 @@ const Login = ({ onLogin }) => {
         </div>
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit}>
+        <form ref={formRef} onSubmit={handleSubmit}>
+          {params.get('registered') && (
+            <div style={{ marginBottom: '16px', padding: '10px 12px', background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', borderRadius: 8 }}>
+              Account created. Please sign in.
+            </div>
+          )}
+          {error && (
+            <div style={{ marginBottom: '16px', padding: '10px 12px', background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', borderRadius: 8 }}>
+              {error}
+            </div>
+          )}
           {/* Email Input */}
           <div style={{ marginBottom: '24px' }}>
             <label style={{
@@ -135,18 +158,18 @@ const Login = ({ onLogin }) => {
                   width: '100%',
                   padding: '14px 16px 14px 48px',
                   borderRadius: '12px',
-                  border: '2px solid #e5e7eb',
+                  border: '2px solid var(--input-border)',
                   fontSize: '15px',
-                  color: '#111827',
+                  color: 'var(--text-primary)',
                   transition: 'all 0.2s',
                   outline: 'none'
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = '#22c55e';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(34, 197, 94, 0.1)';
+                  e.target.style.borderColor = 'var(--input-focus-border)';
+                  e.target.style.boxShadow = '0 0 0 3px var(--focus-ring)';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = '#e5e7eb';
+                  e.target.style.borderColor = 'var(--input-border)';
                   e.target.style.boxShadow = 'none';
                 }}
               />
@@ -182,23 +205,24 @@ const Login = ({ onLogin }) => {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); formRef.current?.requestSubmit(); } }}
                 placeholder="Enter your password"
                 style={{
                   width: '100%',
                   padding: '14px 48px 14px 48px',
                   borderRadius: '12px',
-                  border: '2px solid #e5e7eb',
+                  border: '2px solid var(--input-border)',
                   fontSize: '15px',
-                  color: '#111827',
+                  color: 'var(--text-primary)',
                   transition: 'all 0.2s',
                   outline: 'none'
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = '#22c55e';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(34, 197, 94, 0.1)';
+                  e.target.style.borderColor = 'var(--input-focus-border)';
+                  e.target.style.boxShadow = '0 0 0 3px var(--focus-ring)';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = '#e5e7eb';
+                  e.target.style.borderColor = 'var(--input-border)';
                   e.target.style.boxShadow = 'none';
                 }}
               />
@@ -267,13 +291,8 @@ const Login = ({ onLogin }) => {
             flexWrap: 'wrap',
             gap: '16px'
           }}>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                console.log('Forgot password clicked');
-                // TODO: Implement forgot password functionality
-              }}
+            <Link
+              to="/forgot-password"
               style={{
                 color: '#22c55e',
                 textDecoration: 'none',
@@ -284,17 +303,12 @@ const Login = ({ onLogin }) => {
               onMouseLeave={(e) => e.target.style.color = '#22c55e'}
             >
               Forgot password?
-            </a>
+            </Link>
 
             <div>
               Don't have an account?{' '}
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  console.log('Sign up clicked');
-                  // TODO: Implement sign up navigation
-                }}
+              <Link
+                to="/signup"
                 style={{
                   color: '#22c55e',
                   textDecoration: 'none',
@@ -305,25 +319,12 @@ const Login = ({ onLogin }) => {
                 onMouseLeave={(e) => e.target.style.color = '#22c55e'}
               >
                 Sign up
-              </a>
+              </Link>
             </div>
           </div>
         </div>
 
-        {/* Info Badge */}
-        <div style={{
-          marginTop: '24px',
-          padding: '12px 16px',
-          background: '#f0fdf4',
-          borderRadius: '12px',
-          border: '1px solid #bbf7d0',
-          fontSize: '13px',
-          color: '#16a34a',
-          textAlign: 'center',
-          fontWeight: '500'
-        }}>
-          Backend authentication will be integrated soon
-        </div>
+        {/* Info Badge removed after integration */}
       </div>
     </div>
   );

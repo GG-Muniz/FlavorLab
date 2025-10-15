@@ -21,6 +21,8 @@ from .. import models
 from ..schemas.user import TokenData, UserResponse
 from ..config import get_settings
 from ..database import get_db
+import smtplib
+from email.message import EmailMessage
 
 # Get settings
 settings = get_settings()
@@ -241,6 +243,75 @@ class AuthService:
         """
         user.is_active = True
         db.commit()
+
+    @staticmethod
+    def delete_user_by_email(db: Session, email: str) -> bool:
+        """
+        Delete a user by email (case-insensitive). Returns True if deleted.
+        Intended for development/demo flows to reset a special account.
+        """
+        user = db.query(models.User).filter(models.User.email.ilike(email)).first()
+        if not user:
+            return False
+        db.delete(user)
+        db.commit()
+        return True
+
+    # --- Password reset helpers ---
+    @staticmethod
+    def generate_password_reset_token(email: str, expires_minutes: int = 30) -> str:
+        """
+        Generate a short‑lived JWT token for password reset.
+        Encodes the email as subject and a purpose claim.
+        """
+        now_utc = datetime.datetime.now(datetime.UTC)
+        exp_dt = now_utc + datetime.timedelta(minutes=max(1, int(expires_minutes)))
+        exp_ts = int(exp_dt.timestamp())
+        payload = {"sub": email, "prp": "password_reset", "exp": exp_ts}
+        return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+    @staticmethod
+    def validate_password_reset_token(token: str) -> Optional[str]:
+        """
+        Validate a password reset token and return the email if valid.
+        Returns None if invalid or expired.
+        """
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            if payload.get("prp") != "password_reset":
+                return None
+            email = payload.get("sub")
+            if not isinstance(email, str) or not email:
+                return None
+            return email
+        except JWTError:
+            return None
+
+    # --- Email helpers (SMTP) ---
+    @staticmethod
+    def send_email(subject: str, to_email: str, html_body: str, text_body: Optional[str] = None) -> bool:
+        """Send an email using configured SMTP. Returns True if sent, else False."""
+        msg = EmailMessage()
+        msg['Subject'] = subject
+        msg['From'] = settings.email_from
+        msg['To'] = to_email
+        if text_body:
+            msg.set_content(text_body)
+        msg.add_alternative(html_body, subtype='html')
+
+        try:
+            if settings.email_tls:
+                server = smtplib.SMTP(settings.email_host, settings.email_port, timeout=5)
+                server.starttls()
+            else:
+                server = smtplib.SMTP(settings.email_host, settings.email_port, timeout=5)
+            if settings.email_user and settings.email_password:
+                server.login(settings.email_user, settings.email_password)
+            server.send_message(msg)
+            server.quit()
+            return True
+        except Exception:
+            return False
 
 
 # Dependency functions for FastAPI

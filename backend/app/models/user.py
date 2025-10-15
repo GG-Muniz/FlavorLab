@@ -6,7 +6,7 @@ and user management in the FlavorLab system.
 """
 
 import datetime
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, JSON
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, JSON, Float, Date
 from sqlalchemy.orm import relationship
 from ..database import Base
 
@@ -37,6 +37,18 @@ class User(Base):
     # Profile information
     first_name = Column(String(100), nullable=True)
     last_name = Column(String(100), nullable=True)
+    # Additional personal data
+    age = Column(Integer, nullable=True)
+    height_cm = Column(Integer, nullable=True)
+    weight_kg = Column(Float, nullable=True)
+    # Avatar URL (served via FastAPI static files)
+    avatar_url = Column(String(512), nullable=True)
+    # Extended profile
+    date_of_birth = Column(Date, nullable=True)
+    gender = Column(String(32), nullable=True)
+    activity_level = Column(String(32), nullable=True)
+    health_goals = Column(JSON)  # list / json
+    dietary_preferences = Column(JSON)  # list / json
     
     # Preferences (stored as JSON for flexibility)
     preferences = Column(JSON)  # JSON string
@@ -90,6 +102,15 @@ class User(Base):
             "is_verified": self.is_verified,
             "first_name": self.first_name,
             "last_name": self.last_name,
+            "age": self.age,
+            "height_cm": self.height_cm,
+            "weight_kg": self.weight_kg,
+            "avatar_url": self.avatar_url,
+            "date_of_birth": self.date_of_birth.isoformat() if self.date_of_birth else None,
+            "gender": self.gender,
+            "activity_level": self.activity_level,
+            "health_goals": self.health_goals,
+            "dietary_preferences": self.dietary_preferences,
             "preferences": self.preferences,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
