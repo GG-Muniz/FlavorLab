@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import DayDetailModal from './DayDetailModal';
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [showDayDetail, setShowDayDetail] = useState(false);
+  const [monthData, setMonthData] = useState({});
+  const [selectedDayData, setSelectedDayData] = useState(null);
 
   // Get the first day of the month
   const getFirstDayOfMonth = (date) => {
@@ -52,6 +56,76 @@ const Calendar = () => {
   // Check if date is today
   const isToday = (date) => {
     return isSameDay(date, new Date());
+  };
+
+  // Fetch month data (mock for now - will connect to API later)
+  useEffect(() => {
+    // Mock data - simulating API response
+    const mockMonthData = {};
+    const today = new Date();
+
+    // Add mock data for last 7 days
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      mockMonthData[dateKey] = { hasLog: true };
+    }
+
+    setMonthData(mockMonthData);
+  }, [currentDate]);
+
+  // Handle day click - open modal with day details
+  const handleDayClick = (day) => {
+    setSelectedDate(day);
+
+    // Mock day data - simulating API response
+    const dateKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+    const hasData = monthData[dateKey]?.hasLog;
+
+    if (hasData) {
+      // Mock detailed data
+      setSelectedDayData({
+        date: dateKey,
+        items: [
+          {
+            mealType: 'Breakfast',
+            name: 'Scrambled Eggs & Toast',
+            description: '2 eggs, whole wheat toast, avocado',
+            calories: 420
+          },
+          {
+            mealType: 'Lunch',
+            name: 'Grilled Chicken Salad',
+            description: 'Mixed greens, grilled chicken, olive oil dressing',
+            calories: 380
+          },
+          {
+            mealType: 'Dinner',
+            name: 'Salmon with Vegetables',
+            description: 'Baked salmon, broccoli, quinoa',
+            calories: 520
+          }
+        ],
+        summary: {
+          calories: 1320,
+          protein: 95,
+          carbs: 110,
+          fat: 45
+        }
+      });
+    } else {
+      setSelectedDayData(null);
+    }
+
+    setShowDayDetail(true);
+  };
+
+  // Check if day has logged meals
+  const dayHasLog = (day) => {
+    if (!day) return false;
+    const dateKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+    return monthData[dateKey]?.hasLog || false;
   };
 
   // Generate calendar days
@@ -214,18 +288,21 @@ const Calendar = () => {
             return <div key={`empty-${index}`} />;
           }
 
-          const isSelected = isSameDay(day, selectedDate);
+          const isSelected = selectedDate && isSameDay(day, selectedDate);
           const isTodayDate = isToday(day);
+          const hasLog = dayHasLog(day);
 
           return (
             <button
               key={index}
-              onClick={() => setSelectedDate(day)}
+              onClick={() => handleDayClick(day)}
               style={{
                 aspectRatio: '1',
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
+                gap: '4px',
                 fontSize: '14px',
                 fontWeight: '600',
                 border: isTodayDate ? '2px solid #22c55e' : '1px solid transparent',
@@ -236,7 +313,8 @@ const Calendar = () => {
                 color: isSelected ? '#ffffff' : isTodayDate ? '#22c55e' : '#374151',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
-                position: 'relative'
+                position: 'relative',
+                padding: '8px'
               }}
               onMouseEnter={(e) => {
                 if (!isSelected) {
@@ -249,44 +327,28 @@ const Calendar = () => {
                 }
               }}
             >
-              {day.getDate()}
+              <span>{day.getDate()}</span>
+              {hasLog && (
+                <div style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  background: isSelected ? '#ffffff' : '#22c55e',
+                  marginTop: '2px'
+                }} />
+              )}
             </button>
           );
         })}
       </div>
 
-      {/* Selected date display */}
-      <div style={{
-        marginTop: '24px',
-        padding: '16px',
-        background: '#f9fafb',
-        borderRadius: '12px',
-        border: '1px solid #f3f4f6'
-      }}>
-        <p style={{
-          fontSize: '12px',
-          fontWeight: '600',
-          color: '#6b7280',
-          margin: '0 0 4px 0',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px'
-        }}>
-          Selected Date
-        </p>
-        <p style={{
-          fontSize: '16px',
-          fontWeight: '700',
-          color: '#111827',
-          margin: 0
-        }}>
-          {selectedDate.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
-        </p>
-      </div>
+      {/* Day Detail Modal */}
+      <DayDetailModal
+        isOpen={showDayDetail}
+        onClose={() => setShowDayDetail(false)}
+        selectedDate={selectedDate}
+        dayData={selectedDayData}
+      />
     </div>
   );
 };
