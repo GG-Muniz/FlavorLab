@@ -207,7 +207,16 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [user] = useState({ id: '123', name: 'Sarah' });
+  // Get user data from localStorage if available, otherwise use default
+  const getUserFromStorage = () => {
+    try {
+      const storedUser = localStorage.getItem('user');
+      return storedUser ? JSON.parse(storedUser) : { id: '123', name: 'User', first_name: 'User' };
+    } catch {
+      return { id: '123', name: 'User', first_name: 'User' };
+    }
+  };
+  const [user] = useState(getUserFromStorage());
   const [hasCompletedNutriTest, setHasCompletedNutriTest] = useState(false);
 
   const [showNotifications, setShowNotifications] = useState(false);
