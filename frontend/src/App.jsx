@@ -5,8 +5,8 @@ import Login from './components/auth/Login';
 import NutriTest from './components/onboarding/NutriTest';
 import CalorieDetailModal from './components/modals/CalorieDetailModal';
 import CalorieCounter from './components/modals/CalorieCounter';
-import Calendar from './components/calendar/Calendar';
-import UpNext from './components/dashboard/UpNext';
+import CalendarPage from './pages/CalendarPage';
+import SmartActionStack from './components/dashboard/SmartActionStack';
 import { getDailyCalorieSummary } from './services/calorieApi';
 
 import {
@@ -1242,18 +1242,25 @@ const HealthTipOfTheDay = () => {
                 gap: '24px'
               }}
             >
-              <UpNext onAction={(actionId) => {
-                console.log('Action triggered:', actionId);
-                if (actionId === 'breakfast' || actionId === 'lunch' || actionId === 'dinner') {
-                  setShowCalorieCounter(true);
-                } else if (actionId === 'water') {
-                  // TODO: Add water logging functionality
-                  console.log('Log water intake');
-                } else if (actionId === 'plan-tomorrow') {
-                  // TODO: Navigate to meal planning
-                  console.log('Plan tomorrow\'s meals');
-                }
-              }} />
+              <SmartActionStack
+                mealsLoggedToday={{
+                  breakfast: false, // TODO: Track from API
+                  lunch: false,
+                  dinner: false
+                }}
+                onAction={(actionId) => {
+                  console.log('Smart Action triggered:', actionId);
+                  if (actionId === 'breakfast' || actionId === 'lunch' || actionId === 'dinner') {
+                    setShowCalorieCounter(true);
+                  } else if (actionId === 'water') {
+                    // TODO: Add water logging functionality
+                    console.log('Log water intake');
+                  } else if (actionId === 'plan-tomorrow') {
+                    // TODO: Navigate to meal planning
+                    console.log('Plan tomorrow\'s meals');
+                  }
+                }}
+              />
               <HealthTipOfTheDay />
             </motion.div>
 
@@ -1275,7 +1282,7 @@ const HealthTipOfTheDay = () => {
 
         {/* Calendar */}
         {activeTab === 'calendar' && (
-          <Calendar />
+          <CalendarPage />
         )}
 
         {/* Other Tabs */}
