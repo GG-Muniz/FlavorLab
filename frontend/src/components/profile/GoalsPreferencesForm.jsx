@@ -1,19 +1,21 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { updateUserProfile } from '../../api/auth';
+import { getHealthPillars } from '../../services/healthPillarsApi';
 
-const PRESET_GOALS = [
-  { key: 'weight_loss', label: 'Weight Loss' },
-  { key: 'muscle_gain', label: 'Muscle Gain' },
-  { key: 'improve_gut_health', label: 'Improve Gut Health' },
-  { key: 'better_energy', label: 'Better Energy' }
+const DIET_OPTIONS = [
+  { value: '', label: 'Select' },
+  { value: 'balanced', label: 'Balanced' },
+  { value: 'vegan', label: 'Vegan' },
+  { value: 'vegetarian', label: 'Vegetarian' },
+  { value: 'keto', label: 'Keto' },
+  { value: 'paleo', label: 'Paleo' },
+  { value: 'pescatarian', label: 'Pescatarian' },
+  { value: 'mediterranean', label: 'Mediterranean' }
 ];
-
-const DIETS = ['', 'Balanced', 'Vegan', 'Vegetarian', 'Keto', 'Paleo', 'Pescetarian'];
-const ALLERGENS = ['Dairy', 'Gluten', 'Peanuts', 'Tree Nuts', 'Shellfish', 'Soy', 'Eggs'];
+const ALLERGENS = ['Dairy', 'Gluten', 'Peanuts', 'Tree Nuts', 'Soy', 'Eggs', 'Shellfish', 'Fish', 'Sesame'];
 
 export default function GoalsPreferencesForm({ onSaved }) {
-  const { user, token } = useAuth();
+  const { user, updateProfile } = useAuth();
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -21,16 +23,82 @@ export default function GoalsPreferencesForm({ onSaved }) {
   const initialGoals = user?.health_goals || {};
   const initialPrefs = user?.dietary_preferences || {};
 
-  const [goals, setGoals] = useState(() => {
-    const map = {};
-    PRESET_GOALS.forEach(g => { map[g.key] = Boolean(initialGoals?.[g.key]); });
-    return map;
+  // Health pillars list and selection (mirrors NutriTest)
+  const [pillars, setPillars] = useState([]);
+  const [selectedPillars, setSelectedPillars] = useState(() => {
+    if (Array.isArray(initialGoals)) return initialGoals;
+    if (Array.isArray(initialGoals?.selectedGoals)) return initialGoals.selectedGoals;
+    return [];
   });
 
   const [diet, setDiet] = useState(initialPrefs?.diet || '');
   const [allergies, setAllergies] = useState(new Set(initialPrefs?.allergies || []));
   const [disliked, setDisliked] = useState(initialPrefs?.disliked || []);
   const [tagInput, setTagInput] = useState('');
+  const [mealsPerDay, setMealsPerDay] = useState(initialPrefs?.meals_per_day || '');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
+
+  // Debounced search for disliked ingredients
+  useEffect(() => {
+    const q = (tagInput || '').trim();
+    if (!q) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    const id = setTimeout(async () => {
+      try {
+        setIsSearching(true);
+        setSearchError('');
+        const resp = await fetch((import.meta.env.VITE_API_BASE_URL || '/api/v1') + '/entities/simple-search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name_contains: q })
+        });
+        const data = await resp.json();
+        setSuggestions(Array.isArray(data?.results) ? data.results : []);
+        setShowSuggestions(true);
+      } catch (e) {
+        setSearchError('Search failed');
+        setSuggestions([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 250);
+    return () => clearTimeout(id);
+  }, [tagInput]);
+
+  // Sync local state with user changes from AuthContext
+  useEffect(() => {
+    const nextInitialGoals = user?.health_goals || {};
+    const nextInitialPrefs = user?.dietary_preferences || {};
+    const nextSelected = Array.isArray(nextInitialGoals?.selectedGoals)
+      ? nextInitialGoals.selectedGoals
+      : (Array.isArray(nextInitialGoals) ? nextInitialGoals : []);
+    setSelectedPillars(nextSelected);
+    setDiet(nextInitialPrefs?.diet || '');
+    setAllergies(new Set(nextInitialPrefs?.allergies || []));
+    setDisliked(nextInitialPrefs?.disliked || []);
+    setMealsPerDay(nextInitialPrefs?.meals_per_day || '');
+  }, [user]);
+
+  // Load pillars to mirror NutriTest labels
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await getHealthPillars();
+        if (!mounted) return;
+        setPillars(data || []);
+      } catch (e) {
+        // Non-fatal; leave empty list
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   function toggleAllergy(item) {
     const next = new Set(allergies);
@@ -42,8 +110,10 @@ export default function GoalsPreferencesForm({ onSaved }) {
     e?.preventDefault();
     const val = (tagInput || '').trim();
     if (!val) return;
-    if (!disliked.includes(val)) setDisliked([...disliked, val]);
+    // When free-typing, store as name-only tag
+    if (!disliked.find(t => (t?.name || t) === val)) setDisliked([...disliked, { name: val }]);
     setTagInput('');
+    setShowSuggestions(false);
   }
 
   function removeTag(idx) {
@@ -52,20 +122,29 @@ export default function GoalsPreferencesForm({ onSaved }) {
     setDisliked(next);
   }
 
+  function selectSuggestion(item) {
+    if (!item) return;
+    const exists = disliked.find(t => (t?.id || t?.name) === item.id || t?.name === item.name);
+    if (!exists) setDisliked([...disliked, { id: item.id, name: item.name }]);
+    setTagInput('');
+    setShowSuggestions(false);
+  }
+
   async function save() {
     setSaving(true);
     setMessage('');
     setError('');
     try {
       const payload = {
-        health_goals: goals,
+        health_goals: { selectedGoals: selectedPillars },
         dietary_preferences: {
           diet,
           allergies: Array.from(allergies),
-          disliked
+          disliked: disliked.map(t => (typeof t === 'string' ? { name: t } : t)),
+          meals_per_day: mealsPerDay || undefined
         }
       };
-      await updateUserProfile(token, payload);
+      await updateProfile(payload);
       setMessage('Goals & preferences saved');
       onSaved && onSaved();
     } catch (err) {
@@ -85,10 +164,20 @@ export default function GoalsPreferencesForm({ onSaved }) {
         <div>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Health Goals</div>
           <div style={{ display: 'grid', gap: 8 }}>
-            {PRESET_GOALS.map(g => (
-              <label key={g.key} style={{ display: 'flex', alignItems: 'center', gap: 8, border: '2px solid var(--color-gray-200)', borderRadius: 10, padding: '8px 10px', background: 'transparent' }}>
-                <input type="checkbox" checked={!!goals[g.key]} onChange={(e) => setGoals({ ...goals, [g.key]: e.target.checked })} />
-                {g.label}
+            {pillars.map(p => (
+              <label key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, border: '2px solid var(--color-gray-200)', borderRadius: 10, padding: '8px 10px', background: 'transparent' }}>
+                <input
+                  type="checkbox"
+                  checked={selectedPillars.includes(p.id)}
+                  onChange={(e) => {
+                    const isChecked = e.target.checked;
+                    setSelectedPillars(prev => {
+                      if (isChecked) return prev.includes(p.id) ? prev : [...prev, p.id];
+                      return prev.filter(id => id !== p.id);
+                    });
+                  }}
+                />
+                {p.name || p.title || `Goal ${p.id}`}
               </label>
             ))}
           </div>
@@ -97,7 +186,9 @@ export default function GoalsPreferencesForm({ onSaved }) {
         <div>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Dietary Plan</div>
           <select value={diet} onChange={(e) => setDiet(e.target.value)} style={{ width: '100%' }}>
-            {DIETS.map(d => <option key={d} value={d}>{d || 'Select'}</option>)}
+            {DIET_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
           </select>
 
           <div style={{ fontWeight: 700, margin: '16px 0 8px 0' }}>Allergies / Intolerances</div>
@@ -110,15 +201,36 @@ export default function GoalsPreferencesForm({ onSaved }) {
             ))}
           </div>
 
+          <div style={{ fontWeight: 700, margin: '16px 0 8px 0' }}>Meals Per Day</div>
+          <select value={mealsPerDay} onChange={(e) => setMealsPerDay(e.target.value)} style={{ width: '100%' }}>
+            <option value="">Select</option>
+            <option value="3-meals">3 Meals</option>
+            <option value="3-meals-2-snacks">3 Meals + 2 Snacks</option>
+            <option value="5-6-smaller">5-6 Smaller Meals</option>
+          </select>
+
           <div style={{ fontWeight: 700, margin: '16px 0 8px 0' }}>Disliked Ingredients</div>
-          <form onSubmit={addTag} style={{ display: 'flex', gap: 8 }}>
-            <input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Add ingredient" style={{ flex: 1 }} />
-            <button type="submit" style={{ padding: '8px 12px', borderRadius: 10, background: '#22c55e', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}>Add</button>
-          </form>
+          <div style={{ position: 'relative' }}>
+            <form onSubmit={addTag} style={{ display: 'flex', gap: 8 }}>
+              <input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Search to add ingredient" style={{ flex: 1 }} />
+              <button type="submit" style={{ padding: '8px 12px', borderRadius: 10, background: '#22c55e', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}>Add</button>
+            </form>
+            {showSuggestions && (suggestions?.length > 0 || isSearching || searchError) && (
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, marginTop: 4, zIndex: 10 }}>
+                {isSearching && <div style={{ padding: 8, color: '#6b7280' }}>Searching...</div>}
+                {searchError && <div style={{ padding: 8, color: '#b91c1c' }}>{searchError}</div>}
+                {suggestions.map(item => (
+                  <button key={item.id} type="button" onClick={() => selectSuggestion(item)} style={{ width: '100%', textAlign: 'left', padding: 8, background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                    {item.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
             {disliked.map((tag, idx) => (
               <span key={idx} style={{ padding: '6px 10px', borderRadius: 999, border: '2px solid var(--color-gray-200)', background: 'transparent' }}>
-                {tag}
+                {tag?.name || tag}
                 <button onClick={() => removeTag(idx)} style={{ marginLeft: 8, border: 'none', background: 'transparent', cursor: 'pointer', color: '#ef4444' }}>×</button>
               </span>
             ))}

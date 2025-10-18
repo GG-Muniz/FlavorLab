@@ -1,11 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import HealthPillarsSelector from './HealthPillarsSelector';
 import PreferencesSelector from './PreferencesSelector';
 import FinalPreferences from './FinalPreferences';
 import LoadingOverlay from './LoadingOverlay';
+import './NutriTest.css';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const NutriTest = ({ onComplete }) => {
+  const { user, updateProfile } = useAuth();
+  const navigate = useNavigate();
   // Master state object - holds all data from the entire flow
   const [formData, setFormData] = useState({
     healthPillars: [],
@@ -22,6 +27,27 @@ const NutriTest = ({ onComplete }) => {
   // Loading state for API call
   const [isLoading, setIsLoading] = useState(false);
 
+  // Pre-populate from AuthContext on mount
+  useEffect(() => {
+    if (!user) return;
+    const goals = user.health_goals || {};
+    const prefs = user.dietary_preferences || {};
+    const normalizeDiet = (d) => (typeof d === 'string' ? d.trim().toLowerCase().replace('pescetarian', 'pescatarian') : d);
+    setFormData(prev => ({
+      ...prev,
+      // For pillars: if your backend stores IDs, map appropriately; otherwise derive from keys
+      healthPillars: Array.isArray(goals?.selectedGoals)
+        ? goals.selectedGoals
+        : (Array.isArray(goals) ? goals : []),
+      allergies: Array.isArray(prefs?.allergies) ? prefs.allergies : [],
+      diets: Array.isArray(prefs?.diet)
+        ? prefs.diet.map(normalizeDiet)
+        : (prefs?.diet ? [normalizeDiet(prefs.diet)] : []),
+      mealsPerDay: prefs?.meals_per_day || prev.mealsPerDay,
+      dislikedIngredients: Array.isArray(prefs?.disliked) ? prefs.disliked : []
+    }));
+  }, [user]);
+
   // Single function for any child to update the master formData
   const handleDataChange = (stepData) => {
     setFormData(prevData => ({ ...prevData, ...stepData }));
@@ -37,24 +63,32 @@ const NutriTest = ({ onComplete }) => {
   };
 
   // Handle final completion
-  const handleComplete = () => {
-    console.log('NutriTest completed with data:', formData);
-    if (onComplete) {
-      onComplete(formData);
+  const handleComplete = async () => {
+    const payload = {
+      // Map NutriTest data into backend schema
+      health_goals: (formData.healthPillars && formData.healthPillars.length)
+        ? { selectedGoals: formData.healthPillars }
+        : undefined,
+      dietary_preferences: {
+        diet: (formData.diets?.[0] || '').trim().toLowerCase(),
+        allergies: formData.allergies || [],
+        disliked: formData.dislikedIngredients || [],
+        meals_per_day: formData.mealsPerDay || undefined
+      }
+    };
+    try {
+      setIsLoading(true);
+      await updateProfile(payload);
+      if (onComplete) onComplete(payload);
+      navigate('/profile', { state: { defaultTab: 'goals' } });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Handle generate plan with loading state
   const handleGeneratePlan = async () => {
-    setIsLoading(true);
-    console.log('SENDING THIS TO THE LLM:', formData);
-
-    // Simulate API call delay (replace with actual API call)
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // TODO: Add actual API call to the meal plan endpoint here
-    setIsLoading(false);
-    handleComplete();
+    await handleComplete();
   };
 
   // Page transition variants
@@ -70,7 +104,7 @@ const NutriTest = ({ onComplete }) => {
   };
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh' }}>
+    <div className="nutri-test-container" style={{ position: 'relative', minHeight: '100vh' }}>
       <AnimatePresence mode="wait">
         {/* Step 1: Health Pillars */}
         {currentStep === 1 && (

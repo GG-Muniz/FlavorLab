@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { getCurrentUser, loginUser, registerUser } from '../api/auth';
+import { getCurrentUser, loginUser, registerUser, updateUserProfile } from '../api/auth';
 
 const AuthContext = createContext(null);
 
@@ -37,6 +37,13 @@ export function AuthProvider({ children }) {
     error,
     async refreshUser() {
       if (!token) return null;
+      const me = await getCurrentUser(token);
+      setUser(me);
+      return me;
+    },
+    async updateProfile(payload) {
+      if (!token) throw new Error('Not authenticated');
+      await updateUserProfile(token, payload);
       const me = await getCurrentUser(token);
       setUser(me);
       return me;
