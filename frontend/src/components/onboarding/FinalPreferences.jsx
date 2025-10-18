@@ -142,8 +142,8 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
 
         <div className="meals-grid">
           <motion.div
-            className={`selectable-card meal-option-card ${initialData.mealsPerDay === '3-meals' ? 'selected' : ''}`}
-            onClick={() => handleMealsPerDayChange('3-meals')}
+            className={`selectable-card meal-option-card ${initialData.mealsPerDay === '3' ? 'selected' : ''}`}
+            onClick={() => handleMealsPerDayChange('3')}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -153,7 +153,21 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
             }}>
               🍽️
             </div>
-            <h4 style={{ fontSize: '16px', fontWeight: '700', color: initialData.mealsPerDay === '3-meals' ? '#166534' : '#000000', margin: 0 }}>
+<<<<<<< HEAD
+            <h4 style={{
+              fontSize: '16px',
+              fontWeight: '700',
+              color: initialData.mealsPerDay === '3' ? '#16a34a' : '#111827',
+              margin: 0
+            }}>
+=======
+            <h4 style={{
+              fontSize: '16px',
+              fontWeight: '700',
+              color: initialData.mealsPerDay === '3' ? '#16a34a' : '#111827',
+              margin: 0
+            }}>
+>>>>>>> origin/feature/full-stack-ai-planner
               3 Meals
             </h4>
           </motion.div>
@@ -170,14 +184,14 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
             }}>
               🍽️🍎
             </div>
-            <h4 style={{ fontSize: '16px', fontWeight: '700', color: initialData.mealsPerDay === '3-meals-2-snacks' ? '#166534' : '#000000', margin: 0 }}>
+            <h4 style={{ fontSize: '16px', fontWeight: '700', color: initialData.mealsPerDay === '3-meals-2-snacks' ? '#16a34a' : '#111827', margin: 0 }}>
               3 Meals + 2 Snacks
             </h4>
           </motion.div>
 
           <motion.div
-            className={`selectable-card meal-option-card ${initialData.mealsPerDay === '5-6-smaller' ? 'selected' : ''}`}
-            onClick={() => handleMealsPerDayChange('5-6-smaller')}
+            className={`selectable-card meal-option-card ${initialData.mealsPerDay === '6' ? 'selected' : ''}`}
+            onClick={() => handleMealsPerDayChange('6')}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -187,7 +201,21 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
             }}>
               🍱
             </div>
-            <h4 style={{ fontSize: '16px', fontWeight: '700', color: initialData.mealsPerDay === '5-6-smaller' ? '#166534' : '#000000', margin: 0 }}>
+<<<<<<< HEAD
+            <h4 style={{
+              fontSize: '16px',
+              fontWeight: '700',
+              color: initialData.mealsPerDay === '6' ? '#16a34a' : '#111827',
+              margin: 0
+            }}>
+=======
+            <h4 style={{
+              fontSize: '16px',
+              fontWeight: '700',
+              color: initialData.mealsPerDay === '6' ? '#16a34a' : '#111827',
+              margin: 0
+            }}>
+>>>>>>> origin/feature/full-stack-ai-planner
               5-6 Smaller Meals
             </h4>
           </motion.div>

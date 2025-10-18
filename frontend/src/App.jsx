@@ -9,6 +9,7 @@ import Calendar from './components/calendar/Calendar';
 import { useAuth } from './context/AuthContext';
 import UpNext from './components/dashboard/UpNext';
 import { getDailyCalorieSummary } from './services/calorieApi';
+import MealPlanShowcase from './components/mealplan/MealPlanShowcase';
 
 import {
   LayoutDashboard,
@@ -37,6 +38,7 @@ const iconConfig = {
   navigation: {
     dashboard: { icon: LayoutDashboard, label: 'Dashboard' },
     recipes: { icon: ChefHat, label: 'Recipe Generator' },
+    mealplans: { icon: ChefHat, label: 'Meal Plans' },
     history: { icon: History, label: 'Meal History' },
     calendar: { icon: CalendarIcon, label: 'Calendar' }
   },
@@ -1178,8 +1180,13 @@ const HealthTipOfTheDay = () => {
           <Calendar />
         )}
 
+        {/* Meal Plans */}
+        {activeTab === 'mealplans' && (
+          <MealPlanShowcase />
+        )}
+
         {/* Other Tabs */}
-        {activeTab !== 'dashboard' && activeTab !== 'nutritest' && activeTab !== 'calendar' && (
+        {activeTab !== 'dashboard' && activeTab !== 'nutritest' && activeTab !== 'calendar' && activeTab !== 'mealplans' && (
           <Card>
             <div style={{ textAlign: 'center' }}>
               <div style={{
