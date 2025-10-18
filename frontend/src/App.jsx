@@ -554,8 +554,10 @@ const HealthTipOfTheDay = () => {
       transform: isAnimating ? 'translateY(0)' : 'translateY(20px)',
       transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
     }}>
+<<<<<<< HEAD
       {/* Header moved to AppLayout */}
-
+=======
+>>>>>>> jota-features
       {/* Main Content */}
       <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '32px 16px' }}>
         {/* Navigation Tabs */}
@@ -1155,18 +1157,25 @@ const HealthTipOfTheDay = () => {
               gap: '24px'
               }}
             >
-              <UpNext onAction={(actionId) => {
-                console.log('Action triggered:', actionId);
-                if (actionId === 'breakfast' || actionId === 'lunch' || actionId === 'dinner') {
-                  setShowCalorieCounter(true);
-                } else if (actionId === 'water') {
-                  // TODO: Add water logging functionality
-                  console.log('Log water intake');
-                } else if (actionId === 'plan-tomorrow') {
-                  // TODO: Navigate to meal planning
-                  console.log('Plan tomorrow\'s meals');
-                }
-              }} />
+              <SmartActionStack
+                mealsLoggedToday={{
+                  breakfast: false, // TODO: Track from API
+                  lunch: false,
+                  dinner: false
+                }}
+                onAction={(actionId) => {
+                  console.log('Smart Action triggered:', actionId);
+                  if (actionId === 'breakfast' || actionId === 'lunch' || actionId === 'dinner') {
+                    setShowCalorieCounter(true);
+                  } else if (actionId === 'water') {
+                    // TODO: Add water logging functionality
+                    console.log('Log water intake');
+                  } else if (actionId === 'plan-tomorrow') {
+                    // TODO: Navigate to meal planning
+                    console.log('Plan tomorrow\'s meals');
+                  }
+                }}
+              />
               <HealthTipOfTheDay />
             </motion.div>
 

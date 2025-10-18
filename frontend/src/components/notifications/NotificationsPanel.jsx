@@ -103,22 +103,23 @@ const NotificationsPanel = ({ isOpen, onClose, user }) => {
 
   return (
     <>
-      {/* Backdrop overlay */}
-      <div
-        onClick={onClose}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'rgba(0, 0, 0, 0.3)',
-          zIndex: 999,
-          opacity: isOpen ? 1 : 0,
-          visibility: isOpen ? 'visible' : 'hidden',
-          transition: 'opacity 0.3s ease, visibility 0.3s ease'
-        }}
-      />
+      {/* Backdrop overlay - only render when open */}
+      {isOpen && (
+        <div
+          onClick={onClose}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0, 0, 0, 0.3)',
+            zIndex: 999,
+            opacity: 1,
+            transition: 'opacity 0.3s ease'
+          }}
+        />
+      )}
 
       {/* Notification Panel */}
       <div style={{
@@ -135,7 +136,8 @@ const NotificationsPanel = ({ isOpen, onClose, user }) => {
         borderLeft: '1px solid #f3f4f6',
         transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        visibility: 'visible'
+        visibility: isOpen ? 'visible' : 'hidden',
+        pointerEvents: isOpen ? 'auto' : 'none'
       }}>
       {/* Header */}
       <div style={{
