@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently -k -n FRONTEND,BACKEND -c green,cyan \"npm:dev:frontend\" \"npm:dev:backend\"",
     "dev:frontend": "vite",
-    "dev:backend": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"cd ..\\backend; if(!(Test-Path venv)) { py -m venv venv }; .\\venv\\Scripts\\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000\"",
+    "dev:backend": "cd ../backend && source venv/bin/activate && python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
