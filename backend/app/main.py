@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from .api import health, users, entities, relationships, flavor, calorie_tracker, nutrition
+from .api import health, users, entities, relationships, flavor, calorie_tracker, nutrition, tips, meals
 from .database import engine, Base, SessionLocal, ensure_user_columns
 from .config import get_settings
 
@@ -48,18 +48,34 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS Middleware - Allow frontend to access backend
-origins = [
-    "http://localhost",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://192.168.9.86:5173",  # Network IP for development
-    "*"  # Allow all origins during development
+# CORS Middleware (settings-driven origins; add common dev IPs)
+_origins = settings.cors_origins or []
+if isinstance(_origins, str):
+    _origins = [_origins]
+additional_dev_origins = [
+    "http://192.168.9.86:5173",  # merge: dev LAN IP from incoming branch
 ]
+for origin in additional_dev_origins:
+    if origin not in _origins:
+        _origins.append(origin)
+
+if "*" in _origins or not _origins:
+    _origins = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://192.168.9.213:5173",
+        "http://192.168.9.86:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:5175",
+        "http://127.0.0.1:5175",
+        "http://localhost:5176",
+        "http://127.0.0.1:5176",
+    ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -73,9 +89,11 @@ app.include_router(health.router, prefix=settings.api_prefix, tags=["Health"])
 app.include_router(users.router, prefix=settings.api_prefix, tags=["Users", "Authentication"])
 app.include_router(nutrition.router, prefix=settings.api_prefix, tags=["Nutrition"])
 app.include_router(entities.router, prefix=settings.api_prefix, tags=["Entities"])
+app.include_router(tips.router, prefix=settings.api_prefix, tags=["Tips"])
 app.include_router(relationships.router, prefix=settings.api_prefix, tags=["Relationships"])
 app.include_router(flavor.router, prefix=settings.api_prefix, tags=["Flavor"])
 app.include_router(calorie_tracker.router, prefix=settings.api_prefix, tags=["Calorie Tracking"])
+app.include_router(meals.router, prefix=settings.api_prefix, tags=["Meals"])
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

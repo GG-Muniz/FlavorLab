@@ -58,7 +58,7 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.datetime.now(datetime.UTC), onupdate=datetime.datetime.now(datetime.UTC))
     last_login = Column(DateTime)
 
-    # Relationships
+    # Relationships (from calorie tracking feature)
     calorie_goal = relationship("DailyCalorieGoal", back_populates="user", uselist=False, cascade="all, delete-orphan")
     calorie_intakes = relationship("CalorieIntakeEntry", back_populates="user", cascade="all, delete-orphan")
     

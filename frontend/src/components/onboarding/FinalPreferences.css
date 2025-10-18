@@ -47,11 +47,16 @@
 }
 
 .selectable-card.meal-option-card.selected {
-  background: #f0fdf4;
+  /* Match previous page: allergy tint bg but green outline */
+  background: #fff7ed;
   border-color: #16a34a;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05);
   transform: translateY(-2px);
 }
+
+/* Ensure selected meal option title text is black/green consistent */
+.selectable-card.meal-option-card h4 { color: #000000; }
+.selectable-card.meal-option-card.selected h4 { color: #166534; }
 
 .selectable-card.meal-option-card.selected:hover {
   border-color: #16a34a;

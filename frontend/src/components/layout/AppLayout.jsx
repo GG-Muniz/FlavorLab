@@ -1,5 +1,5 @@
 import { Outlet, Link } from 'react-router-dom';
-import { Apple } from 'lucide-react';
+import { Apple, BookOpen } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import ProfileDropdown from '../profile/ProfileDropdown';
 import { absoluteUrl } from '../../api/auth';
@@ -17,6 +17,16 @@ export default function AppLayout() {
             <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-gray-900)', letterSpacing: '-0.025em', margin: 0 }}>HealthLab</h1>
           </Link>
 
+          <nav style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Link to="/ingredients" style={{
+              display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none',
+              padding: '8px 12px', borderRadius: 10, border: '1px solid var(--color-gray-200)'
+            }}>
+              <BookOpen width={18} height={18} color="#111827" />
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Ingredients</span>
+            </Link>
+          </nav>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Hello, <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{user?.first_name || user?.email}</span> 👋</div>
             <ProfileDropdown avatarUrl={user?.avatar_url ? absoluteUrl(user.avatar_url) : undefined} />
@@ -30,5 +40,3 @@ export default function AppLayout() {
     </div>
   );
 }
-
-

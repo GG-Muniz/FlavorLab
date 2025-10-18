@@ -2,7 +2,8 @@
 Nutrition API endpoints for FlavorLab.
 
 This module provides REST API endpoints for user nutrition tracking,
-including calorie goals, macronutrient targets, and water intake.
+including calorie goals, macronutrient targets, water intake, and
+computed daily nutrition goals based on user biometrics.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -15,9 +16,12 @@ from ..schemas.nutrition import (
     CalorieGoalData,
     MacroData,
     WaterData,
+    NutritionGoalsResponse,
 )
 from ..services.auth import get_current_active_user
 from ..database import get_db
+from ..services.nutrition_service import calculate_tdee, calculate_macronutrient_goals
+from sqlalchemy.orm.attributes import flag_modified
 
 router = APIRouter(prefix="/users", tags=["Nutrition"])
 
@@ -115,3 +119,72 @@ async def get_user_nutrition(
     )
 
     return nutrition_data
+
+
+@router.get("/me/nutrition-goals", response_model=NutritionGoalsResponse)
+async def get_my_nutrition_goals(
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+) -> NutritionGoalsResponse:
+    """
+    Calculate or return cached daily nutrition goals for the current user.
+
+    Requires the user's biometric profile to be complete.
+    Persists computed goals to `user.health_goals` to avoid recalculation.
+    """
+    # If cached goals exist, return them
+    if current_user.health_goals and all(
+        key in current_user.health_goals for key in ("calories", "protein_g", "carbs_g", "fat_g")
+    ):
+        return NutritionGoalsResponse.model_validate(current_user.health_goals)
+
+    # Validate required biometrics
+    missing = []
+    if current_user.weight_kg is None:
+        missing.append("weight_kg")
+    if current_user.height_cm is None:
+        missing.append("height_cm")
+    if current_user.age is None:
+        missing.append("age")
+    if not current_user.gender:
+        missing.append("gender")
+    if not current_user.activity_level:
+        missing.append("activity_level")
+
+    if missing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please complete your biometric profile to calculate goals. Missing: " + ", ".join(missing),
+        )
+
+    # Determine goal profile; default to Maintain if not set
+    goal_profile = "Maintain"
+    try:
+        # Optionally read from preferences/health_goals if provided
+        prefs = current_user.preferences or {}
+        goal_profile = prefs.get("goal_profile", goal_profile)
+    except Exception:
+        pass
+
+    # Compute TDEE and macro goals
+    tdee = calculate_tdee(
+        weight_kg=current_user.weight_kg,
+        height_cm=current_user.height_cm,
+        age=current_user.age,
+        gender=current_user.gender,
+        activity_level=current_user.activity_level,
+    )
+    goals = calculate_macronutrient_goals(tdee=tdee, goal_profile=goal_profile)
+
+    # Persist in user.health_goals to avoid repeated computation
+    try:
+        current_user.health_goals = dict(goals)
+        flag_modified(current_user, "health_goals")
+        db.add(current_user)
+        db.commit()
+        db.refresh(current_user)
+    except Exception:
+        db.rollback()
+        # Non-fatal; still return computed goals
+
+    return NutritionGoalsResponse.model_validate(goals)

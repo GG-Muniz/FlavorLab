@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { uploadAvatar, absoluteUrl, updateUserProfile } from '../../api/auth';
+import { uploadAvatar, absoluteUrl } from '../../api/auth';
 import GoalsPreferencesForm from './GoalsPreferencesForm.jsx';
 
 export default function ProfilePage() {
-  const { user, token, refreshUser } = useAuth();
+  const { user, token, updateProfile, refreshUser } = useAuth();
+  const location = useLocation();
   const inputRef = useRef(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('personal'); // 'personal' | 'goals'
+  const [activeTab, setActiveTab] = useState(location.state?.defaultTab || 'personal'); // 'personal' | 'goals'
   const [unitSystem, setUnitSystem] = useState('metric'); // 'metric' | 'imperial'
   const [form, setForm] = useState({
     first_name: '',
@@ -90,8 +92,7 @@ export default function ProfilePage() {
         activity_level: form.activity_level || undefined,
         date_of_birth: form.date_of_birth || undefined,
       };
-      await updateUserProfile(token, payload);
-      await refreshUser();
+      await updateProfile(payload);
     } catch (err) {
       setError(err?.message || 'Failed to save');
     } finally {
@@ -207,6 +208,14 @@ export default function ProfilePage() {
         )}
         {activeTab === 'goals' && (
           <div style={{ marginTop: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>Goals & Preferences</div>
+              <Link to="/nutritest" style={{ textDecoration: 'none' }}>
+                <button style={{ padding: '10px 16px', borderRadius: 10, background: '#22c55e', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}>
+                  Retake NutriTest
+                </button>
+              </Link>
+            </div>
             <GoalsPreferencesForm onSaved={refreshUser} />
           </div>
         )}
