@@ -7,12 +7,14 @@ to generate AI-powered meal plans based on user survey data and preferences.
 
 import json
 import logging
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from anthropic import AsyncAnthropic
 from pydantic import ValidationError
+from sqlalchemy.orm import Session
 
 from ..config import get_settings
 from ..models.user import User
+from ..models.entity import IngredientEntity
 from ..models.health_pillars import HEALTH_PILLARS, get_pillar_name
 from ..schemas.meal_plan import DailyMealPlan
 
@@ -29,7 +31,7 @@ settings = get_settings()
 client = AsyncAnthropic(api_key=settings.anthropic_api_key)
 
 
-def generate_meal_plan_prompt(survey_data: dict, num_days: int, include_recipes: bool) -> str:
+def generate_meal_plan_prompt(survey_data: dict, num_days: int, include_recipes: bool, preferred_ingredients: Optional[List[str]] = None) -> str:
     """
     Generate a detailed prompt for the LLM to create a personalized meal plan.
 
@@ -37,6 +39,7 @@ def generate_meal_plan_prompt(survey_data: dict, num_days: int, include_recipes:
         survey_data: User's survey data including health pillars, dietary restrictions, etc.
         num_days: Number of days for the meal plan
         include_recipes: Whether to include detailed recipe information
+        preferred_ingredients: Optional list of ingredient names to prioritize based on health goals
 
     Returns:
         str: Formatted prompt for the LLM
@@ -87,6 +90,15 @@ For each meal, only include the basic fields (type, name, calories, description)
 DO NOT include ingredients, servings, prep_time_minutes, cook_time_minutes, instructions, or nutrition fields.
 """
 
+    # Preferred ingredients section
+    preferred_ingredients_section = ""
+    if preferred_ingredients:
+        preferred_ingredients_section = f"""
+## PREFERRED INGREDIENTS
+Based on the user's health goals, prioritize using the following ingredients in the meal plan. You do not have to use all of them, but they should be featured prominently and creatively:
+{', '.join(preferred_ingredients)}
+"""
+
     # Build the complete prompt
     prompt = f"""You are FlavorLab's expert nutritionist and meal planning AI. Create a personalized {num_days}-day meal plan.
 {allergy_constraint}
@@ -99,7 +111,7 @@ Each day MUST have exactly this structure: {meal_structure}
 - Dietary Restrictions: {', '.join(dietary_restrictions) if dietary_restrictions else 'None'}
 - Meal Complexity: {meal_complexity}
 - Disliked Ingredients: {', '.join(disliked_ingredients) if disliked_ingredients else 'None'}
-
+{preferred_ingredients_section}
 ## REQUIREMENTS
 1. Address all health goals through food choices
 2. Respect all dietary restrictions strictly
@@ -140,7 +152,8 @@ Generate the {num_days}-day meal plan now as pure JSON:"""
 async def generate_llm_meal_plan(
     user: User,
     num_days: int = 1,
-    include_recipes: bool = False
+    include_recipes: bool = False,
+    db: Session = None
 ) -> List[DailyMealPlan]:
     """
     Generate a personalized meal plan using Claude Haiku LLM.
@@ -149,6 +162,7 @@ async def generate_llm_meal_plan(
         user: User model with preferences containing survey_data
         num_days: Number of days for the meal plan (default: 1)
         include_recipes: Whether to include detailed recipe information (default: False)
+        db: Database session for fetching preferred ingredients (optional)
 
     Returns:
         List[DailyMealPlan]: Validated list of daily meal plans
@@ -164,8 +178,40 @@ async def generate_llm_meal_plan(
 
         survey_data = user.preferences["survey_data"]
 
+        # Fetch preferred ingredients based on user health goals
+        preferred_ingredient_names = []
+        if db is not None:
+            user_health_goals = user.preferences.get("health_goals", [])
+            if user_health_goals:
+                preferred_ingredients = []
+                for pillar_id in user_health_goals:
+                    try:
+                        pillar_ingredients = IngredientEntity.get_ingredients_by_pillar(
+                            db, pillar_id=pillar_id, limit=10
+                        )
+                        preferred_ingredients.extend(pillar_ingredients)
+                    except Exception as e:
+                        logger.warning(f"Could not fetch ingredients for pillar {pillar_id}: {e}")
+                        continue
+
+                # Deduplicate ingredients
+                seen = set()
+                unique_ingredients = [
+                    ing for ing in preferred_ingredients
+                    if not (ing.id in seen or seen.add(ing.id))
+                ]
+
+                # Extract ingredient names
+                preferred_ingredient_names = [ing.name for ing in unique_ingredients]
+                logger.info(f"Found {len(preferred_ingredient_names)} preferred ingredients for user {user.id}")
+
         # Generate the prompt
-        prompt = generate_meal_plan_prompt(survey_data, num_days, include_recipes)
+        prompt = generate_meal_plan_prompt(
+            survey_data,
+            num_days,
+            include_recipes,
+            preferred_ingredients=preferred_ingredient_names if preferred_ingredient_names else None
+        )
 
         logger.info(f"Generating LLM meal plan for user {user.id} ({num_days} days, recipes={include_recipes})")
 
