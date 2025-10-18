@@ -153,12 +153,7 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
             }}>
               🍽️
             </div>
-            <h4 style={{
-              fontSize: '16px',
-              fontWeight: '700',
-              color: initialData.mealsPerDay === '3-meals' ? '#16a34a' : '#111827',
-              margin: 0
-            }}>
+            <h4 style={{ fontSize: '16px', fontWeight: '700', color: initialData.mealsPerDay === '3-meals' ? '#166534' : '#000000', margin: 0 }}>
               3 Meals
             </h4>
           </motion.div>
@@ -175,12 +170,7 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
             }}>
               🍽️🍎
             </div>
-            <h4 style={{
-              fontSize: '16px',
-              fontWeight: '700',
-              color: initialData.mealsPerDay === '3-meals-2-snacks' ? '#16a34a' : '#111827',
-              margin: 0
-            }}>
+            <h4 style={{ fontSize: '16px', fontWeight: '700', color: initialData.mealsPerDay === '3-meals-2-snacks' ? '#166534' : '#000000', margin: 0 }}>
               3 Meals + 2 Snacks
             </h4>
           </motion.div>
@@ -197,12 +187,7 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
             }}>
               🍱
             </div>
-            <h4 style={{
-              fontSize: '16px',
-              fontWeight: '700',
-              color: initialData.mealsPerDay === '5-6-smaller' ? '#16a34a' : '#111827',
-              margin: 0
-            }}>
+            <h4 style={{ fontSize: '16px', fontWeight: '700', color: initialData.mealsPerDay === '5-6-smaller' ? '#166534' : '#000000', margin: 0 }}>
               5-6 Smaller Meals
             </h4>
           </motion.div>
@@ -296,7 +281,7 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
             gap: '12px',
             padding: '14px 28px',
             background: '#ffffff',
-            color: '#374151',
+            color: '#000000',
             border: '2px solid #e5e7eb',
             borderRadius: '12px',
             fontSize: '16px',
@@ -313,8 +298,8 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
             e.currentTarget.style.background = '#ffffff';
           }}
         >
-          <ArrowLeft width={20} height={20} />
-          <span>Back</span>
+          <ArrowLeft width={20} height={20} color="#000000" />
+          <span style={{ color: '#000000', opacity: 1, fontWeight: 700 }}>Back</span>
         </button>
 
         <button

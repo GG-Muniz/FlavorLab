@@ -9,6 +9,14 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
+class NutritionGoalsResponse(BaseModel):
+    """Computed daily nutrition goals based on TDEE and macro splits."""
+    calories: float = Field(..., description="Daily calorie target (kcal)")
+    protein_g: float = Field(..., description="Daily protein target (g)")
+    carbs_g: float = Field(..., description="Daily carbohydrate target (g)")
+    fat_g: float = Field(..., description="Daily fat target (g)")
+
+
 class CalorieGoalData(BaseModel):
     """Schema for calorie goal data."""
     current: float = Field(default=0.0, description="Current calories consumed")

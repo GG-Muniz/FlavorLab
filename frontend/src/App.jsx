@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NotificationsPanel, NotificationBellButton } from './components/notifications/NotificationsPanel';
 import Login from './components/auth/Login';
-import NutriTest from './components/onboarding/NutriTest';
 import CalorieDetailModal from './components/modals/CalorieDetailModal';
 import CalorieCounter from './components/modals/CalorieCounter';
 import Calendar from './components/calendar/Calendar';
@@ -37,7 +36,6 @@ import {
 const iconConfig = {
   navigation: {
     dashboard: { icon: LayoutDashboard, label: 'Dashboard' },
-    nutritest: { icon: FlaskConical, label: 'NutriTest' },
     recipes: { icon: ChefHat, label: 'Recipe Generator' },
     history: { icon: History, label: 'Meal History' },
     calendar: { icon: CalendarIcon, label: 'Calendar' }
@@ -212,9 +210,7 @@ function App() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const user = authUser || { id: '123', name: 'User' };
-  const [hasCompletedNutriTest, setHasCompletedNutriTest] = useState(false);
-  // Disable auto-rendering NutriTest on the dashboard; keep it in its own tab
-  const showNutriOnDashboard = false;
+  // NutriTest is now accessible via /nutritest route from Profile page only
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]); //Despues va a venir del API
@@ -287,14 +283,7 @@ function App() {
     fetchNutritionData().catch(() => {});
   }, []);
 
-  // Handle NutriTest completion
-  const handleNutriTestComplete = (testResults) => {
-    console.log('NutriTest completed:', testResults);
-    setHasCompletedNutriTest(true);
-    // TODO: Send results to backend to create user profile and meal plan
-    // Switch back to dashboard
-    setActiveTab('dashboard');
-  };
+  // NutriTest completion handled in dedicated route component
 
   const apiService = new ApiService();
   const llmService = new LLMService();
@@ -330,12 +319,12 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
           style={{
-            position: 'absolute',
-            width: size + 16,
-            height: size + 16,
-            borderRadius: '50%',
-            background: `radial-gradient(circle, ${color}15 0%, transparent 70%)`,
-            animation: 'pulse 2s infinite'
+          position: 'absolute',
+          width: size + 16,
+          height: size + 16,
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${color}15 0%, transparent 70%)`,
+          animation: 'pulse 2s infinite'
           }}
         />
       )}
@@ -426,12 +415,32 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
 
 // Health Tip of the Day Component
 const HealthTipOfTheDay = () => {
-  // Mock health tip - will be based on user's health goals from API
-  const healthTip = {
-    title: "Stay Hydrated",
-    tip: "Drinking water before meals can help reduce appetite and support weight loss. Aim for at least 8 glasses throughout the day.",
-    category: "Hydration"
-  };
+  const [tip, setTip] = useState(null);
+  const [loadingTip, setLoadingTip] = useState(true);
+  const [tipError, setTipError] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+    (async () => {
+      try {
+        setLoadingTip(true);
+        setTipError(null);
+        const resp = await fetch(`${API_BASE_URL}/tips/today`);
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data?.detail || 'Failed to load tip');
+        if (mounted) setTip(data);
+      } catch (e) {
+        if (mounted) setTipError(e?.message || 'Failed to load tip');
+      } finally {
+        if (mounted) setLoadingTip(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const category = tip?.category || 'TIP';
+  const text = tip?.text || 'Loading...';
 
   return (
     <Card>
@@ -471,17 +480,8 @@ const HealthTipOfTheDay = () => {
             textTransform: 'uppercase',
             letterSpacing: '0.5px'
           }}>
-            {healthTip.category}
+            {category}
           </div>
-
-          <h4 style={{
-            fontSize: '16px',
-            fontWeight: '700',
-            color: '#111827',
-            margin: '0 0 12px 0'
-          }}>
-            {healthTip.title}
-          </h4>
 
           <p style={{
             fontSize: '14px',
@@ -489,35 +489,8 @@ const HealthTipOfTheDay = () => {
             lineHeight: '1.6',
             margin: 0
           }}>
-            {healthTip.tip}
+            {loadingTip ? 'Loading tip...' : (tipError || text)}
           </p>
-        </div>
-
-        <div style={{
-          marginTop: '16px',
-          textAlign: 'center'
-        }}>
-          <button
-            style={{
-              padding: '8px 16px',
-              background: 'transparent',
-              border: '1px solid #fde68a',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: '600',
-              color: '#d97706',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#fef3c7';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            View All Tips
-          </button>
         </div>
       </div>
     </Card>
@@ -772,19 +745,7 @@ const HealthTipOfTheDay = () => {
           </div>
         </div>
 
-        {/* Auto-show NutriTest for new users */}
-        {activeTab === 'dashboard' && showNutriOnDashboard && !hasCompletedNutriTest && (
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '24px',
-            padding: '32px',
-            boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-            border: '1px solid #f3f4f6',
-            marginBottom: '32px'
-          }}>
-            <NutriTest onComplete={handleNutriTestComplete} />
-          </div>
-        )}
+        {/* NutriTest removed from dashboard */}
 
         {/* Dashboard Content */}
         {activeTab === 'dashboard' && (
@@ -810,9 +771,9 @@ const HealthTipOfTheDay = () => {
                 visible: { opacity: 1, y: 0 }
               }}
               style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '24px'
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '24px'
               }}
             >
             {/* Calories Card - REPLACE YOUR EXISTING ONE WITH THIS */}
@@ -1187,9 +1148,9 @@ const HealthTipOfTheDay = () => {
                 visible: { opacity: 1, y: 0 }
               }}
               style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-                gap: '24px'
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+              gap: '24px'
               }}
             >
               <UpNext onAction={(actionId) => {
@@ -1210,18 +1171,7 @@ const HealthTipOfTheDay = () => {
           </motion.div>
         )}
 
-        {/* NutriTest Tab */}
-        {activeTab === 'nutritest' && (
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '24px',
-            padding: '32px',
-            boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-            border: '1px solid #f3f4f6'
-          }}>
-            <NutriTest onComplete={handleNutriTestComplete} />
-          </div>
-        )}
+        {/* NutriTest removed from main tabs; available at /nutritest */}
 
         {/* Calendar */}
         {activeTab === 'calendar' && (

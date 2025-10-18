@@ -307,6 +307,37 @@ async def search_entities(
         )
 
 
+@router.post("/simple-search")
+async def simple_ingredient_search(
+    payload: dict,
+    db: Session = Depends(get_db)
+):
+    """
+    Lightweight ingredient name search for autocomplete.
+
+    Accepts {"name_contains": "app"} and returns [{"id":"apple","name":"Apple"}, ...].
+    Case-insensitive, limited to ingredients only. Returns at most 15 results.
+    """
+    try:
+        term = (payload or {}).get("name_contains", "")
+        term = (term or "").strip()
+        if not term:
+            return {"results": []}
+
+        query = (
+            db.query(IngredientEntity.id, IngredientEntity.name)
+            .filter(IngredientEntity.name.ilike(f"%{term}%"))
+        ).limit(15)
+
+        results = [{"id": row[0], "name": row[1]} for row in query.all()]
+        return {"results": results}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error searching ingredients: {str(e)}"
+        )
+
+
 @router.get("/{entity_id}", response_model=EntityResponse)
 async def get_entity(
     entity_id: str,

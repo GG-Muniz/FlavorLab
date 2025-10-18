@@ -14,7 +14,10 @@ import AppLayout from './components/layout/AppLayout.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
 import HelpPage from './pages/HelpPage.jsx'
 import DisplayPage from './pages/DisplayPage.jsx'
+import IngredientBrowserPage from './pages/IngredientBrowserPage.jsx'
+import IngredientDetailPage from './pages/IngredientDetailPage.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
+import NutriTest from './components/onboarding/NutriTest.jsx'
 
 function ProtectedRoute({ children }) {
   const { token } = useAuth();
@@ -35,10 +38,13 @@ createRoot(document.getElementById('root')).render(
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="/onboarding" element={<OnboardingWizard />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/nutritest" element={<NutriTest />} />
             {/* New routes */}
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/display" element={<DisplayPage />} />
+            <Route path="/ingredients" element={<IngredientBrowserPage />} />
+            <Route path="/ingredients/:ingredientId" element={<IngredientDetailPage />} />
             <Route path="/*" element={<App />} />
           </Route>
           </Routes>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { BackgroundCard, SectionHeader, SelectableCard } from '../ui/CardGrid.jsx';
 import {
   AlertCircle,
   Leaf,
@@ -9,18 +10,18 @@ import {
 } from 'lucide-react';
 import './PreferencesSelector.css';
 
-// Mock data for allergies and dietary preferences
+// Canonical options for allergies and dietary preferences (uniform across app)
 const mockPreferenceOptions = {
   allergies: [
-    { id: 'milk', name: 'Milk', icon: '🥛' },
-    { id: 'eggs', name: 'Eggs', icon: '🥚' },
-    { id: 'fish', name: 'Fish', icon: '🐟' },
-    { id: 'shellfish', name: 'Crustacean Shellfish', icon: '🦞' },
-    { id: 'treenuts', name: 'Tree Nuts', icon: '🌰' },
-    { id: 'peanuts', name: 'Peanuts', icon: '🥜' },
-    { id: 'wheat', name: 'Wheat', icon: '🌾' },
-    { id: 'soybeans', name: 'Soybeans', icon: '🫘' },
-    { id: 'sesame', name: 'Sesame', icon: '🫚' }
+    { id: 'Dairy', name: 'Dairy', icon: '🥛' },
+    { id: 'Gluten', name: 'Gluten', icon: '🌾' },
+    { id: 'Peanuts', name: 'Peanuts', icon: '🥜' },
+    { id: 'Tree Nuts', name: 'Tree Nuts', icon: '🌰' },
+    { id: 'Soy', name: 'Soy', icon: '🌱' },
+    { id: 'Eggs', name: 'Eggs', icon: '🥚' },
+    { id: 'Shellfish', name: 'Shellfish', icon: '🦞' },
+    { id: 'Fish', name: 'Fish', icon: '🐟' },
+    { id: 'Sesame', name: 'Sesame', icon: '🌿' }
   ],
   diets: [
     { id: 'vegetarian', name: 'Vegetarian', description: 'No meat', icon: '🥗' },
@@ -28,7 +29,8 @@ const mockPreferenceOptions = {
     { id: 'pescatarian', name: 'Pescatarian', description: 'No meat, but fish', icon: '🐟' },
     { id: 'keto', name: 'Keto', description: 'Low-carb, high-fat', icon: '🥑' },
     { id: 'paleo', name: 'Paleo', description: 'Primal eating', icon: '🥩' },
-    { id: 'mediterranean', name: 'Mediterranean', description: 'Plant-based foods', icon: '🫒' }
+    // Use commonly supported fruit icon for Mediterranean
+    { id: 'mediterranean', name: 'Mediterranean', description: 'Plant-based foods', icon: '🍇' }
   ]
 };
 
@@ -52,10 +54,9 @@ const PreferencesSelector = ({
       setSelectedAllergies(newSelection);
       onDataChange({ allergies: newSelection });
     } else if (type === 'diet') {
-      // Allow multiple diet selections
-      const newSelection = selectedDiets.includes(id)
-        ? selectedDiets.filter(item => item !== id)
-        : [...selectedDiets, id];
+      // Enforce single-selection for diet
+      const currentlySelected = selectedDiets[0];
+      const newSelection = currentlySelected === id ? [] : [id];
       setSelectedDiets(newSelection);
       onDataChange({ diets: newSelection });
     }
@@ -104,162 +105,30 @@ const PreferencesSelector = ({
       </div>
 
       {/* Allergies Section */}
-      <div className="background-card allergies-card">
-        <div className="section-header">
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '12px'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              background: '#fff7ed',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <AlertCircle width={20} height={20} color="#ea580c" />
-            </div>
-            <h3 style={{
-              fontSize: '20px',
-              fontWeight: '600',
-              color: '#111827',
-              margin: 0
-            }}>
-              Any Food Allergies?
-            </h3>
-          </div>
-          <p style={{
-            fontSize: '14px',
-            color: '#6b7280',
-            margin: 0
-          }}>
-            Select all that apply (optional)
-          </p>
-        </div>
-
-        {/* Allergies Grid */}
+      <BackgroundCard tone="blue">
+        <SectionHeader icon={(props) => <AlertCircle {...props} />} title="Any Food Allergies?" subtitle="Select all that apply (optional)" iconBg="#fff7ed" iconColor="#ea580c" />
         <div className="card-grid allergies-grid">
           {mockPreferenceOptions.allergies.map((allergy) => {
             const isSelected = selectedAllergies.includes(allergy.id);
-
             return (
-              <motion.div
-                key={allergy.id}
-                className={`selectable-card allergy-card ${isSelected ? 'selected' : ''}`}
-                onClick={() => handleSelection(allergy.id, 'allergy')}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {isSelected && (
-                  <div className="check-icon">
-                    <CheckCircle2 width={16} height={16} color="#ea580c" fill="#fff7ed" />
-                  </div>
-                )}
-                <span style={{
-                  fontSize: '40px',
-                  marginBottom: '8px'
-                }}>
-                  {allergy.icon}
-                </span>
-                <span style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: isSelected ? '#ea580c' : '#374151',
-                  textAlign: 'center'
-                }}>
-                  {allergy.name}
-                </span>
-              </motion.div>
+              <SelectableCard key={allergy.id} palette="orange" selected={isSelected} onClick={() => handleSelection(allergy.id, 'allergy')} emoji={allergy.icon} title={allergy.name} />
             );
           })}
         </div>
-      </div>
+      </BackgroundCard>
 
       {/* Dietary Preferences Section */}
-      <div className="background-card diets-card">
-        <div className="section-header">
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '12px'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              background: '#f0fdf4',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Leaf width={20} height={20} color="#16a34a" />
-            </div>
-            <h3 style={{
-              fontSize: '20px',
-              fontWeight: '600',
-              color: '#111827',
-              margin: 0
-            }}>
-              Dietary Preference
-            </h3>
-          </div>
-          <p style={{
-            fontSize: '14px',
-            color: '#6b7280',
-            margin: 0
-          }}>
-            Select all that apply (optional)
-          </p>
-        </div>
-
-        {/* Diets Grid */}
+      <BackgroundCard tone="green">
+        <SectionHeader icon={(props) => <Leaf {...props} />} title="Dietary Preference" subtitle="Select one (optional)" iconBg="#f0fdf4" iconColor="#16a34a" />
         <div className="card-grid diets-grid">
           {mockPreferenceOptions.diets.map((diet) => {
             const isSelected = selectedDiets.includes(diet.id);
-
             return (
-              <motion.div
-                key={diet.id}
-                className={`selectable-card diet-card ${isSelected ? 'selected' : ''}`}
-                onClick={() => handleSelection(diet.id, 'diet')}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {isSelected && (
-                  <div className="check-icon">
-                    <CheckCircle2 width={20} height={20} color="#16a34a" fill="#f0fdf4" />
-                  </div>
-                )}
-                <span style={{
-                  fontSize: '48px',
-                  marginBottom: '12px'
-                }}>
-                  {diet.icon}
-                </span>
-                <span style={{
-                  fontSize: '16px',
-                  fontWeight: '700',
-                  color: isSelected ? '#16a34a' : '#111827',
-                  marginBottom: '4px'
-                }}>
-                  {diet.name}
-                </span>
-                <span style={{
-                  fontSize: '12px',
-                  color: isSelected ? '#15803d' : '#6b7280'
-                }}>
-                  {diet.description}
-                </span>
-              </motion.div>
+              <SelectableCard key={diet.id} palette="green" selected={isSelected} onClick={() => handleSelection(diet.id.toLowerCase(), 'diet')} emoji={diet.icon} title={diet.name} subtitle={diet.description} />
             );
           })}
         </div>
-      </div>
+      </BackgroundCard>
 
       {/* Navigation Buttons */}
       <div style={{
@@ -276,7 +145,7 @@ const PreferencesSelector = ({
             gap: '12px',
             padding: '14px 28px',
             background: '#ffffff',
-            color: '#374151',
+            color: '#000000',
             border: '2px solid #e5e7eb',
             borderRadius: '12px',
             fontSize: '16px',
@@ -293,8 +162,8 @@ const PreferencesSelector = ({
             e.currentTarget.style.background = '#ffffff';
           }}
         >
-          <ArrowLeft width={20} height={20} />
-          <span>Back</span>
+          <ArrowLeft width={20} height={20} color="#000000" />
+          <span style={{ color: '#000000', opacity: 1, fontWeight: 700 }}>Back</span>
         </button>
 
         <button
