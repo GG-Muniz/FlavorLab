@@ -102,7 +102,6 @@ class User(Base):
             "is_verified": self.is_verified,
             "first_name": self.first_name,
             "last_name": self.last_name,
-            # Union of profile fields and preferences
             "age": self.age,
             "height_cm": self.height_cm,
             "weight_kg": self.weight_kg,

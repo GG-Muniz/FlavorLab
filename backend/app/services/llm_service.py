@@ -125,10 +125,10 @@ Respond ONLY with a JSON array. No markdown, no explanations, no code blocks.
 The JSON must be a valid array that matches this schema:
 
 [
-  {{
+  {
     "day": "Day 1",
     "meals": [
-      {{
+      {
         "type": "breakfast",
         "name": "Meal Name",
         "calories": 400,
@@ -139,9 +139,9 @@ The JSON must be a valid array that matches this schema:
         {"'cook_time_minutes': 15," if include_recipes else ""}
         {"'instructions': ['step 1', 'step 2']," if include_recipes else ""}
         {"'nutrition': {'protein': '20g', 'carbs': '45g', 'fat': '12g'}" if include_recipes else ""}
-      }}
+      }
     ]
-  }}
+  }
 ]
 
 Generate the {num_days}-day meal plan now as pure JSON:"""
