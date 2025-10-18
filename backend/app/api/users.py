@@ -470,7 +470,8 @@ async def generate_llm_meal_plan_endpoint(
         daily_plans = await llm_service.generate_llm_meal_plan(
             user=current_user,
             num_days=1,
-            include_recipes=include_recipes
+            include_recipes=include_recipes,
+            db=db
         )
 
         # Construct health goal summary
