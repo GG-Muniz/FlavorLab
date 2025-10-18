@@ -7,6 +7,7 @@ import LoadingOverlay from './LoadingOverlay';
 import './NutriTest.css';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { submitSurvey } from '../../services/mealPlanApi';
 
 const NutriTest = ({ onComplete }) => {
   const { user, updateProfile } = useAuth();
@@ -17,7 +18,7 @@ const NutriTest = ({ onComplete }) => {
     allergies: [],
     diets: [],
     // Step 3 fields
-    mealsPerDay: '3-meals', // '3-meals', '3-meals-2-snacks', or '5-6-smaller'
+    mealsPerDay: '3', // '3', '3-meals-2-snacks', or '6'
     dislikedIngredients: []
   });
 
@@ -88,7 +89,17 @@ const NutriTest = ({ onComplete }) => {
 
   // Handle generate plan with loading state
   const handleGeneratePlan = async () => {
-    await handleComplete();
+    setIsLoading(true);
+    try {
+      await submitSurvey(formData);
+      await handleComplete();
+      navigate('/?tab=mealplans', { replace: true });
+    } catch (error) {
+      console.error('Error submitting survey:', error);
+      alert(`Failed to submit survey: ${error?.message || 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Page transition variants

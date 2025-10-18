@@ -28,6 +28,7 @@ from ..schemas.user import (
     UserProfileResponse,
     ChangePasswordRequest,
     HealthGoalsUpdate,
+    UserSurveyData,
     Token,
     TokenData,
     UserStatsResponse,
@@ -40,6 +41,7 @@ from ..schemas.meal_plan import (
     MealPlanRequest,
     MealItem,
     DailyMealPlan,
+    LLMMealPlanResponse,
 )
 from ..services.auth import AuthService, get_current_active_user, get_current_verified_user
 from ..database import get_db
@@ -359,6 +361,154 @@ async def update_health_goals(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error updating health goals: {str(e)}"
+        )
+
+
+@router.post("/me/survey", response_model=UserProfileResponse)
+async def submit_user_survey(
+    survey_data: UserSurveyData,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
+    """
+    Submit complete user survey data from onboarding flow.
+
+    This endpoint processes the user's onboarding survey, translates health pillar names
+    to IDs for backward compatibility, and stores both the translated IDs and complete
+    survey data in user preferences.
+
+    Args:
+        survey_data: Complete survey data including health pillars, dietary restrictions, etc.
+        db: Database session
+        current_user: Current authenticated user
+
+    Returns:
+        UserProfileResponse: Updated user profile with survey data
+
+    Raises:
+        HTTPException: If survey submission fails or pillar names are invalid
+    """
+    try:
+        # Create reverse mapping: pillar_name -> pillar_id
+        pillar_name_to_id = {
+            pillar_data["name"]: pillar_id
+            for pillar_id, pillar_data in HEALTH_PILLARS.items()
+        }
+
+        # Translate health pillar names to IDs
+        pillar_ids = []
+        for pillar_name in survey_data.healthPillars:
+            pillar_id = pillar_name_to_id.get(pillar_name)
+            if pillar_id is None:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invalid health pillar name: {pillar_name}"
+                )
+            pillar_ids.append(pillar_id)
+
+        # Get current preferences or initialize empty dict
+        preferences = current_user.preferences or {}
+
+        # Store translated pillar IDs for backward compatibility
+        preferences["health_goals"] = pillar_ids
+
+        # Store complete survey data for LLM meal plan generation
+        preferences["survey_data"] = survey_data.model_dump()
+
+        # Save updated preferences (create new dict to trigger SQLAlchemy update detection)
+        current_user.preferences = dict(preferences)
+
+        # Mark the field as modified to ensure SQLAlchemy detects the change
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(current_user, "preferences")
+
+        # Commit changes
+        db.commit()
+        db.refresh(current_user)
+
+        return UserProfileResponse.model_validate(current_user)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error submitting survey: {str(e)}"
+        )
+
+
+@router.post("/me/llm-meal-plan", response_model=LLMMealPlanResponse)
+async def generate_llm_meal_plan_endpoint(
+    include_recipes: bool = False,
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Generate an AI-powered personalized meal plan using Claude Haiku LLM.
+
+    This endpoint creates a 1-day meal plan based on the user's survey data,
+    using the Claude Haiku model for cost-effective, high-quality meal planning.
+
+    Args:
+        include_recipes: Whether to include detailed recipe information (ingredients, instructions, etc.)
+        current_user: Current authenticated user
+        db: Database session
+
+    Returns:
+        LLMMealPlanResponse: Generated meal plan with health goal summary
+
+    Raises:
+        HTTPException 503: If meal plan generation fails
+        HTTPException 400: If user has no survey data
+    """
+    try:
+        # Import the LLM service
+        from ..services import llm_service
+
+        # Generate meal plan using LLM (1 day)
+        daily_plans = await llm_service.generate_llm_meal_plan(
+            user=current_user,
+            num_days=1,
+            include_recipes=include_recipes,
+            db=db
+        )
+
+        # Construct health goal summary
+        health_goal_summary = None
+        if current_user.preferences and "health_goals" in current_user.preferences:
+            health_goal_ids = current_user.preferences["health_goals"]
+            health_goal_names = [
+                get_pillar_name(goal_id) for goal_id in health_goal_ids
+            ]
+            health_goal_summary = (
+                f"This meal plan is designed to support your health goals: "
+                f"{', '.join(health_goal_names)}. "
+                f"Meals are tailored to your dietary preferences and restrictions."
+            )
+
+        return LLMMealPlanResponse(
+            plan=daily_plans,
+            health_goal_summary=health_goal_summary
+        )
+
+    except llm_service.LLMResponseError as e:
+        logger.error(f"LLM meal plan generation failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Could not generate meal plan at this time."
+        )
+    except ValueError as e:
+        logger.error(f"User survey data missing: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please complete the user survey before generating a meal plan."
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error generating LLM meal plan: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Could not generate meal plan at this time."
         )
 
 

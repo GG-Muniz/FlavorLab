@@ -5,7 +5,7 @@ This module defines the request/response schemas for meal plan generation
 and management, including meals, daily plans, and weekly meal plans.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 
 
@@ -15,6 +15,12 @@ class MealItem(BaseModel):
     name: str = Field(..., description="Name of the meal")
     calories: int = Field(..., description="Estimated calories for this meal")
     description: str = Field(..., description="Description of the meal and its ingredients")
+    ingredients: Optional[List[str]] = Field(None, description="List of ingredients with measurements")
+    servings: Optional[int] = Field(None, description="Number of servings")
+    prep_time_minutes: Optional[int] = Field(None, description="Preparation time in minutes")
+    cook_time_minutes: Optional[int] = Field(None, description="Cooking time in minutes")
+    instructions: Optional[List[str]] = Field(None, description="Step-by-step cooking instructions")
+    nutrition: Optional[Dict[str, Any]] = Field(None, description="Detailed nutritional information")
 
 
 class DailyMealPlan(BaseModel):
@@ -50,4 +56,13 @@ class MealPlanRequest(BaseModel):
     preferences: dict = Field(
         default_factory=dict,
         description="Optional preferences for meal generation"
+    )
+
+
+class LLMMealPlanResponse(BaseModel):
+    """Schema for LLM-generated meal plan response."""
+    plan: List[DailyMealPlan] = Field(..., description="List of daily meal plans")
+    health_goal_summary: Optional[str] = Field(
+        None,
+        description="Summary of how this meal plan addresses the user's health goals"
     )
