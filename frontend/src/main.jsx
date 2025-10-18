@@ -20,9 +20,19 @@ import { ThemeProvider } from './context/ThemeContext.jsx'
 import NutriTest from './components/onboarding/NutriTest.jsx'
 
 function ProtectedRoute({ children }) {
-  const { token } = useAuth();
+  const { token, loading } = useAuth();
+  if (loading) return <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center'}}>Loading...</div>;
   if (!token) return <Navigate to="/login" replace />;
   return children;
+}
+
+function DebugHome() {
+  return (
+    <div style={{minHeight:'100vh',display:'flex',flexDirection:'column'}}>
+      <div style={{padding:16,background:'#e5e7eb'}}>Debug Home: shell rendered</div>
+      <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center'}}>Content area</div>
+    </div>
+  );
 }
 
 createRoot(document.getElementById('root')).render(
@@ -31,22 +41,24 @@ createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-          <Route path="/login" element={<Login onLogin={() => {}} />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-            <Route path="/onboarding" element={<OnboardingWizard />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/nutritest" element={<NutriTest />} />
-            {/* New routes */}
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/help" element={<HelpPage />} />
-            <Route path="/display" element={<DisplayPage />} />
-            <Route path="/ingredients" element={<IngredientBrowserPage />} />
-            <Route path="/ingredients/:ingredientId" element={<IngredientDetailPage />} />
-            <Route path="/*" element={<App />} />
-          </Route>
+            <Route path="/login" element={<Login onLogin={() => {}} />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+
+            <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+              <Route index element={<App />} />
+              <Route path="onboarding" element={<OnboardingWizard />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="nutritest" element={<NutriTest />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="help" element={<HelpPage />} />
+              <Route path="display" element={<DisplayPage />} />
+              <Route path="ingredients" element={<IngredientBrowserPage />} />
+              <Route path="ingredients/:ingredientId" element={<IngredientDetailPage />} />
+            </Route>
+
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

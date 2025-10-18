@@ -9,7 +9,7 @@ const API_PREFIX = '/api/v1';
  * Get authentication token from localStorage
  */
 const getAuthToken = () => {
-  return localStorage.getItem('auth_token');
+  return localStorage.getItem('token');
 };
 
 /**

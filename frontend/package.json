@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently -k -n FRONTEND,BACKEND -c green,cyan \"npm:dev:frontend\" \"npm:dev:backend\"",
     "dev:frontend": "vite",
-    "dev:backend": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"cd ..\\backend; if(!(Test-Path venv)) { py -m venv venv }; .\\venv\\Scripts\\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000\"",
+    "dev:backend": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"cd ..\\backend; if(Test-Path .\\venv\\Scripts\\uvicorn.exe) { .\\venv\\Scripts\\uvicorn.exe app.main:app --reload --host 127.0.0.1 --port 8000 } else { .\\venv\\Scripts\\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000 }\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -16,6 +16,7 @@
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.544.0",
     "moment": "^2.30.1",
+    "prop-types": "^15.8.1",
     "react": "^19.1.1",
     "react-big-calendar": "^1.19.4",
     "react-dom": "^19.1.1",
