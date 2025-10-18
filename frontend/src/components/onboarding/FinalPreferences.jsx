@@ -153,21 +153,12 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
             }}>
               🍽️
             </div>
-<<<<<<< HEAD
             <h4 style={{
               fontSize: '16px',
               fontWeight: '700',
               color: initialData.mealsPerDay === '3' ? '#16a34a' : '#111827',
               margin: 0
             }}>
-=======
-            <h4 style={{
-              fontSize: '16px',
-              fontWeight: '700',
-              color: initialData.mealsPerDay === '3' ? '#16a34a' : '#111827',
-              margin: 0
-            }}>
->>>>>>> origin/feature/full-stack-ai-planner
               3 Meals
             </h4>
           </motion.div>
@@ -201,21 +192,12 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
             }}>
               🍱
             </div>
-<<<<<<< HEAD
             <h4 style={{
               fontSize: '16px',
               fontWeight: '700',
               color: initialData.mealsPerDay === '6' ? '#16a34a' : '#111827',
               margin: 0
             }}>
-=======
-            <h4 style={{
-              fontSize: '16px',
-              fontWeight: '700',
-              color: initialData.mealsPerDay === '6' ? '#16a34a' : '#111827',
-              margin: 0
-            }}>
->>>>>>> origin/feature/full-stack-ai-planner
               5-6 Smaller Meals
             </h4>
           </motion.div>
