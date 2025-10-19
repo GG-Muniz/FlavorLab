@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { absoluteUrl } from '../api/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
@@ -34,6 +35,7 @@ export default function IngredientDetailPage() {
   const carbs = typeof attrs?.carbs_g === 'object' ? attrs?.carbs_g?.value : attrs?.carbs_g;
   const fat = typeof attrs?.fat_g === 'object' ? attrs?.fat_g?.value : attrs?.fat_g;
   const imageUrl = typeof attrs?.image_url === 'object' ? attrs?.image_url?.value : attrs?.image_url;
+  const imgSrc = imageUrl ? absoluteUrl(imageUrl) : null;
   const keyCompounds = typeof attrs?.key_compounds === 'object' ? attrs?.key_compounds?.value : attrs?.key_compounds;
   const nutrientRefs = typeof attrs?.nutrient_references === 'object' ? attrs?.nutrient_references?.value : attrs?.nutrient_references;
 
@@ -45,8 +47,8 @@ export default function IngredientDetailPage() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
           <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 16 }}>
             <div style={{ width: 96, height: 96, borderRadius: 16, overflow: 'hidden', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {imageUrl ? (
-                <img src={imageUrl} alt={ingredient.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {imgSrc ? (
+                <img src={imgSrc} alt={ingredient.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
                 <div style={{ fontSize: 36, fontWeight: 800, color: '#9ca3af' }}>{ingredient.name?.charAt(0) || '?'}</div>
               )}

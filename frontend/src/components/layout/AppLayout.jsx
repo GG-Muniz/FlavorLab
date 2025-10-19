@@ -26,7 +26,6 @@ export default function AppLayout() {
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Ingredients</span>
             </Link>
           </nav>
-
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Hello, <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{user?.first_name || user?.email}</span> 👋</div>
             <ProfileDropdown avatarUrl={user?.avatar_url ? absoluteUrl(user.avatar_url) : undefined} />
@@ -40,3 +39,5 @@ export default function AppLayout() {
     </div>
   );
 }
+
+

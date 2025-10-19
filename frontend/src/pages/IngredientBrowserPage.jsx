@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { absoluteUrl } from '../api/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
@@ -37,7 +38,7 @@ export default function IngredientBrowserPage() {
     }
   }
 
-  async function searchIngredients(query) {
+  async function searchIngredientsApi(query) {
     if (!query) { await fetchIngredients(1); return; }
     setIsLoading(true);
     setError(null);
@@ -62,7 +63,7 @@ export default function IngredientBrowserPage() {
   }, [page]);
 
   useEffect(() => {
-    searchIngredients(debouncedQuery).catch(() => {});
+    searchIngredientsApi(debouncedQuery).catch(() => {});
   }, [debouncedQuery]);
 
   const onPrev = () => setPage(p => Math.max(1, p - 1));
@@ -114,6 +115,7 @@ function IngredientCard({ ingredient }) {
   const attrs = ingredient?.attributes || {};
   const cals = typeof attrs?.calories === 'object' ? attrs?.calories?.value : attrs?.calories;
   const imageUrl = typeof attrs?.image_url === 'object' ? attrs?.image_url?.value : attrs?.image_url;
+  const imgSrc = imageUrl ? absoluteUrl(imageUrl) : null;
 
   return (
     <Link to={`/ingredients/${ingredient.id}`} style={{
@@ -125,8 +127,8 @@ function IngredientCard({ ingredient }) {
       background: '#fff'
     }}>
       <div style={{ height: 120, borderRadius: 8, overflow: 'hidden', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
-        {imageUrl ? (
-          <img src={imageUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        {imgSrc ? (
+          <img src={imgSrc} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
           <div style={{ fontSize: 32, fontWeight: 700, color: '#9ca3af' }}>{name?.charAt(0) || '?'}</div>
         )}

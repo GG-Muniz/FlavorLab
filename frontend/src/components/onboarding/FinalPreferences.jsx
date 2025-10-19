@@ -175,7 +175,7 @@ const FinalPreferences = ({ initialData, onDataChange, onBackStep, onGeneratePla
             }}>
               🍽️🍎
             </div>
-            <h4 style={{ fontSize: '16px', fontWeight: '700', color: initialData.mealsPerDay === '3-meals-2-snacks' ? '#166534' : '#000000', margin: 0 }}>
+            <h4 style={{ fontSize: '16px', fontWeight: '700', color: initialData.mealsPerDay === '3-meals-2-snacks' ? '#16a34a' : '#111827', margin: 0 }}>
               3 Meals + 2 Snacks
             </h4>
           </motion.div>

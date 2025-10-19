@@ -4,10 +4,10 @@ import HealthPillarsSelector from './HealthPillarsSelector';
 import PreferencesSelector from './PreferencesSelector';
 import FinalPreferences from './FinalPreferences';
 import LoadingOverlay from './LoadingOverlay';
-import { submitSurvey } from '../../services/mealPlanApi';
 import './NutriTest.css';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { submitSurvey } from '../../services/mealPlanApi';
 
 const NutriTest = ({ onComplete }) => {
   const { user, updateProfile } = useAuth();
@@ -90,20 +90,15 @@ const NutriTest = ({ onComplete }) => {
   // Handle generate plan with loading state
   const handleGeneratePlan = async () => {
     setIsLoading(true);
-    console.log('SENDING THIS TO THE LLM:', formData);
-
     try {
-      // Submit survey data to backend
       await submitSurvey(formData);
-      console.log('Survey submitted successfully!');
-
-      // Complete the NutriTest flow
       await handleComplete();
+      navigate('/?tab=mealplans', { replace: true });
     } catch (error) {
       console.error('Error submitting survey:', error);
+      alert(`Failed to submit survey: ${error?.message || 'Unknown error'}`);
+    } finally {
       setIsLoading(false);
-      // TODO: Show error message to user
-      alert(`Failed to submit survey: ${error.message}`);
     }
   };
 

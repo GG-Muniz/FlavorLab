@@ -5,12 +5,14 @@ import { NotificationsPanel, NotificationBellButton } from './components/notific
 import Login from './components/auth/Login';
 import CalorieDetailModal from './components/modals/CalorieDetailModal';
 import CalorieCounter from './components/modals/CalorieCounter';
-import CalendarPage from './pages/CalendarPage';
-import SmartActionStack from './components/dashboard/SmartActionStack';
+import LogMealModal from './components/modals/LogMealModal';
 import Calendar from './components/calendar/Calendar';
 import { useAuth } from './context/AuthContext';
 import UpNext from './components/dashboard/UpNext';
 import { getDailyCalorieSummary } from './services/calorieApi';
+import MealPlanShowcase from './components/mealplan/MealPlanShowcase';
+import SmartActionStack from './components/dashboard/SmartActionStack';
+import { fetchNutritionGoals, fetchDailySummary } from './services/nutritionApi';
 
 import {
   LayoutDashboard,
@@ -39,6 +41,7 @@ const iconConfig = {
   navigation: {
     dashboard: { icon: LayoutDashboard, label: 'Dashboard' },
     recipes: { icon: ChefHat, label: 'Recipe Generator' },
+    mealplans: { icon: ChefHat, label: 'Meal Plans' },
     history: { icon: History, label: 'Meal History' },
     calendar: { icon: CalendarIcon, label: 'Calendar' }
   },
@@ -206,22 +209,12 @@ const QuickActionButton = ({ actionKey, action, onClick }) => {
 };
 
 function App() {
-  const { user: authUser } = useAuth();
+  const { user: authUser, loading: authLoading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
-  // Get user data from localStorage if available, otherwise use default
-  const getUserFromStorage = () => {
-    try {
-      const storedUser = localStorage.getItem('user');
-      return storedUser ? JSON.parse(storedUser) : { id: '123', name: 'User', first_name: 'User' };
-    } catch {
-      return { id: '123', name: 'User', first_name: 'User' };
-    }
-  };
-  const [user] = useState(getUserFromStorage());
-  const [hasCompletedNutriTest, setHasCompletedNutriTest] = useState(false);
+  const user = authUser || { id: '123', name: 'User' };
   // NutriTest is now accessible via /nutritest route from Profile page only
 
   const [showNotifications, setShowNotifications] = useState(false);
@@ -232,6 +225,7 @@ function App() {
   // Calculate unread count from notifications array
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
   const [showCalorieCounter, setShowCalorieCounter] = useState(false);
+  const [showLogMealModal, setShowLogMealModal] = useState(false);
   const { data: nutritionData, loading } = useNutritionData(user.id);
   const [hoveredNavButton, setHoveredNavButton] = useState(null);
 
@@ -267,24 +261,24 @@ function App() {
   const fetchNutritionData = async () => {
     try {
       setIsLoadingNutrition(true);
-      const summary = await getDailyCalorieSummary();
+      const today = new Date();
+      const dateStr = today.toISOString().slice(0,10);
+      const [goals, totals] = await Promise.all([
+        fetchNutritionGoals().catch(() => ({ calories: 2000, proteinTarget: 150, carbsTarget: 250, fatTarget: 67 })),
+        fetchDailySummary(dateStr).catch(() => ({ calories: 0, protein: 0, carbs: 0, fat: 0 }))
+      ]);
 
-      // Update nutrition data with API response
+      const percentage = goals.calories > 0 ? Math.min(100, Math.round((totals.calories / goals.calories) * 100)) : 0;
+
       setNutritionDataState({
-        calories: {
-          current: summary.total_intake || 0,
-          target: summary.goal_calories || 2000,
-          percentage: Math.round(summary.percentage || 0)
-        },
-        // Keep other nutrients as placeholders for now (future enhancement)
-        protein: { current: 0, target: 150, unit: 'g' },
-        carbs: { current: 0, target: 250, unit: 'g' },
-        fat: { current: 0, target: 67, unit: 'g' },
+        calories: { current: totals.calories, target: goals.calories, percentage },
+        protein: { current: totals.protein, target: goals.proteinTarget, unit: 'g' },
+        carbs: { current: totals.carbs, target: goals.carbsTarget, unit: 'g' },
+        fat: { current: totals.fat, target: goals.fatTarget, unit: 'g' },
         water: { current: 0, target: 2000, unit: 'ml' }
       });
     } catch (error) {
       console.error('Error fetching nutrition data:', error);
-      // Keep default values on error
     } finally {
       setIsLoadingNutrition(false);
     }
@@ -528,7 +522,7 @@ const HealthTipOfTheDay = () => {
 
   // App is only rendered behind a ProtectedRoute; no local login gate needed
 
-  if (loading) {
+  if (loading && !authLoading) {
     return (
       <div style={{
         minHeight: '100vh',
@@ -565,7 +559,6 @@ const HealthTipOfTheDay = () => {
       transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
     }}>
       {/* Header moved to AppLayout */}
-
       {/* Main Content */}
       <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '32px 16px' }}>
         {/* Navigation Tabs */}
@@ -604,7 +597,7 @@ const HealthTipOfTheDay = () => {
                 color: activeTab === key ? '#ffffff' : 'var(--text-secondary)',
                 boxShadow: activeTab === key ? '0 10px 15px -3px rgb(34 197 94 / 0.3)' : 'none',
                 transform: activeTab === key ?  'scale(1.05)' :
-                           hoveredNavButton === key ? 'scale(1.02' : 'scale(1)'
+                           hoveredNavButton === key ? 'scale(1.02)' : 'scale(1)'
               }}
             >
               <IconWrapper
@@ -757,8 +750,6 @@ const HealthTipOfTheDay = () => {
           </div>
         </div>
 
-        {/* NutriTest removed from dashboard */}
-
         {/* Dashboard Content */}
         {activeTab === 'dashboard' && (
           <motion.div
@@ -788,124 +779,72 @@ const HealthTipOfTheDay = () => {
               gap: '24px'
               }}
             >
-            {/* Calories Card - REPLACE YOUR EXISTING ONE WITH THIS */}
-            <Card>
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                width: 80,
-                height: 80,
-                background: '#f0fdf4',
-                borderRadius: '50%',
-                transform: 'translate(32px, -32px)'
-              }}></div>
-              <div style={{ position: 'relative' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
-                  <div style={{
-                    width: 32,
-                    height: 32,
-                    background: '#f0fdf4',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <Zap width={20} height={20} color="#22c55e" />
-                  </div>
-                  <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#374151', margin: 0 }}>
-                    Daily Calories
-                  </h3>
-                </div>
-
-                {/* Centered content with progress ring and info below */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
-                  {/* Progress Ring */}
-                  <ProgressRing
-                    percentage={currentNutritionData.calories.percentage}
-                    size={120}
-                    strokeWidth={10}
-                    color="#22c55e"
-                    onClick={() => setShowCalorieCounter(true)}
-                  />
-
-                  {/* Info below the wheel */}
-                  <div style={{ textAlign: 'center', width: '100%' }}>
-                    <p style={{
-                      fontSize: '14px',
-                      color: '#6b7280',
-                      fontWeight: '500',
-                      margin: '0 0 8px 0'
-                    }}>
-                      Goal: {currentNutritionData.calories.target} kcal
-                    </p>
+              {/* Calories Card */}
+              <Card>
+                <div style={{ position: 'relative' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                     <div style={{
-                      padding: '8px 12px',
+                      width: 32,
+                      height: 32,
                       background: '#f0fdf4',
                       borderRadius: '8px',
-                      border: '1px solid #bbf7d0',
-                      display: 'inline-block'
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
                     }}>
-                      <p style={{
-                        fontSize: '12px',
-                        color: '#16a34a',
-                        fontWeight: '600',
-                        margin: 0
-                      }}>
-                        {currentNutritionData.calories.target - currentNutritionData.calories.current} kcal remaining
-                      </p>
+                      <Zap width={20} height={20} color="#22c55e" />
                     </div>
+                    <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#374151', margin: 0 }}>
+                      Daily Calories
+                    </h3>
+                  </div>
 
-                    {/* Log Meal Quick Action Button */}
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setShowCalorieCounter(true)}
-                      style={{
-                        marginTop: '16px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '12px 20px',
-                        background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                        border: 'none',
-                        borderRadius: '12px',
-                        fontSize: '14px',
-                        fontWeight: '700',
-                        color: '#ffffff',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 6px -1px rgba(34, 197, 94, 0.2)',
-                        transition: 'box-shadow 0.2s'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(34, 197, 94, 0.3)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(34, 197, 94, 0.2)';
-                      }}
-                    >
-                      <Plus width={18} height={18} />
-                      <span>Log Meal</span>
-                    </motion.button>
+                  {/* Progress Ring */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                    <div>
+                      <ProgressRing
+                        percentage={Math.max(0, Math.min(100, currentNutritionData.calories.percentage))}
+                        size={120}
+                        strokeWidth={10}
+                        color="#22c55e"
+                        onClick={() => setShowCalorieCounter(true)}
+                      />
+                    </div>
+                    <div>
+                      <p style={{ color: '#6b7280', margin: 0 }}>
+                        Goal: {currentNutritionData.calories.target} kcal — Consumed: {currentNutritionData.calories.current} kcal
+                      </p>
+                      <div style={{ height: 8 }} />
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setShowLogMealModal(true)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '12px 20px',
+                          background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                          border: 'none',
+                          borderRadius: '12px',
+                          fontSize: '14px',
+                          fontWeight: '700',
+                          color: '#ffffff',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <Plus width={18} height={18} />
+                        <span>Log Meal</span>
+                      </motion.button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
 
               {/* Macronutrients Card */}
               <Card>
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                  width: 80,
-                  height: 80,
-                  background: '#f0fdf4',
-                  borderRadius: '50%',
-                  transform: 'translate(32px, -32px)'
-                }}></div>
                 <div style={{ position: 'relative' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
                     <div style={{
                       width: 32,
                       height: 32,
@@ -922,12 +861,11 @@ const HealthTipOfTheDay = () => {
                     </h3>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-                    {/* Protein */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '14.7px', fontWeight: '600', color: '#374151' }}>Protein</span>
-                        <span style={{ fontSize: '14.7px', fontWeight: '600', color: '#6b7280' }}>
+                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Protein</span>
+                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>
                           {currentNutritionData.protein.current}g / {currentNutritionData.protein.target}g
                         </span>
                       </div>
@@ -935,32 +873,16 @@ const HealthTipOfTheDay = () => {
                         {Array.from({ length: 10 }).map((_, i) => {
                           const filled = i < Math.floor((currentNutritionData.protein.current / currentNutritionData.protein.target) * 10);
                           return (
-                            <motion.div
-                              key={i}
-                              initial={{ scaleX: 0 }}
-                              animate={{ scaleX: 1 }}
-                              transition={{
-                                duration: 0.6,
-                                delay: i * 0.05,
-                                ease: 'easeOut'
-                              }}
-                              style={{
-                                flex: 1,
-                                background: filled ? '#ef4444' : '#f3f4f6',
-                                borderRadius: '4px',
-                                transformOrigin: 'left'
-                              }}
-                            />
+                            <div key={i} style={{ flex: 1, background: filled ? '#ef4444' : '#f3f4f6', borderRadius: '4px' }} />
                           );
                         })}
                       </div>
                     </div>
 
-                    {/* Carbs */}
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '14.7px', fontWeight: '600', color: '#374151' }}>Carbs</span>
-                        <span style={{ fontSize: '14.7px', fontWeight: '600', color: '#6b7280' }}>
+                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Carbs</span>
+                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>
                           {currentNutritionData.carbs.current}g / {currentNutritionData.carbs.target}g
                         </span>
                       </div>
@@ -968,32 +890,16 @@ const HealthTipOfTheDay = () => {
                         {Array.from({ length: 10 }).map((_, i) => {
                           const filled = i < Math.floor((currentNutritionData.carbs.current / currentNutritionData.carbs.target) * 10);
                           return (
-                            <motion.div
-                              key={i}
-                              initial={{ scaleX: 0 }}
-                              animate={{ scaleX: 1 }}
-                              transition={{
-                                duration: 0.6,
-                                delay: i * 0.05 + 0.15,
-                                ease: 'easeOut'
-                              }}
-                              style={{
-                                flex: 1,
-                                background: filled ? '#fbbf24' : '#f3f4f6',
-                                borderRadius: '4px',
-                                transformOrigin: 'left'
-                              }}
-                            />
+                            <div key={i} style={{ flex: 1, background: filled ? '#fbbf24' : '#f3f4f6', borderRadius: '4px' }} />
                           );
                         })}
                       </div>
                     </div>
 
-                    {/* Fat */}
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '14.7px', fontWeight: '600', color: '#374151' }}>Fat</span>
-                        <span style={{ fontSize: '14.7px', fontWeight: '600', color: '#6b7280' }}>
+                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Fat</span>
+                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>
                           {currentNutritionData.fat.current}g / {currentNutritionData.fat.target}g
                         </span>
                       </div>
@@ -1001,22 +907,7 @@ const HealthTipOfTheDay = () => {
                         {Array.from({ length: 10 }).map((_, i) => {
                           const filled = i < Math.floor((currentNutritionData.fat.current / currentNutritionData.fat.target) * 10);
                           return (
-                            <motion.div
-                              key={i}
-                              initial={{ scaleX: 0 }}
-                              animate={{ scaleX: 1 }}
-                              transition={{
-                                duration: 0.6,
-                                delay: i * 0.05 + 0.3,
-                                ease: 'easeOut'
-                              }}
-                              style={{
-                                flex: 1,
-                                background: filled ? '#8b5cf6' : '#f3f4f6',
-                                borderRadius: '4px',
-                                transformOrigin: 'left'
-                              }}
-                            />
+                            <div key={i} style={{ flex: 1, background: filled ? '#8b5cf6' : '#f3f4f6', borderRadius: '4px' }} />
                           );
                         })}
                       </div>
@@ -1027,18 +918,8 @@ const HealthTipOfTheDay = () => {
 
               {/* Today's Activity Card */}
               <Card>
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                  width: 80,
-                  height: 80,
-                  background: '#f0fdf4',
-                  borderRadius: '50%',
-                  transform: 'translate(32px, -32px)'
-                }}></div>
                 <div style={{ position: 'relative' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
                     <div style={{
                       width: 32,
                       height: 32,
@@ -1056,7 +937,6 @@ const HealthTipOfTheDay = () => {
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    {/* Meals */}
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -1085,7 +965,6 @@ const HealthTipOfTheDay = () => {
                       <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>3</div>
                     </div>
 
-                    {/* Water */}
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -1117,7 +996,6 @@ const HealthTipOfTheDay = () => {
                       </div>
                     </div>
 
-                    {/* Streak */}
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -1167,38 +1045,30 @@ const HealthTipOfTheDay = () => {
             >
               <SmartActionStack
                 mealsLoggedToday={{
-                  breakfast: false, // TODO: Track from API
+                  breakfast: false,
                   lunch: false,
                   dinner: false
                 }}
                 onAction={(actionId) => {
-                  console.log('Smart Action triggered:', actionId);
                   if (actionId === 'breakfast' || actionId === 'lunch' || actionId === 'dinner') {
-                    setShowCalorieCounter(true);
-                  } else if (actionId === 'water') {
-                    // TODO: Add water logging functionality
-                    console.log('Log water intake');
-                  } else if (actionId === 'plan-tomorrow') {
-                    // TODO: Navigate to meal planning
-                    console.log('Plan tomorrow\'s meals');
+                    setShowLogMealModal(true);
                   }
                 }}
               />
               <HealthTipOfTheDay />
             </motion.div>
-
           </motion.div>
         )}
 
-        {/* NutriTest removed from main tabs; available at /nutritest */}
-
-        {/* Calendar */}
         {activeTab === 'calendar' && (
-          <CalendarPage />
+          <Calendar />
         )}
 
-        {/* Other Tabs */}
-        {activeTab !== 'dashboard' && activeTab !== 'nutritest' && activeTab !== 'calendar' && (
+        {activeTab === 'mealplans' && (
+          <MealPlanShowcase />
+        )}
+
+        {activeTab !== 'dashboard' && activeTab !== 'nutritest' && activeTab !== 'calendar' && activeTab !== 'mealplans' && (
           <Card>
             <div style={{ textAlign: 'center' }}>
               <div style={{
@@ -1225,25 +1095,28 @@ const HealthTipOfTheDay = () => {
           </Card>
         )}
       </div>
-      {/* Notifications Panel */}
+
       <NotificationsPanel
         isOpen={showNotifications}
         onClose={() => setShowNotifications(false)}
         user={user}
       />
 
-      {/* Calorie Detail Modal */}
       <CalorieDetailModal
         isOpen={showCalorieModal}
         onClose={() => setShowCalorieModal(false)}
         calorieData={currentNutritionData.calories}
       />
 
-      {/* Calorie Counter Modal */}
       <CalorieCounter
         isOpen={showCalorieCounter}
         onClose={() => setShowCalorieCounter(false)}
         onDataUpdate={fetchNutritionData}
+      />
+      <LogMealModal
+        isOpen={showLogMealModal}
+        onClose={() => setShowLogMealModal(false)}
+        onSaved={fetchNutritionData}
       />
     </div>
   );
