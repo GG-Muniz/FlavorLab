@@ -27,7 +27,7 @@ export default function IngredientBrowserPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const resp = await fetch(`${API_BASE_URL}/entities?classification=ingredient&page=${p}&size=${size}`);
+      const resp = await fetch(`${API_BASE_URL}/entities/?classification=ingredient&page=${p}&size=${size}`);
       const data = await resp.json();
       if (!resp.ok) throw new Error(data?.detail || 'Failed to load ingredients');
       setIngredients(data?.entities || []);

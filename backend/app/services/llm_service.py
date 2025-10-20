@@ -99,6 +99,25 @@ Based on the user's health goals, prioritize using the following ingredients in 
 {', '.join(preferred_ingredients)}
 """
 
+    # Build an example JSON structure to avoid brace-escaping issues in f-strings
+    example_meal = {
+        "type": "breakfast",
+        "name": "Meal Name",
+        "calories": 400,
+        "description": "Brief description",
+    }
+    if include_recipes:
+        example_meal.update({
+            "ingredients": ["ingredient 1", "ingredient 2"],
+            "servings": 2,
+            "prep_time_minutes": 10,
+            "cook_time_minutes": 15,
+            "instructions": ["step 1", "step 2"],
+            "nutrition": {"protein": "20g", "carbs": "45g", "fat": "12g"},
+        })
+    example_day = {"day": "Day 1", "meals": [example_meal]}
+    example_json = json.dumps([example_day], indent=2)
+
     # Build the complete prompt
     prompt = f"""You are FlavorLab's expert nutritionist and meal planning AI. Create a personalized {num_days}-day meal plan.
 {allergy_constraint}
@@ -122,27 +141,9 @@ Each day MUST have exactly this structure: {meal_structure}
 
 ## JSON-ONLY MANDATE
 Respond ONLY with a JSON array. No markdown, no explanations, no code blocks.
-The JSON must be a valid array that matches this schema:
+The JSON must be a valid array matching this structure (example only):
 
-[
-  {
-    "day": "Day 1",
-    "meals": [
-      {
-        "type": "breakfast",
-        "name": "Meal Name",
-        "calories": 400,
-        "description": "Brief description"{"," if include_recipes else ""}
-        {"'ingredients': ['ingredient 1', 'ingredient 2']," if include_recipes else ""}
-        {"'servings': 2," if include_recipes else ""}
-        {"'prep_time_minutes': 10," if include_recipes else ""}
-        {"'cook_time_minutes': 15," if include_recipes else ""}
-        {"'instructions': ['step 1', 'step 2']," if include_recipes else ""}
-        {"'nutrition': {'protein': '20g', 'carbs': '45g', 'fat': '12g'}" if include_recipes else ""}
-      }
-    ]
-  }
-]
+{example_json}
 
 Generate the {num_days}-day meal plan now as pure JSON:"""
 
