@@ -22,12 +22,18 @@
  * />
  */
 
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Clock, Users, Flame, ChefHat } from 'lucide-react';
+import { X, Clock, Users, Flame, ChefHat, Calendar } from 'lucide-react';
 import PropTypes from 'prop-types';
 import './MealDetailModal.css';
+import { getCalendarLinks } from '../../services/mealsApi';
 
 const MealDetailModal = ({ meal, isOpen, onClose }) => {
+  // State for calendar integration
+  const [calendarLinks, setCalendarLinks] = useState(null);
+  const [loadingLinks, setLoadingLinks] = useState(false);
+
   // Don't render anything if modal is closed or no meal selected
   if (!isOpen || !meal) return null;
 
@@ -82,6 +88,27 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   };
+
+  /**
+   * Fetch calendar links when modal opens
+   */
+  useEffect(() => {
+    const fetchCalendarLinks = async () => {
+      if (!meal?.id) return;
+
+      setLoadingLinks(true);
+      try {
+        const links = await getCalendarLinks(meal.id);
+        setCalendarLinks(links);
+      } catch (error) {
+        console.error('Failed to fetch calendar links:', error);
+      } finally {
+        setLoadingLinks(false);
+      }
+    };
+
+    fetchCalendarLinks();
+  }, [meal?.id]);
 
   const colors = getMealTypeColor(meal.type);
 
@@ -280,6 +307,103 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                       </span>
                     </div>
                   )}
+                </div>
+
+                {/* Calendar Integration */}
+                <div style={{ marginTop: '24px' }}>
+                  {/* Calendar Label */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '12px'
+                  }}>
+                    <Calendar size={16} color="#6b7280" />
+                    <span style={{
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: '#6b7280'
+                    }}>
+                      Add to Calendar
+                    </span>
+                  </div>
+
+                  {/* Calendar Provider Links */}
+                  {loadingLinks ? (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      color: '#9ca3af',
+                      fontSize: '14px'
+                    }}>
+                      <span>Loading calendar links...</span>
+                    </div>
+                  ) : calendarLinks ? (
+                    <div style={{
+                      display: 'flex',
+                      gap: '12px',
+                    }}>
+                      <a
+                        href={calendarLinks.google}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '8px 14px',
+                          background: '#ffffff',
+                          color: '#4285F4',
+                          border: '2px solid #4285F4',
+                          borderRadius: '6px',
+                          textDecoration: 'none',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#4285F4';
+                          e.currentTarget.style.color = '#ffffff';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#ffffff';
+                          e.currentTarget.style.color = '#4285F4';
+                        }}
+                      >
+                        Google Calendar
+                      </a>
+                      <a
+                        href={calendarLinks.outlook}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '8px 14px',
+                          background: '#ffffff',
+                          color: '#0078D4',
+                          border: '2px solid #0078D4',
+                          borderRadius: '6px',
+                          textDecoration: 'none',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#0078D4';
+                          e.currentTarget.style.color = '#ffffff';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#ffffff';
+                          e.currentTarget.style.color = '#0078D4';
+                        }}
+                      >
+                        Outlook Calendar
+                      </a>
+                    </div>
+                  ) : null}
                 </div>
               </div>
 
@@ -502,6 +626,7 @@ MealDetailModal.propTypes = {
    * Meal data object with full recipe details
    */
   meal: PropTypes.shape({
+    id: PropTypes.number.isRequired,
     type: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     calories: PropTypes.number.isRequired,

@@ -11,6 +11,7 @@ import { useAuth } from './context/AuthContext';
 import UpNext from './components/dashboard/UpNext';
 import { getDailyCalorieSummary } from './services/calorieApi';
 import MealPlanShowcase from './components/mealplan/MealPlanShowcase';
+import MealHistory from './components/mealhistory/MealHistory';
 import SmartActionStack from './components/dashboard/SmartActionStack';
 import { fetchNutritionGoals, fetchDailySummary } from './services/nutritionApi';
 
@@ -1068,7 +1069,11 @@ const HealthTipOfTheDay = () => {
           <MealPlanShowcase />
         )}
 
-        {activeTab !== 'dashboard' && activeTab !== 'nutritest' && activeTab !== 'calendar' && activeTab !== 'mealplans' && (
+        {activeTab === 'history' && (
+          <MealHistory />
+        )}
+
+        {activeTab !== 'dashboard' && activeTab !== 'nutritest' && activeTab !== 'calendar' && activeTab !== 'mealplans' && activeTab !== 'history' && (
           <Card>
             <div style={{ textAlign: 'center' }}>
               <div style={{

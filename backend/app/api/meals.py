@@ -4,22 +4,26 @@ Meals API endpoints: log meals and get daily nutrition summary.
 
 from __future__ import annotations
 
-from datetime import date
-from typing import List
+from datetime import date, datetime
+from typing import List, Optional
+from urllib.parse import urlencode, quote
 
-from fastapi import APIRouter, Depends, HTTPException, status, Path
+from fastapi import APIRouter, Depends, HTTPException, status, Path, Query
 from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..services.auth import get_current_active_user
 from .. import models
 from ..models import Entity
-from ..models.meal import MealLog, MealLogEntry
+from ..models.meal import MealLog, MealLogEntry, Meal, MealSource
 from ..schemas.meals import (
     MealLogCreate,
     MealLogResponse,
     MealLogEntryResponse,
     DailyNutritionSummary,
+    MealResponse,
+    LogMealRequest,
+    CalendarLinksResponse,
 )
 
 
@@ -149,6 +153,232 @@ async def get_daily_summary(
         total_protein_g=round(total_protein_g, 2),
         total_carbs_g=round(total_carbs_g, 2),
         total_fat_g=round(total_fat_g, 2),
+    )
+
+
+# ============================================================================
+# Complete Meal (Recipe) Endpoints
+# ============================================================================
+
+@router.get("", response_model=List[MealResponse])
+async def get_meals(
+    source: Optional[str] = Query(None, description="Filter by source: 'generated' or 'logged'"),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+) -> List[MealResponse]:
+    """
+    Get all meals for the current user, optionally filtered by source.
+
+    - source=generated: Returns meal templates (AI-generated, not yet logged)
+    - source=logged: Returns consumed meals (logged to specific dates)
+    - source=None: Returns all meals
+    """
+    query = db.query(Meal).filter(Meal.user_id == current_user.id)
+
+    if source:
+        source_upper = source.upper()
+        if source_upper == "GENERATED":
+            query = query.filter(Meal.source == MealSource.GENERATED)
+        elif source_upper == "LOGGED":
+            query = query.filter(Meal.source == MealSource.LOGGED)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid source filter. Must be 'generated' or 'logged', got: {source}"
+            )
+
+    meals = query.order_by(Meal.created_at.desc()).all()
+
+    return [
+        MealResponse(
+            id=meal.id,
+            user_id=meal.user_id,
+            name=meal.name,
+            meal_type=meal.meal_type,
+            calories=meal.calories,
+            description=meal.description,
+            ingredients=meal.ingredients,
+            servings=meal.servings,
+            prep_time_minutes=meal.prep_time_minutes,
+            cook_time_minutes=meal.cook_time_minutes,
+            instructions=meal.instructions,
+            nutrition_info=meal.nutrition_info,
+            source=meal.source.value,
+            date_logged=meal.date_logged,
+            created_at=meal.created_at.isoformat() if meal.created_at else "",
+            updated_at=meal.updated_at.isoformat() if meal.updated_at else "",
+        )
+        for meal in meals
+    ]
+
+
+@router.post("/log-from-template/{template_id}", response_model=MealResponse)
+async def log_meal_from_template(
+    template_id: int = Path(..., description="ID of the meal template to log"),
+    payload: LogMealRequest = ...,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+) -> MealResponse:
+    """
+    Log a meal template as a consumed meal.
+
+    This endpoint:
+    1. Fetches the original GENERATED meal template
+    2. Creates a NEW meal record copying all data from the template
+    3. Sets source=LOGGED and date_logged to the specified date
+    4. Leaves the original template unchanged
+
+    For MVP (Option A): Frontend auto-logs to today's date when user clicks "Log Meal"
+    """
+    # Fetch the template
+    template = db.query(Meal).filter(
+        Meal.id == template_id,
+        Meal.user_id == current_user.id
+    ).first()
+
+    if not template:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Meal template {template_id} not found or does not belong to current user"
+        )
+
+    # Verify it's actually a template
+    if template.source != MealSource.GENERATED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Meal {template_id} is not a template (source={template.source.value}). Only GENERATED meals can be logged."
+        )
+
+    try:
+        # Create a new meal record copying all data from template
+        logged_meal = Meal(
+            user_id=current_user.id,
+            name=template.name,
+            meal_type=template.meal_type,
+            calories=template.calories,
+            description=template.description,
+            ingredients=template.ingredients,
+            servings=template.servings,
+            prep_time_minutes=template.prep_time_minutes,
+            cook_time_minutes=template.cook_time_minutes,
+            instructions=template.instructions,
+            nutrition_info=template.nutrition_info,
+            source=MealSource.LOGGED,  # CRITICAL: Mark as logged
+            date_logged=payload.log_date  # CRITICAL: Set the log date
+        )
+
+        db.add(logged_meal)
+        db.commit()
+        db.refresh(logged_meal)
+
+        return MealResponse(
+            id=logged_meal.id,
+            user_id=logged_meal.user_id,
+            name=logged_meal.name,
+            meal_type=logged_meal.meal_type,
+            calories=logged_meal.calories,
+            description=logged_meal.description,
+            ingredients=logged_meal.ingredients,
+            servings=logged_meal.servings,
+            prep_time_minutes=logged_meal.prep_time_minutes,
+            cook_time_minutes=logged_meal.cook_time_minutes,
+            instructions=logged_meal.instructions,
+            nutrition_info=logged_meal.nutrition_info,
+            source=logged_meal.source.value,
+            date_logged=logged_meal.date_logged,
+            created_at=logged_meal.created_at.isoformat() if logged_meal.created_at else "",
+            updated_at=logged_meal.updated_at.isoformat() if logged_meal.updated_at else "",
+        )
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error logging meal: {str(e)}"
+        )
+
+
+@router.get("/{meal_id}/calendar-links", response_model=CalendarLinksResponse)
+async def get_calendar_links(
+    meal_id: int = Path(..., description="ID of the meal to create calendar links for"),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+) -> CalendarLinksResponse:
+    """
+    Generate "Magic Links" for adding a meal to personal calendars.
+
+    Returns pre-configured links for:
+    - Google Calendar
+    - Outlook Calendar
+
+    These links allow users to add meal events without direct API integration.
+    """
+    # Fetch the meal
+    meal = db.query(Meal).filter(
+        Meal.id == meal_id,
+        Meal.user_id == current_user.id
+    ).first()
+
+    if not meal:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Meal {meal_id} not found or does not belong to current user"
+        )
+
+    # Prepare event details
+    title = meal.name
+    description = meal.description or f"A delicious meal from FlavorLab. Calories: {meal.calories} kcal"
+
+    # Determine event time
+    # If meal is logged, use the logged date; otherwise use today
+    if meal.date_logged:
+        event_date = meal.date_logged
+    else:
+        event_date = date.today()
+
+    # Set default meal times based on meal type
+    meal_times = {
+        "breakfast": (8, 0),   # 8:00 AM
+        "lunch": (12, 0),      # 12:00 PM
+        "dinner": (18, 0),     # 6:00 PM
+        "snack": (15, 0),      # 3:00 PM
+    }
+
+    hour, minute = meal_times.get(meal.meal_type.lower() if meal.meal_type else "lunch", (12, 0))
+
+    # Create datetime objects for start and end (30 min duration)
+    start_datetime = datetime(event_date.year, event_date.month, event_date.day, hour, minute)
+    end_datetime = datetime(event_date.year, event_date.month, event_date.day, hour, minute + 30)
+
+    # Format dates for Google Calendar (UTC format without separators)
+    google_start = start_datetime.strftime("%Y%m%dT%H%M%S")
+    google_end = end_datetime.strftime("%Y%m%dT%H%M%S")
+    google_dates = f"{google_start}/{google_end}"
+
+    # Format dates for Outlook (ISO 8601)
+    outlook_start = start_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+    outlook_end = end_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+
+    # Build Google Calendar link
+    google_params = {
+        "action": "TEMPLATE",
+        "text": title,
+        "dates": google_dates,
+        "details": description,
+    }
+    google_link = f"https://calendar.google.com/calendar/render?{urlencode(google_params)}"
+
+    # Build Outlook Calendar link
+    outlook_params = {
+        "subject": title,
+        "startdt": outlook_start,
+        "enddt": outlook_end,
+        "body": description,
+    }
+    outlook_link = f"https://outlook.live.com/calendar/0/deeplink/compose?{urlencode(outlook_params)}"
+
+    return CalendarLinksResponse(
+        google=google_link,
+        outlook=outlook_link
     )
 
 

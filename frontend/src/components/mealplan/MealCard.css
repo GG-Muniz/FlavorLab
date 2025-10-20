@@ -15,10 +15,9 @@
   min-height: 300px;
 }
 
-/* Hover state - border color change */
+/* Hover state - subtle elevation only */
 .meal-card:hover {
-  border-color: #22c55e !important;
-  box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.2) !important;
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12) !important;
 }
 
 /* Active state - slight press effect */
@@ -31,11 +30,7 @@
  * ============================================================================ */
 
 .meal-type-badge {
-  transition: transform 0.2s ease;
-}
-
-.meal-card:hover .meal-type-badge {
-  transform: translateY(-2px);
+  /* No hover effects */
 }
 
 /* ============================================================================
@@ -43,11 +38,7 @@
  * ============================================================================ */
 
 .meal-name {
-  transition: color 0.2s ease;
-}
-
-.meal-card:hover .meal-name {
-  color: #16a34a;
+  /* No hover effects */
 }
 
 /* ============================================================================
@@ -55,12 +46,7 @@
  * ============================================================================ */
 
 .meal-calories {
-  transition: all 0.2s ease;
-}
-
-.meal-card:hover .meal-calories {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  transform: translateX(2px);
+  /* No hover effects */
 }
 
 /* ============================================================================
@@ -68,11 +54,7 @@
  * ============================================================================ */
 
 .meal-description {
-  transition: color 0.2s ease;
-}
-
-.meal-card:hover .meal-description {
-  color: #374151;
+  /* No hover effects */
 }
 
 /* ============================================================================
@@ -80,12 +62,7 @@
  * ============================================================================ */
 
 .meal-click-hint span {
-  transition: all 0.2s ease;
-}
-
-.meal-card:hover .meal-click-hint span {
-  color: #16a34a;
-  font-weight: 700;
+  /* No hover effects */
 }
 
 /* ============================================================================
@@ -164,24 +141,12 @@
     border-color: #374151 !important;
   }
 
-  .meal-card:hover {
-    border-color: #22c55e !important;
-  }
-
   .meal-name {
     color: #f3f4f6 !important;
   }
 
-  .meal-card:hover .meal-name {
-    color: #22c55e !important;
-  }
-
   .meal-description {
     color: #9ca3af !important;
-  }
-
-  .meal-card:hover .meal-description {
-    color: #d1d5db !important;
   }
 }
 
