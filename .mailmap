@@ -1,0 +1,8 @@
+# .mailmap - Consolidate contributor identities
+# This tells GitHub to exclude noreply@anthropic.com from contributors
+
+# Exclude Claude AI assistant
+<noreply@anthropic.com> <>
+
+# Consolidate GG-Muniz identities
+GG-Muniz <g.garciamuniz@outlook.com> Gabriel Garcia-Muniz <g.garciamuniz@outlook.com>
