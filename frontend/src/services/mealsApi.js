@@ -83,3 +83,51 @@ export async function getCalendarLinks(mealId) {
   if (!res.ok) throw new Error(data?.detail || 'Failed to fetch calendar links');
   return data;
 }
+
+/**
+ * Log a meal for today and get updated dashboard summary.
+ * @param {number} mealId - ID of the meal to log
+ * @returns {Promise<Object>} Dashboard summary with daily_goal, total_consumed, remaining, logged_meals_today
+ */
+export async function logMealForToday(mealId) {
+  const res = await fetch(`${API_BASE_URL}/meals/${mealId}/log`, {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.detail || 'Failed to log meal for today');
+  return data; // Returns complete dashboard summary
+}
+
+/**
+ * Manually log calories for a meal and get updated dashboard summary.
+ * @param {string} mealType - Type of meal (e.g., Breakfast, Lunch, Dinner, Snack)
+ * @param {number} calories - Number of calories consumed
+ * @returns {Promise<Object>} Dashboard summary with daily_goal, total_consumed, remaining, logged_meals_today
+ */
+export async function logManualCalories(mealType, calories) {
+  const res = await fetch(`${API_BASE_URL}/meals/log-manual`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ meal_type: mealType, calories })
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.detail || 'Failed to log manual calories');
+  return data; // Returns complete dashboard summary
+}
+
+/**
+ * Set or update the user's daily calorie goal and get updated dashboard summary.
+ * @param {number} goalCalories - Daily calorie goal
+ * @returns {Promise<Object>} Dashboard summary with daily_goal, total_consumed, remaining, logged_meals_today
+ */
+export async function setCalorieGoal(goalCalories) {
+  const res = await fetch(`${API_BASE_URL}/users/me/nutrition-goal`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify({ goal_calories: goalCalories })
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.detail || 'Failed to set calorie goal');
+  return data; // Returns complete dashboard summary
+}

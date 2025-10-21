@@ -87,3 +87,30 @@ class CalendarLinksResponse(BaseModel):
     outlook: str = Field(..., description="Outlook Calendar magic link")
 
 
+class LoggedMealSummary(BaseModel):
+    """Summary of a single logged meal for dashboard display."""
+    name: str
+    calories: int
+    meal_type: str
+    logged_at: str  # ISO datetime string
+
+
+class DailyCaloriesSummaryResponse(BaseModel):
+    """Complete dashboard summary response after logging a meal."""
+    daily_goal: int = Field(..., description="User's daily calorie goal")
+    total_consumed: int = Field(..., description="Total calories consumed today")
+    remaining: int = Field(..., description="Remaining calories for the day")
+    logged_meals_today: List[LoggedMealSummary] = Field(..., description="All meals logged for today")
+
+
+class SetCalorieGoalRequest(BaseModel):
+    """Request schema for setting user's daily calorie goal."""
+    goal_calories: int = Field(..., gt=0, description="Daily calorie goal (must be positive)")
+
+
+class LogManualCaloriesRequest(BaseModel):
+    """Request schema for manually logging calories."""
+    meal_type: str = Field(..., description="Meal type (e.g., Breakfast, Lunch, Dinner, Snack)")
+    calories: int = Field(..., gt=0, description="Calories consumed (must be positive)")
+
+

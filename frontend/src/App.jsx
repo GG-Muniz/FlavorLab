@@ -4,10 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { NotificationsPanel, NotificationBellButton } from './components/notifications/NotificationsPanel';
 import Login from './components/auth/Login';
 import CalorieDetailModal from './components/modals/CalorieDetailModal';
-import CalorieCounter from './components/modals/CalorieCounter';
+import DailyTrackerModal from './components/modals/DailyTrackerModal';
 import LogMealModal from './components/modals/LogMealModal';
 import Calendar from './components/calendar/Calendar';
 import { useAuth } from './context/AuthContext';
+import { useDashboard } from './contexts/DashboardContext';
 import UpNext from './components/dashboard/UpNext';
 import { getDailyCalorieSummary } from './services/calorieApi';
 import MealPlanShowcase from './components/mealplan/MealPlanShowcase';
@@ -211,6 +212,7 @@ const QuickActionButton = ({ actionKey, action, onClick }) => {
 
 function App() {
   const { user: authUser, loading: authLoading } = useAuth();
+  const { summary, updateSummary } = useDashboard();
   const location = useLocation();
   const navigate = useNavigate();
   const [isAnimating, setIsAnimating] = useState(true);
@@ -271,12 +273,22 @@ function App() {
 
       const percentage = goals.calories > 0 ? Math.min(100, Math.round((totals.calories / goals.calories) * 100)) : 0;
 
-      setNutritionDataState({
+      const nutritionState = {
         calories: { current: totals.calories, target: goals.calories, percentage },
         protein: { current: totals.protein, target: goals.proteinTarget, unit: 'g' },
         carbs: { current: totals.carbs, target: goals.carbsTarget, unit: 'g' },
         fat: { current: totals.fat, target: goals.fatTarget, unit: 'g' },
         water: { current: 0, target: 2000, unit: 'ml' }
+      };
+
+      setNutritionDataState(nutritionState);
+
+      // Also update the dashboard context with the calorie summary
+      updateSummary({
+        daily_goal: goals.calories,
+        total_consumed: totals.calories,
+        remaining: goals.calories - totals.calories,
+        logged_meals_today: []
       });
     } catch (error) {
       console.error('Error fetching nutrition data:', error);
@@ -804,7 +816,7 @@ const HealthTipOfTheDay = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
                     <div>
                       <ProgressRing
-                        percentage={Math.max(0, Math.min(100, currentNutritionData.calories.percentage))}
+                        percentage={Math.max(0, Math.min(100, summary.daily_goal > 0 ? (summary.total_consumed / summary.daily_goal) * 100 : 0))}
                         size={120}
                         strokeWidth={10}
                         color="#22c55e"
@@ -813,7 +825,7 @@ const HealthTipOfTheDay = () => {
                     </div>
                     <div>
                       <p style={{ color: '#6b7280', margin: 0 }}>
-                        Goal: {currentNutritionData.calories.target} kcal — Consumed: {currentNutritionData.calories.current} kcal
+                        Goal: {summary.daily_goal} kcal — Consumed: {summary.total_consumed} kcal
                       </p>
                       <div style={{ height: 8 }} />
                       <motion.button
@@ -1113,10 +1125,9 @@ const HealthTipOfTheDay = () => {
         calorieData={currentNutritionData.calories}
       />
 
-      <CalorieCounter
+      <DailyTrackerModal
         isOpen={showCalorieCounter}
         onClose={() => setShowCalorieCounter(false)}
-        onDataUpdate={fetchNutritionData}
       />
       <LogMealModal
         isOpen={showLogMealModal}

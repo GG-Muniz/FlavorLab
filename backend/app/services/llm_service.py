@@ -28,6 +28,9 @@ class LLMResponseError(Exception):
 
 # Initialize the async Anthropic client
 settings = get_settings()
+logger.info(f"[LLM DEBUG] Loading Anthropic API key from settings...")
+logger.info(f"[LLM DEBUG] API key present: {bool(settings.anthropic_api_key)}")
+logger.info(f"[LLM DEBUG] API key prefix: {settings.anthropic_api_key[:20] if settings.anthropic_api_key else 'NONE'}...")
 client = AsyncAnthropic(api_key=settings.anthropic_api_key)
 
 
@@ -125,10 +128,10 @@ Respond ONLY with a JSON array. No markdown, no explanations, no code blocks.
 The JSON must be a valid array that matches this schema:
 
 [
-  {
+  {{
     "day": "Day 1",
     "meals": [
-      {
+      {{
         "type": "breakfast",
         "name": "Meal Name",
         "calories": 400,
@@ -138,10 +141,10 @@ The JSON must be a valid array that matches this schema:
         {"'prep_time_minutes': 10," if include_recipes else ""}
         {"'cook_time_minutes': 15," if include_recipes else ""}
         {"'instructions': ['step 1', 'step 2']," if include_recipes else ""}
-        {"'nutrition': {'protein': '20g', 'carbs': '45g', 'fat': '12g'}" if include_recipes else ""}
-      }
+        {"'nutrition': {{'protein': '20g', 'carbs': '45g', 'fat': '12g'}}" if include_recipes else ""}
+      }}
     ]
-  }
+  }}
 ]
 
 Generate the {num_days}-day meal plan now as pure JSON:"""
@@ -173,15 +176,22 @@ async def generate_llm_meal_plan(
     """
     try:
         # Retrieve survey data from user preferences
-        if not user.preferences or "survey_data" not in user.preferences:
+        # Parse JSON string if needed (preferences might be stored as JSON string)
+        import json
+        if isinstance(user.preferences, str):
+            preferences = json.loads(user.preferences) if user.preferences else {}
+        else:
+            preferences = user.preferences or {}
+
+        if not preferences or "survey_data" not in preferences:
             raise ValueError("User has no survey data in preferences")
 
-        survey_data = user.preferences["survey_data"]
+        survey_data = preferences["survey_data"]
 
         # Fetch preferred ingredients based on user health goals
         preferred_ingredient_names = []
         if db is not None:
-            user_health_goals = user.preferences.get("health_goals", [])
+            user_health_goals = preferences.get("health_goals", [])
             if user_health_goals:
                 preferred_ingredients = []
                 for pillar_id in user_health_goals:
@@ -214,18 +224,25 @@ async def generate_llm_meal_plan(
         )
 
         logger.info(f"Generating LLM meal plan for user {user.id} ({num_days} days, recipes={include_recipes})")
+        logger.info(f"[LLM DEBUG] Prompt length: {len(prompt)} chars")
 
         # Make async API call to Claude Haiku
-        message = await client.messages.create(
-            model="claude-3-haiku-20240307",
-            max_tokens=4096,  # Haiku's max token limit
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
-        )
+        try:
+            logger.info(f"[LLM DEBUG] Calling Anthropic API with model: claude-3-haiku-20240307")
+            message = await client.messages.create(
+                model="claude-3-haiku-20240307",
+                max_tokens=4096,  # Haiku's max token limit
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ]
+            )
+            logger.info(f"[LLM DEBUG] API call successful!")
+        except Exception as api_error:
+            logger.error(f"[LLM DEBUG] Anthropic API call failed: {type(api_error).__name__}: {api_error}")
+            raise
 
         # Extract the response content
         response_text = message.content[0].text.strip()

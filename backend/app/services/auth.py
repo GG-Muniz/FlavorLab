@@ -124,19 +124,29 @@ class AuthService:
     def authenticate_user(db: Session, email: str, password: str) -> Optional[models.User]:
         """
         Authenticate a user with email and password.
-        
+
         Args:
             db: Database session
             email: User email
             password: User password
-            
+
         Returns:
             User: Authenticated user or None if authentication fails
         """
+        import logging
+        logger = logging.getLogger(__name__)
+
         user = db.query(models.User).filter(models.User.email == email).first()
+        logger.info(f"[AUTH DEBUG] User lookup for '{email}': {user is not None}")
         if not user:
             return None
-        if not AuthService.verify_password(password, user.hashed_password):
+
+        logger.info(f"[AUTH DEBUG] Stored hash: {user.hashed_password[:50]}...")
+        logger.info(f"[AUTH DEBUG] Password to verify: {password}")
+        password_match = AuthService.verify_password(password, user.hashed_password)
+        logger.info(f"[AUTH DEBUG] Password verification result: {password_match}")
+
+        if not password_match:
             return None
         return user
     

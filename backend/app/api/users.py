@@ -36,6 +36,10 @@ from ..schemas.user import (
     PasswordReset,
     PasswordResetConfirm,
 )
+from ..schemas.meals import (
+    DailyCaloriesSummaryResponse,
+    SetCalorieGoalRequest,
+)
 from ..schemas.meal_plan import (
     MealPlanResponse,
     MealPlanRequest,
@@ -407,7 +411,12 @@ async def submit_user_survey(
             pillar_ids.append(pillar_id)
 
         # Get current preferences or initialize empty dict
-        preferences = current_user.preferences or {}
+        # Parse JSON string if needed
+        if isinstance(current_user.preferences, str):
+            import json
+            preferences = json.loads(current_user.preferences) if current_user.preferences else {}
+        else:
+            preferences = current_user.preferences or {}
 
         # Store translated pillar IDs for backward compatibility
         preferences["health_goals"] = pillar_ids
@@ -415,8 +424,9 @@ async def submit_user_survey(
         # Store complete survey data for LLM meal plan generation
         preferences["survey_data"] = survey_data.model_dump()
 
-        # Save updated preferences (create new dict to trigger SQLAlchemy update detection)
-        current_user.preferences = dict(preferences)
+        # Save updated preferences as JSON string
+        import json
+        current_user.preferences = json.dumps(preferences)
 
         # Mark the field as modified to ensure SQLAlchemy detects the change
         from sqlalchemy.orm.attributes import flag_modified
@@ -474,10 +484,49 @@ async def generate_llm_meal_plan_endpoint(
             db=db
         )
 
+        # Save generated meals to database as templates
+        from ..models.meal import Meal, MealSource
+        saved_meal_ids = []
+
+        for daily_plan in daily_plans:
+            for meal_data in daily_plan.meals:
+                # Create Meal record
+                new_meal = Meal(
+                    user_id=current_user.id,
+                    name=meal_data.name,
+                    meal_type=meal_data.type,
+                    source=MealSource.GENERATED,
+                    calories=meal_data.calories,
+                    protein_g=meal_data.nutrition.get('protein_g') if hasattr(meal_data, 'nutrition') and meal_data.nutrition else None,
+                    carbs_g=meal_data.nutrition.get('carbs_g') if hasattr(meal_data, 'nutrition') and meal_data.nutrition else None,
+                    fat_g=meal_data.nutrition.get('fat_g') if hasattr(meal_data, 'nutrition') and meal_data.nutrition else None,
+                    description=meal_data.description,
+                    servings=meal_data.servings if hasattr(meal_data, 'servings') else None,
+                    prep_time_minutes=meal_data.prep_time_minutes if hasattr(meal_data, 'prep_time_minutes') else None,
+                    cook_time_minutes=meal_data.cook_time_minutes if hasattr(meal_data, 'cook_time_minutes') else None,
+                    ingredients=meal_data.ingredients if hasattr(meal_data, 'ingredients') else None,
+                    instructions=meal_data.instructions if hasattr(meal_data, 'instructions') else None,
+                    nutrition_info=meal_data.nutrition if hasattr(meal_data, 'nutrition') else None,
+                    date_logged=None  # Not logged yet, just a template
+                )
+                db.add(new_meal)
+                db.flush()  # Get the ID
+                saved_meal_ids.append(new_meal.id)
+
+        db.commit()
+        logger.info(f"Saved {len(saved_meal_ids)} generated meals to database for user {current_user.id}")
+
         # Construct health goal summary
         health_goal_summary = None
-        if current_user.preferences and "health_goals" in current_user.preferences:
-            health_goal_ids = current_user.preferences["health_goals"]
+        # Parse preferences JSON string if needed
+        import json
+        if isinstance(current_user.preferences, str):
+            preferences = json.loads(current_user.preferences) if current_user.preferences else {}
+        else:
+            preferences = current_user.preferences or {}
+
+        if preferences and "health_goals" in preferences:
+            health_goal_ids = preferences["health_goals"]
             health_goal_names = [
                 get_pillar_name(goal_id) for goal_id in health_goal_ids
             ]
@@ -976,7 +1025,7 @@ async def verify_user_account(
         return {
             "message": f"User account '{user_id}' verified successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -985,4 +1034,75 @@ async def verify_user_account(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error verifying user account: {str(e)}"
         )
+
+
+@router.put("/me/nutrition-goal", response_model=DailyCaloriesSummaryResponse)
+async def set_nutrition_goal(
+    request: SetCalorieGoalRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+) -> DailyCaloriesSummaryResponse:
+    """
+    Set or update the user's daily calorie goal and return updated dashboard summary.
+
+    This endpoint:
+    1. Creates or updates the user's daily calorie goal
+    2. Calculates total calories consumed today
+    3. Returns complete dashboard summary
+    """
+    from ..models.calorie_tracking import DailyCalorieGoal
+    from ..models.meal import Meal
+    from datetime import date
+
+    # Get today's date
+    today = date.today()
+
+    # Find or create calorie goal
+    calorie_goal = db.query(DailyCalorieGoal).filter(
+        DailyCalorieGoal.user_id == current_user.id
+    ).first()
+
+    if calorie_goal:
+        # Update existing goal
+        calorie_goal.goal_calories = request.goal_calories
+    else:
+        # Create new goal
+        calorie_goal = DailyCalorieGoal(
+            user_id=current_user.id,
+            goal_calories=request.goal_calories
+        )
+        db.add(calorie_goal)
+
+    db.commit()
+    db.refresh(calorie_goal)
+
+    # Calculate total consumed today from logged meals
+    todays_meals = db.query(Meal).filter(
+        Meal.user_id == current_user.id,
+        Meal.date_logged == today
+    ).all()
+
+    total_consumed = sum(m.calories or 0 for m in todays_meals)
+    remaining = request.goal_calories - total_consumed
+
+    # Build logged meals summary
+    from ..schemas.meals import LoggedMealSummary
+    from datetime import datetime
+
+    logged_meals = [
+        LoggedMealSummary(
+            name=m.name,
+            calories=int(m.calories or 0),
+            meal_type=m.meal_type or "Unknown",
+            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now().isoformat()
+        )
+        for m in todays_meals
+    ]
+
+    return DailyCaloriesSummaryResponse(
+        daily_goal=request.goal_calories,
+        total_consumed=int(total_consumed),
+        remaining=remaining,
+        logged_meals_today=logged_meals
+    )
 

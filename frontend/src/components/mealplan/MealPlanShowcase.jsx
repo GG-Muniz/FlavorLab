@@ -15,14 +15,19 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { generateMealPlan } from '../../services/mealPlanApi';
-import { getMeals, logMealFromTemplate } from '../../services/mealsApi';
+import { getMeals, logMealForToday } from '../../services/mealsApi';
 import { motion } from 'framer-motion';
-import { ChefHat, RefreshCw, AlertCircle, Sparkles, Calendar } from 'lucide-react';
+import { ChefHat, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
 import MealCard from './MealCard';
 import MealDetailModal from './MealDetailModal';
+import { useDashboard } from '../../contexts/DashboardContext';
 
 const MealPlanShowcase = () => {
+  const navigate = useNavigate();
+  const { updateSummary } = useDashboard();
+
   // ============================================================================
   // State Management
   // ============================================================================
@@ -51,11 +56,6 @@ const MealPlanShowcase = () => {
    * Loading state for generating new meals
    */
   const [generating, setGenerating] = useState(false);
-
-  /**
-   * Loading state for logging a meal (track by meal ID)
-   */
-  const [loggingMealId, setLoggingMealId] = useState(null);
 
   // ============================================================================
   // Data Fetching Logic
@@ -107,31 +107,27 @@ const MealPlanShowcase = () => {
   };
 
   /**
-   * Log a meal template as consumed (Option A: auto-log to today)
+   * Log a meal for today and navigate to dashboard with updated summary
    *
-   * Creates a new LOGGED meal record copying data from the template.
+   * Calls the new /meals/{meal_id}/log endpoint which returns the complete
+   * dashboard summary including today's total calories and remaining calories.
    */
   const handleLogMeal = async (mealTemplate) => {
     try {
-      setLoggingMealId(mealTemplate.id);
+      // Call the new endpoint that logs the meal AND returns dashboard summary
+      const dashboardSummary = await logMealForToday(mealTemplate.id);
 
-      // Get today's date in YYYY-MM-DD format (local timezone)
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const today = `${year}-${month}-${day}`;
+      // Update the dashboard context with the new summary
+      updateSummary(dashboardSummary);
 
-      // Log the meal from template
-      await logMealFromTemplate(mealTemplate.id, today);
+      // Navigate to dashboard tab
+      navigate('/?tab=dashboard');
 
-      // Show success feedback (you can enhance this with a toast notification)
-      alert(`${mealTemplate.name} logged successfully for today!`);
+      // Optionally reload meal templates to remove the logged one from GENERATED list
+      await loadMealTemplates();
     } catch (err) {
       console.error('Error logging meal:', err);
       alert(`Failed to log meal: ${err.message}`);
-    } finally {
-      setLoggingMealId(null);
     }
   };
 
@@ -487,10 +483,10 @@ const MealPlanShowcase = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * idx, duration: 0.4 }}
-            style={{ position: 'relative' }}
           >
             <MealCard
               meal={{
+                id: meal.id,
                 type: meal.meal_type || 'meal',
                 name: meal.name,
                 calories: meal.calories,
@@ -503,59 +499,8 @@ const MealPlanShowcase = () => {
                 nutrition: meal.nutrition_info
               }}
               onClick={() => setSelectedMeal(meal)}
+              onLogMeal={handleLogMeal}
             />
-
-            {/* Log Meal Button - Positioned over the card */}
-            <div style={{
-              position: 'absolute',
-              bottom: '16px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: 'calc(100% - 48px)',
-              zIndex: 10
-            }}>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleLogMeal(meal);
-                }}
-                disabled={loggingMealId === meal.id}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  padding: '12px 20px',
-                  background: loggingMealId === meal.id ? '#9ca3af' : '#0ea5e9',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '10px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: loggingMealId === meal.id ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 4px 6px -1px rgba(14, 165, 233, 0.4)',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  if (loggingMealId !== meal.id) {
-                    e.currentTarget.style.background = '#7dd3fc';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 8px 12px -2px rgba(125, 211, 252, 0.5)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (loggingMealId !== meal.id) {
-                    e.currentTarget.style.background = '#0ea5e9';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(14, 165, 233, 0.4)';
-                  }
-                }}
-              >
-                <Calendar width={16} height={16} color="#ffffff" />
-                <span style={{ color: '#ffffff' }}>{loggingMealId === meal.id ? 'Logging...' : 'Log Meal for Today'}</span>
-              </button>
-            </div>
           </motion.div>
         ))}
       </div>

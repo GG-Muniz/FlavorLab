@@ -24,11 +24,11 @@
  */
 
 import { motion } from 'framer-motion';
-import { Flame } from 'lucide-react';
+import { Flame, Calendar } from 'lucide-react';
 import PropTypes from 'prop-types';
 import './MealCard.css';
 
-const MealCard = ({ meal, onClick }) => {
+const MealCard = ({ meal, onClick, onLogMeal }) => {
   /**
    * Get color scheme based on meal type
    * Each meal type has a unique color palette for visual distinction
@@ -238,6 +238,45 @@ const MealCard = ({ meal, onClick }) => {
         </div>
       )}
 
+      {/* Action Buttons */}
+      {onLogMeal && (
+        <div style={{
+          marginTop: '16px',
+          paddingTop: '16px',
+          borderTop: '1px solid #f3f4f6',
+          display: 'flex',
+          gap: '8px'
+        }}>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent card click
+              onLogMeal(meal);
+            }}
+            style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              padding: '10px 16px',
+              background: '#22c55e',
+              color: 'white',
+              border: 'none',
+              borderRadius: '10px',
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            <Calendar width={16} height={16} />
+            Log for Today
+          </motion.button>
+        </div>
+      )}
+
       {/* Click Hint */}
       <div
         className="meal-click-hint"
@@ -296,7 +335,13 @@ MealCard.propTypes = {
    * Click handler function called when card is clicked
    * Receives the meal object as parameter
    */
-  onClick: PropTypes.func.isRequired
+  onClick: PropTypes.func.isRequired,
+
+  /**
+   * Optional: Handler for logging meal for today
+   * Receives the meal object as parameter
+   */
+  onLogMeal: PropTypes.func
 };
 
 export default MealCard;
