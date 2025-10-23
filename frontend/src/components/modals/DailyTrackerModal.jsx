@@ -83,7 +83,7 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
   // Transform logged meals for display
   const intakeHistory = summary.logged_meals_today.map((meal, index) => ({
     id: index,
-    meal: meal.meal_type,
+    meal: meal.name,
     calories: meal.calories,
     timestamp: new Date(meal.logged_at).toLocaleTimeString('en-US', {
       hour: '2-digit',

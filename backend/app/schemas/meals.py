@@ -89,6 +89,7 @@ class CalendarLinksResponse(BaseModel):
 
 class LoggedMealSummary(BaseModel):
     """Summary of a single logged meal for dashboard display."""
+    log_id: int
     name: str
     calories: int
     meal_type: str

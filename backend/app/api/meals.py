@@ -443,6 +443,7 @@ async def log_meal_for_today(
     # Build logged meals summary
     logged_meals = [
         LoggedMealSummary(
+            log_id=m.id,
             name=m.name,
             calories=int(m.calories or 0),
             meal_type=m.meal_type or "Unknown",
@@ -516,6 +517,7 @@ async def log_manual_calories(
     # Build logged meals summary
     logged_meals = [
         LoggedMealSummary(
+            log_id=m.id,
             name=m.name,
             calories=int(m.calories or 0),
             meal_type=m.meal_type or "Unknown",
