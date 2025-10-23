@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { X, Calculator, Target, Flame, TrendingUp, Plus, ChevronDown } from 'lucide-react';
-import { setCalorieGoal, logManualCalories } from '../../services/mealsApi';
+import { useState, useEffect } from 'react';
+import { X, Calculator, Target, Flame, TrendingUp, Plus, ChevronDown, Utensils } from 'lucide-react';
+import { setCalorieGoal, logManualCalories, getMeals } from '../../services/mealsApi';
 import { useDashboard } from '../../contexts/DashboardContext';
 
 const DailyTrackerModal = ({ isOpen, onClose }) => {
@@ -15,7 +15,35 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState('log-intake');
+
+  // Meal plans state
+  const [mealPlans, setMealPlans] = useState([]);
+  const [mealPlansLoading, setMealPlansLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
   const mealOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+
+  // Fetch meal plans when component mounts
+  useEffect(() => {
+    if (isOpen) {
+      fetchMealPlans();
+    }
+  }, [isOpen]);
+
+  const fetchMealPlans = async () => {
+    try {
+      setMealPlansLoading(true);
+      const plans = await getMeals('generated');
+      setMealPlans(plans);
+    } catch (err) {
+      console.error('Error fetching meal plans:', err);
+      setError('Failed to load meal plans');
+    } finally {
+      setMealPlansLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -71,6 +99,46 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
       } finally {
         setIsLoading(false);
       }
+    }
+  };
+
+  const handleLogMealPlan = async (plan) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Use the correct endpoint: POST /api/v1/meals/{meal_id}/log
+      const response = await fetch(`/api/v1/meals/${plan.id}/log`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData?.detail || 'Failed to log meal plan');
+      }
+
+      const updatedSummary = await response.json();
+
+      // Update the global context with new data
+      updateSummary(updatedSummary);
+
+      // Show success message
+      setSuccessMessage('Meal logged successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000); // Clear after 3 seconds
+
+      // Remove the logged meal from the local state
+      setMealPlans(currentMealPlans => currentMealPlans.filter(p => p.id !== plan.id));
+
+      console.log('Meal plan logged successfully');
+    } catch (err) {
+      console.error('Error logging meal plan:', err);
+      setError('Failed to log meal plan. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -203,6 +271,55 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
           borderBottomRightRadius: '24px',
           overflowY: 'auto'
         }}>
+          {/* Tab Navigation */}
+          <div style={{
+            display: 'flex',
+            background: '#f8fafc',
+            borderRadius: '12px',
+            padding: '6px',
+            marginBottom: '24px',
+            border: '2px solid #e2e8f0',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+          }}>
+            <button
+              onClick={() => setActiveTab('log-intake')}
+              style={{
+                flex: 1,
+                padding: '12px 20px',
+                borderRadius: '8px',
+                border: 'none',
+                background: activeTab === 'log-intake' ? '#ffffff' : 'transparent',
+                color: activeTab === 'log-intake' ? '#1e293b' : '#64748b',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: activeTab === 'log-intake' ? '0 2px 4px rgba(0, 0, 0, 0.1)' : 'none',
+                border: activeTab === 'log-intake' ? '1px solid #e2e8f0' : '1px solid transparent'
+              }}
+            >
+              Log Intake
+            </button>
+            <button
+              onClick={() => setActiveTab('meal-plans')}
+              style={{
+                flex: 1,
+                padding: '12px 20px',
+                borderRadius: '8px',
+                border: 'none',
+                background: activeTab === 'meal-plans' ? '#ffffff' : 'transparent',
+                color: activeTab === 'meal-plans' ? '#1e293b' : '#64748b',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: activeTab === 'meal-plans' ? '0 2px 4px rgba(0, 0, 0, 0.1)' : 'none',
+                border: activeTab === 'meal-plans' ? '1px solid #e2e8f0' : '1px solid transparent'
+              }}
+            >
+              Meal Plans
+            </button>
+          </div>
           {/* Error Message */}
           {error && (
             <div style={{
@@ -218,7 +335,26 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
             </div>
           )}
 
-          {/* Progress Summary */}
+          {/* Success Message */}
+          {successMessage && (
+            <div style={{
+              padding: '12px 16px',
+              background: '#f0fdf4',
+              border: '1px solid #bbf7d0',
+              borderRadius: '12px',
+              marginBottom: '16px',
+              color: '#166534',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>
+              {successMessage}
+            </div>
+          )}
+
+          {/* Tab Content */}
+          {activeTab === 'log-intake' && (
+            <>
+              {/* Progress Summary */}
           {savedGoal && (
             <div style={{
               padding: '20px',
@@ -638,6 +774,180 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+            </>
+          )}
+
+          {/* Meal Plans Tab */}
+          {activeTab === 'meal-plans' && (
+            <div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '12px'
+              }}>
+                <Utensils width={18} height={18} color="#8b5cf6" />
+                <h3 style={{
+                  fontSize: '16px',
+                  fontWeight: '700',
+                  color: '#111827',
+                  margin: 0
+                }}>
+                  Your Meal Plans
+                </h3>
+              </div>
+
+              {mealPlansLoading ? (
+                <div style={{
+                  padding: '20px',
+                  textAlign: 'center',
+                  color: '#6b7280'
+                }}>
+                  Loading meal plans...
+                </div>
+              ) : mealPlans.length === 0 ? (
+                <div style={{
+                  padding: '32px 20px',
+                  textAlign: 'center',
+                  color: '#64748b',
+                  background: '#ffffff',
+                  borderRadius: '12px',
+                  border: '2px solid #e2e8f0',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                }}>
+                  <Utensils width={32} height={32} color="#cbd5e1" style={{ marginBottom: '12px' }} />
+                  <p style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#475569',
+                    margin: '0 0 8px 0'
+                  }}>
+                    No meal plans available
+                  </p>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#64748b',
+                    margin: 0
+                  }}>
+                    Generate some meal plans first!
+                  </p>
+                </div>
+              ) : (
+                <div style={{
+                  background: '#ffffff',
+                  borderRadius: '12px',
+                  border: '2px solid #e2e8f0',
+                  overflow: 'hidden',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                }}>
+                  {mealPlans.map((plan, index) => (
+                    <div
+                      key={plan.id}
+                      style={{
+                        padding: '20px',
+                        borderBottom: index < mealPlans.length - 1 ? '1px solid #f1f5f9' : 'none',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        gap: '16px'
+                      }}
+                    >
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        {/* Meal Name - Primary */}
+                        <h4 style={{
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          color: '#1e293b',
+                          margin: '0 0 8px 0',
+                          lineHeight: '1.3'
+                        }}>
+                          {plan.name}
+                        </h4>
+
+                        {/* Meal Type & Calories - Secondary */}
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          marginBottom: '8px'
+                        }}>
+                          <span style={{
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            color: '#ea580c',
+                            background: '#fef3c7',
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            textTransform: 'capitalize'
+                          }}>
+                            {plan.meal_type}
+                          </span>
+                          <span style={{
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            color: '#ea580c'
+                          }}>
+                            {plan.calories} cal
+                          </span>
+                        </div>
+
+                        {/* Description - Tertiary */}
+                        {plan.description && (
+                          <p style={{
+                            fontSize: '14px',
+                            color: '#64748b',
+                            margin: 0,
+                            lineHeight: '1.4',
+                            maxWidth: '100%'
+                          }}>
+                            {plan.description}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Log Button */}
+                      <button
+                        onClick={() => handleLogMealPlan(plan)}
+                        disabled={isLoading}
+                        style={{
+                          padding: '10px 16px',
+                          background: isLoading ? '#9ca3af' : '#ea580c',
+                          color: '#ffffff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          cursor: isLoading ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          opacity: isLoading ? 0.7 : 1,
+                          boxShadow: isLoading ? 'none' : '0 2px 4px rgba(234, 88, 12, 0.2)',
+                          flexShrink: 0
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isLoading) {
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(234, 88, 12, 0.3)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isLoading) {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(234, 88, 12, 0.2)';
+                          }
+                        }}
+                      >
+                        <Plus width={14} height={14} />
+                        {isLoading ? 'Logging...' : 'Log'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
