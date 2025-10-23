@@ -17,6 +17,7 @@ import re
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional
+from app.services import llm_service
 
 from .. import models
 from ..models.entity import IngredientEntity
@@ -63,14 +64,14 @@ async def register_user(
 ) -> UserResponse:
     """
     Register a new user.
-    
+
     Args:
         user_data: User registration data
         db: Database session
-        
+
     Returns:
         UserResponse: Created user information
-        
+
     Raises:
         HTTPException: If registration fails
     """
@@ -111,7 +112,7 @@ async def register_user(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Email already registered"
                 )
-        
+
         # Check if username is taken (if provided)
         if user_data.username:
             existing_username = db.query(models.User).filter(models.User.username == user_data.username).first()
@@ -120,7 +121,7 @@ async def register_user(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Username already taken"
                 )
-        
+
         # Create user
         user = AuthService.create_user(
             db=db,
@@ -131,9 +132,9 @@ async def register_user(
             last_name=user_data.last_name,
             is_active=user_data.is_active
         )
-        
+
         return UserResponse.model_validate(user)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -180,16 +181,16 @@ async def get_current_user_profile(
 ):
     """
     Get current user's profile information.
-    
+
     Args:
         current_user: Current authenticated user
-        
+
     Returns:
         UserProfileResponse: User profile information
     """
     try:
         return UserProfileResponse.model_validate(current_user)
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -205,12 +206,12 @@ async def update_current_user_profile(
 ):
     """
     Update current user's profile information.
-    
+
     Args:
         user_data: User update data
         db: Database session
         current_user: Current authenticated user
-        
+
     Returns:
         UserResponse: Updated user information
     """
@@ -223,7 +224,7 @@ async def update_current_user_profile(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Username already taken"
                 )
-        
+
         # Update fields
         if user_data.username is not None:
             current_user.username = user_data.username
@@ -257,12 +258,12 @@ async def update_current_user_profile(
         # Update preferences when explicitly provided (including None to clear)
         if 'preferences' in user_data.model_fields_set:
             current_user.preferences = user_data.preferences
-        
+
         db.commit()
         db.refresh(current_user)
-        
+
         return UserProfileResponse.model_validate(current_user)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -473,6 +474,19 @@ async def generate_llm_meal_plan_endpoint(
         HTTPException 400: If user has no survey data
     """
     try:
+        # Early check: Verify user has survey data before attempting generation
+        import json
+        if isinstance(current_user.preferences, str):
+            preferences = json.loads(current_user.preferences) if current_user.preferences else {}
+        else:
+            preferences = current_user.preferences or {}
+
+        if not preferences or "survey_data" not in preferences:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Please complete the NutriTest survey before generating a meal plan."
+            )
+
         # Import the LLM service
         from ..services import llm_service
 
@@ -551,22 +565,26 @@ async def generate_llm_meal_plan_endpoint(
         logger.error(f"User survey data missing: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Please complete the user survey before generating a meal plan."
+            detail="Please complete the NutriTest survey before generating a meal plan."
         )
     except Exception as e:
-        logger.error(f"Unexpected error generating LLM meal plan: {e}")
+        import traceback
+        logger.error(f"Unexpected error generating LLM meal plan: {type(e).__name__}: {e}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Could not generate meal plan at this time."
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Could not generate meal plan: {str(e)}"
         )
 
 
 @router.post("/me/meal-plan", response_model=MealPlanResponse)
 async def generate_meal_plan(
+
     request: Optional[MealPlanRequest] = None,
     current_user: models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
+    print("--- CTI TEST: GENERATE_MEAL_PLAN ENDPOINT WAS HIT ---")
     """
     Generate a personalized meal plan for the current user.
 
@@ -726,21 +744,21 @@ async def deactivate_account(
 ):
     """
     Deactivate current user's account.
-    
+
     Args:
         db: Database session
         current_user: Current authenticated user
-        
+
     Returns:
         Dict with success message
     """
     try:
         AuthService.deactivate_user(db, current_user)
-        
+
         return {
             "message": "Account deactivated successfully"
         }
-        
+
     except Exception as e:
         db.rollback()
         raise HTTPException(
@@ -868,36 +886,36 @@ async def get_user_statistics(
 ):
     """
     Get user statistics (requires verified user).
-    
+
     Args:
         db: Database session
         current_user: Current verified user
-        
+
     Returns:
         UserStatsResponse: User statistics
     """
     try:
         from sqlalchemy import func
         from datetime import timedelta
-        
+
         # Total users
         total_users = db.query(models.User).count()
-        
+
         # Active users
         active_users = db.query(models.User).filter(models.User.is_active == True).count()
-        
+
         # Verified users
         verified_users = db.query(models.User).filter(models.User.is_verified == True).count()
-        
+
         # Recent registrations (last 30 days)
         thirty_days_ago = datetime.datetime.now(datetime.UTC) - timedelta(days=30)
         recent_registrations = db.query(models.User).filter(
             models.User.created_at >= thirty_days_ago
         ).count()
-        
+
         # Last updated
         last_updated = db.query(func.max(models.User.updated_at)).scalar()
-        
+
         return UserStatsResponse(
             total_users=total_users,
             active_users=active_users,
@@ -905,7 +923,7 @@ async def get_user_statistics(
             recent_registrations=recent_registrations,
             last_updated=last_updated
         )
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -922,26 +940,26 @@ async def get_user_by_id(
 ):
     """
     Get user by ID (requires verified user).
-    
+
     Args:
         user_id: User ID
         db: Database session
         current_user: Current verified user
-        
+
     Returns:
         UserResponse: User information
     """
     try:
         user = AuthService.get_user_by_id(db, user_id)
-        
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User with ID '{user_id}' not found"
             )
-        
+
         return UserResponse.model_validate(user)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -959,30 +977,30 @@ async def activate_user_account(
 ):
     """
     Activate a user account (requires verified user).
-    
+
     Args:
         user_id: User ID
         db: Database session
         current_user: Current verified user
-        
+
     Returns:
         Dict with success message
     """
     try:
         user = AuthService.get_user_by_id(db, user_id)
-        
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User with ID '{user_id}' not found"
             )
-        
+
         AuthService.activate_user(db, user)
-        
+
         return {
             "message": f"User account '{user_id}' activated successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -1001,27 +1019,27 @@ async def verify_user_account(
 ):
     """
     Verify a user account (requires verified user).
-    
+
     Args:
         user_id: User ID
         db: Database session
         current_user: Current verified user
-        
+
     Returns:
         Dict with success message
     """
     try:
         user = AuthService.get_user_by_id(db, user_id)
-        
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User with ID '{user_id}' not found"
             )
-        
+
         user.is_verified = True
         db.commit()
-        
+
         return {
             "message": f"User account '{user_id}' verified successfully"
         }
