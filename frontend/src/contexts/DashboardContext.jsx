@@ -18,7 +18,8 @@ export const DashboardProvider = ({ children }) => {
     logged_meals_today: [],
   });
 
-  // This is the function we will call from our components to update the dashboard state
+  // Pure setter - NO calculations allowed here
+  // Backend is the single source of truth for all calculations
   const updateSummary = (newSummaryData) => {
     setSummary(newSummaryData);
   };

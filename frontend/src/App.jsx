@@ -15,6 +15,7 @@ import MealPlanShowcase from './components/mealplan/MealPlanShowcase';
 import MealHistory from './components/mealhistory/MealHistory';
 import SmartActionStack from './components/dashboard/SmartActionStack';
 import { fetchNutritionGoals, fetchDailySummary } from './services/nutritionApi';
+import { getDailySummary } from './services/mealsApi';
 
 import {
   LayoutDashboard,
@@ -297,10 +298,22 @@ function App() {
     }
   };
 
-  // Fetch nutrition data when app mounts for MVP dashboard visibility
+  // Hydrate dashboard state when user is authenticated
   useEffect(() => {
-    fetchNutritionData().catch(() => {});
-  }, []);
+    const hydrateDashboard = async () => {
+      if (authUser && !authLoading) {
+        try {
+          const summary = await getDailySummary();
+          updateSummary(summary);
+        } catch (error) {
+          console.error('Error hydrating dashboard:', error);
+        }
+      }
+    };
+
+    hydrateDashboard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authUser, authLoading]);
 
   // NutriTest completion handled in dedicated route component
 
@@ -311,7 +324,11 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
   const [isHovered, setIsHovered] = useState(false);
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const offset = circumference - (percentage / 100) * circumference;
+
+  // Cap the visual progress at 100% for the ring, but display actual percentage
+  const displayPercentage = Math.round(percentage);
+  const ringPercentage = Math.min(percentage, 100);
+  const offset = circumference - (ringPercentage / 100) * circumference;
 
   return (
     <motion.button
@@ -413,7 +430,7 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text'
         }}>
-          {percentage}%
+          {displayPercentage}%
         </span>
         {isHovered && (
           <span style={{
@@ -792,67 +809,77 @@ const HealthTipOfTheDay = () => {
               gap: '24px'
               }}
             >
-              {/* Calories Card */}
-              <Card>
-                <div style={{ position: 'relative' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                    <div style={{
-                      width: 32,
-                      height: 32,
-                      background: '#f0fdf4',
-                      borderRadius: '8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <Zap width={20} height={20} color="#22c55e" />
+              {/* Calories Card Column - Stacked vertically */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {/* Daily Calories Card */}
+                <Card>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                      <div style={{
+                        width: 32,
+                        height: 32,
+                        background: '#f0fdf4',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <Zap width={20} height={20} color="#22c55e" />
+                      </div>
+                      <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#374151', margin: 0 }}>
+                        Daily Calories
+                      </h3>
                     </div>
-                    <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#374151', margin: 0 }}>
-                      Daily Calories
-                    </h3>
-                  </div>
 
-                  {/* Progress Ring */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-                    <div>
-                      <ProgressRing
-                        percentage={Math.max(0, Math.min(100, summary.daily_goal > 0 ? (summary.total_consumed / summary.daily_goal) * 100 : 0))}
-                        size={120}
-                        strokeWidth={10}
-                        color="#22c55e"
-                        onClick={() => setShowCalorieCounter(true)}
-                      />
-                    </div>
-                    <div>
-                      <p style={{ color: '#6b7280', margin: 0 }}>
-                        Goal: {summary.daily_goal} kcal — Consumed: {summary.total_consumed} kcal
-                      </p>
-                      <div style={{ height: 8 }} />
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setShowLogMealModal(true)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          padding: '12px 20px',
-                          background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                          border: 'none',
-                          borderRadius: '12px',
-                          fontSize: '14px',
-                          fontWeight: '700',
-                          color: '#ffffff',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        <Plus width={18} height={18} />
-                        <span>Log Meal</span>
-                      </motion.button>
+                    {/* Progress Ring */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                      <div>
+                        <ProgressRing
+                          percentage={summary.daily_goal > 0 ? (summary.total_consumed / summary.daily_goal) * 100 : 0}
+                          size={120}
+                          strokeWidth={10}
+                          color={summary.total_consumed > summary.daily_goal ? "#ef4444" : "#22c55e"}
+                          onClick={() => setShowCalorieCounter(true)}
+                        />
+                      </div>
+                      <div>
+                        <p style={{ color: '#6b7280', margin: 0 }}>
+                          Goal: {summary.daily_goal} kcal — Consumed: {summary.total_consumed} kcal
+                        </p>
+                        <p style={{
+                          color: summary.remaining < 0 ? '#ef4444' : '#22c55e',
+                          margin: '4px 0 0 0',
+                          fontWeight: '600'
+                        }}>
+                          Remaining: {summary.remaining} kcal
+                        </p>
+                        <div style={{ height: 8 }} />
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setShowLogMealModal(true)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '12px 20px',
+                            background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                            border: 'none',
+                            borderRadius: '12px',
+                            fontSize: '14px',
+                            fontWeight: '700',
+                            color: '#ffffff',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <Plus width={18} height={18} />
+                          <span>Log Meal</span>
+                        </motion.button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              </div>
 
               {/* Macronutrients Card */}
               <Card>

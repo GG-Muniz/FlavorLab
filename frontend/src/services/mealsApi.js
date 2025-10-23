@@ -131,3 +131,18 @@ export async function setCalorieGoal(goalCalories) {
   if (!res.ok) throw new Error(data?.detail || 'Failed to set calorie goal');
   return data; // Returns complete dashboard summary
 }
+
+/**
+ * Get the current day's nutrition summary for dashboard hydration.
+ * Called on app load to populate initial dashboard state.
+ * @returns {Promise<Object>} Dashboard summary with daily_goal, total_consumed, remaining, logged_meals_today
+ */
+export async function getDailySummary() {
+  const res = await fetch(`${API_BASE_URL}/users/me/daily-summary`, {
+    method: 'GET',
+    headers: authHeaders(),
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.detail || 'Failed to fetch daily summary');
+  return data; // Returns complete dashboard summary
+}

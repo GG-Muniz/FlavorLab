@@ -1091,6 +1091,7 @@ async def set_nutrition_goal(
 
     logged_meals = [
         LoggedMealSummary(
+            log_id=m.id,
             name=m.name,
             calories=int(m.calories or 0),
             meal_type=m.meal_type or "Unknown",
@@ -1105,4 +1106,24 @@ async def set_nutrition_goal(
         remaining=remaining,
         logged_meals_today=logged_meals
     )
+
+
+@router.get("/me/daily-summary", response_model=DailyCaloriesSummaryResponse)
+async def get_daily_summary(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+) -> DailyCaloriesSummaryResponse:
+    """
+    Get the current day's nutrition summary for dashboard hydration.
+
+    Returns:
+        Complete dashboard state with daily_goal, total_consumed,
+        remaining, and logged_meals_today
+    """
+    from ..services.daily_summary_service import create_daily_summary
+
+    # Get authoritative dashboard state
+    summary = create_daily_summary(current_user.id, db)
+
+    return DailyCaloriesSummaryResponse(**summary)
 
