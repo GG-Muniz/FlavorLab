@@ -4,7 +4,7 @@ Meals API endpoints: log meals and get daily nutrition summary.
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, UTC
 from typing import List, Optional
 from urllib.parse import urlencode
 
@@ -425,6 +425,158 @@ async def log_meal_for_today(
     db.refresh(meal)
 
     # Calculate total consumed today
+    todays_meals = db.query(Meal).filter(
+        Meal.user_id == current_user.id,
+        Meal.date_logged == today
+    ).all()
+
+    total_consumed = sum(m.calories or 0 for m in todays_meals)
+
+    # Get user's daily calorie goal
+    calorie_goal = db.query(DailyCalorieGoal).filter(
+        DailyCalorieGoal.user_id == current_user.id
+    ).first()
+
+    daily_goal = calorie_goal.goal_calories if calorie_goal else 2000  # Default 2000
+    remaining = daily_goal - total_consumed
+
+    # Build logged meals summary
+    logged_meals = [
+        LoggedMealSummary(
+            log_id=m.id,
+            name=m.name,
+            calories=int(m.calories or 0),
+            meal_type=m.meal_type or "Unknown",
+            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now().isoformat()
+        )
+        for m in todays_meals
+    ]
+
+    return DailyCaloriesSummaryResponse(
+        daily_goal=daily_goal,
+        total_consumed=int(total_consumed),
+        remaining=remaining,
+        logged_meals_today=logged_meals
+    )
+
+
+@router.delete("/{meal_id}", response_model=DailyCaloriesSummaryResponse)
+async def delete_logged_meal(
+    meal_id: int = Path(..., description="ID of the logged meal to delete"),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+) -> DailyCaloriesSummaryResponse:
+    """
+    Delete a logged meal and return updated dashboard summary.
+
+    This endpoint:
+    1. Finds the specified logged meal and verifies ownership
+    2. Deletes the meal from the database
+    3. Recalculates total calories consumed today
+    4. Returns updated dashboard summary
+    """
+    from ..models.calorie_tracking import DailyCalorieGoal
+
+    # Get today's date
+    today = date.today()
+
+    # Find the meal
+    meal = db.query(Meal).filter(
+        Meal.id == meal_id,
+        Meal.user_id == current_user.id,
+        Meal.source == MealSource.LOGGED,
+        Meal.date_logged == today
+    ).first()
+
+    if not meal:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Logged meal with ID {meal_id} not found or not logged today"
+        )
+
+    # Delete the meal
+    db.delete(meal)
+    db.commit()
+
+    # Calculate total consumed today after deletion
+    todays_meals = db.query(Meal).filter(
+        Meal.user_id == current_user.id,
+        Meal.date_logged == today
+    ).all()
+
+    total_consumed = sum(m.calories or 0 for m in todays_meals)
+
+    # Get user's daily calorie goal
+    calorie_goal = db.query(DailyCalorieGoal).filter(
+        DailyCalorieGoal.user_id == current_user.id
+    ).first()
+
+    daily_goal = calorie_goal.goal_calories if calorie_goal else 2000  # Default 2000
+    remaining = daily_goal - total_consumed
+
+    # Build logged meals summary
+    logged_meals = [
+        LoggedMealSummary(
+            log_id=m.id,
+            name=m.name,
+            calories=int(m.calories or 0),
+            meal_type=m.meal_type or "Unknown",
+            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now().isoformat()
+        )
+        for m in todays_meals
+    ]
+
+    return DailyCaloriesSummaryResponse(
+        daily_goal=daily_goal,
+        total_consumed=int(total_consumed),
+        remaining=remaining,
+        logged_meals_today=logged_meals
+    )
+
+
+@router.put("/{meal_id}", response_model=DailyCaloriesSummaryResponse)
+async def update_logged_meal(
+    meal_id: int = Path(..., description="ID of the logged meal to update"),
+    request: LogManualCaloriesRequest = ...,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+) -> DailyCaloriesSummaryResponse:
+    """
+    Update a logged meal's calories and meal type, return updated dashboard summary.
+
+    This endpoint:
+    1. Finds the specified logged meal and verifies ownership
+    2. Updates the meal's calories and meal_type
+    3. Recalculates total calories consumed today
+    4. Returns updated dashboard summary
+    """
+    from ..models.calorie_tracking import DailyCalorieGoal
+
+    # Get today's date
+    today = date.today()
+
+    # Find the meal
+    meal = db.query(Meal).filter(
+        Meal.id == meal_id,
+        Meal.user_id == current_user.id,
+        Meal.source == MealSource.LOGGED,
+        Meal.date_logged == today
+    ).first()
+
+    if not meal:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Logged meal with ID {meal_id} not found or not logged today"
+        )
+
+    # Update the meal
+    meal.calories = request.calories
+    meal.meal_type = request.meal_type
+    meal.updated_at = datetime.now(UTC)
+    db.commit()
+    db.refresh(meal)
+
+    # Calculate total consumed today after update
     todays_meals = db.query(Meal).filter(
         Meal.user_id == current_user.id,
         Meal.date_logged == today

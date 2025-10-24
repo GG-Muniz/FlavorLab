@@ -9,6 +9,7 @@ import LogMealModal from './components/modals/LogMealModal';
 import Calendar from './components/calendar/Calendar';
 import { useAuth } from './context/AuthContext';
 import { useDashboard } from './contexts/DashboardContext';
+import { DataProvider } from './context/DataContext.jsx';
 import UpNext from './components/dashboard/UpNext';
 import { getDailyCalorieSummary } from './services/calorieApi';
 import MealPlanShowcase from './components/mealplan/MealPlanShowcase';
@@ -581,13 +582,14 @@ const HealthTipOfTheDay = () => {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--color-gray-50)',
-      opacity: isAnimating ? 1 : 0,
-      transform: isAnimating ? 'translateY(0)' : 'translateY(20px)',
-      transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
-    }}>
+    <DataProvider>
+      <div style={{
+        minHeight: '100vh',
+        background: 'var(--color-gray-50)',
+        opacity: isAnimating ? 1 : 0,
+        transform: isAnimating ? 'translateY(0)' : 'translateY(20px)',
+        transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
+      }}>
       {/* Header moved to AppLayout */}
       {/* Main Content */}
       <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '32px 16px' }}>
@@ -1161,7 +1163,8 @@ const HealthTipOfTheDay = () => {
         onClose={() => setShowLogMealModal(false)}
         onSaved={fetchNutritionData}
       />
-    </div>
+      </div>
+    </DataProvider>
   );
 }
 

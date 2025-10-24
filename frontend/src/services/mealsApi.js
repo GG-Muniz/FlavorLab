@@ -146,3 +146,36 @@ export async function getDailySummary() {
   if (!res.ok) throw new Error(data?.detail || 'Failed to fetch daily summary');
   return data; // Returns complete dashboard summary
 }
+
+/**
+ * Delete a logged meal and get updated dashboard summary.
+ * @param {number} mealId - ID of the logged meal to delete
+ * @returns {Promise<Object>} Dashboard summary with daily_goal, total_consumed, remaining, logged_meals_today
+ */
+export async function deleteLoggedMeal(mealId) {
+  const res = await fetch(`${API_BASE_URL}/meals/${mealId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.detail || 'Failed to delete logged meal');
+  return data; // Returns complete dashboard summary
+}
+
+/**
+ * Update a logged meal's calories and meal type, get updated dashboard summary.
+ * @param {number} mealId - ID of the logged meal to update
+ * @param {string} mealType - Type of meal (e.g., Breakfast, Lunch, Dinner, Snack)
+ * @param {number} calories - Number of calories consumed
+ * @returns {Promise<Object>} Dashboard summary with daily_goal, total_consumed, remaining, logged_meals_today
+ */
+export async function updateLoggedMeal(mealId, mealType, calories) {
+  const res = await fetch(`${API_BASE_URL}/meals/${mealId}`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify({ meal_type: mealType, calories })
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.detail || 'Failed to update logged meal');
+  return data; // Returns complete dashboard summary
+}
