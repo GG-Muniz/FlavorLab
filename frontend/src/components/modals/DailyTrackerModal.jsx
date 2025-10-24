@@ -5,11 +5,11 @@ import { useDashboard } from '../../contexts/DashboardContext';
 import { useData } from '../../context/DataContext.jsx';
 
 const DailyTrackerModal = ({ isOpen, onClose }) => {
-  // Get data from DashboardContext instead of local state
-  const { summary, updateSummary } = useDashboard();
+  // Get data from DashboardContext for updates only
+  const { updateSummary } = useDashboard();
 
-  // Get centralized data from DataContext
-  const { loggedMeals, mealPlans, isLoading, addLog, updateLog, deleteLog, logMeal } = useData();
+  // Get centralized data from DataContext (includes summary)
+  const { loggedMeals, mealPlans, summary, isLoading, addLog, updateLog, deleteLog, logMeal } = useData();
 
   // Only keep input form state local
   const [goalInput, setGoalInput] = useState('');
@@ -121,10 +121,10 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
     }
   };
 
-  // Read all display values from context
-  const totalIntake = summary.total_consumed;
-  const savedGoal = summary.daily_goal;
-  const remaining = summary.remaining;
+  // Read all display values from context (with safety checks)
+  const totalIntake = summary?.total_consumed || 0;
+  const savedGoal = summary?.daily_goal || 0;
+  const remaining = summary?.remaining || 0;
   const percentage = savedGoal > 0 ? Math.min(Math.round((totalIntake / savedGoal) * 100), 100) : 0;
 
   // Transform logged meals for display from DataContext

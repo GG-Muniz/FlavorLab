@@ -6,7 +6,7 @@ registration, authentication, and profile management.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status, Body, Request
-import datetime
+from datetime import datetime, UTC
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import UploadFile, File
 import os
@@ -1113,7 +1113,7 @@ async def set_nutrition_goal(
             name=m.name,
             calories=int(m.calories or 0),
             meal_type=m.meal_type or "Unknown",
-            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now().isoformat()
+            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now(UTC).isoformat()
         )
         for m in todays_meals
     ]

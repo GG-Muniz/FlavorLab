@@ -421,6 +421,7 @@ async def log_meal_for_today(
     # Update meal to logged status
     meal.source = MealSource.LOGGED
     meal.date_logged = today
+    meal.updated_at = datetime.now(UTC)  # Explicitly set timestamp to now
     db.commit()
     db.refresh(meal)
 
@@ -447,7 +448,7 @@ async def log_meal_for_today(
             name=m.name,
             calories=int(m.calories or 0),
             meal_type=m.meal_type or "Unknown",
-            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now().isoformat()
+            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now(UTC).isoformat()
         )
         for m in todays_meals
     ]
@@ -521,7 +522,7 @@ async def delete_logged_meal(
             name=m.name,
             calories=int(m.calories or 0),
             meal_type=m.meal_type or "Unknown",
-            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now().isoformat()
+            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now(UTC).isoformat()
         )
         for m in todays_meals
     ]
@@ -599,7 +600,7 @@ async def update_logged_meal(
             name=m.name,
             calories=int(m.calories or 0),
             meal_type=m.meal_type or "Unknown",
-            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now().isoformat()
+            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now(UTC).isoformat()
         )
         for m in todays_meals
     ]
@@ -673,7 +674,7 @@ async def log_manual_calories(
             name=m.name,
             calories=int(m.calories or 0),
             meal_type=m.meal_type or "Unknown",
-            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now().isoformat()
+            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now(UTC).isoformat()
         )
         for m in todays_meals
     ]
