@@ -28,7 +28,7 @@ import { Flame, Calendar } from 'lucide-react';
 import PropTypes from 'prop-types';
 import './MealCard.css';
 
-const MealCard = ({ meal, onClick, onLogMeal }) => {
+const MealCard = ({ meal, onClick, onLogMeal, isLoggedToday }) => {
   /**
    * Get color scheme based on meal type
    * Each meal type has a unique color palette for visual distinction
@@ -248,12 +248,15 @@ const MealCard = ({ meal, onClick, onLogMeal }) => {
           gap: '8px'
         }}>
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={!isLoggedToday ? { scale: 1.02 } : {}}
+            whileTap={!isLoggedToday ? { scale: 0.98 } : {}}
             onClick={(e) => {
               e.stopPropagation(); // Prevent card click
-              onLogMeal(meal);
+              if (!isLoggedToday) {
+                onLogMeal(meal);
+              }
             }}
+            disabled={isLoggedToday}
             style={{
               flex: 1,
               display: 'flex',
@@ -261,18 +264,19 @@ const MealCard = ({ meal, onClick, onLogMeal }) => {
               justifyContent: 'center',
               gap: '6px',
               padding: '10px 16px',
-              background: '#22c55e',
+              background: isLoggedToday ? '#9ca3af' : '#22c55e',
               color: 'white',
               border: 'none',
               borderRadius: '10px',
               fontSize: '13px',
               fontWeight: '600',
-              cursor: 'pointer',
+              cursor: isLoggedToday ? 'not-allowed' : 'pointer',
+              opacity: isLoggedToday ? 0.7 : 1,
               transition: 'all 0.2s'
             }}
           >
-            <Calendar width={16} height={16} />
-            Log for Today
+            {!isLoggedToday && <Calendar width={16} height={16} />}
+            {isLoggedToday ? 'Logged ✔' : 'Log for Today'}
           </motion.button>
         </div>
       )}
@@ -341,7 +345,13 @@ MealCard.propTypes = {
    * Optional: Handler for logging meal for today
    * Receives the meal object as parameter
    */
-  onLogMeal: PropTypes.func
+  onLogMeal: PropTypes.func,
+
+  /**
+   * Optional: Boolean indicating if this meal has already been logged today
+   * When true, the "Log for Today" button will be disabled
+   */
+  isLoggedToday: PropTypes.bool
 };
 
 export default MealCard;

@@ -26,7 +26,7 @@ import { useData } from '../../context/DataContext.jsx';
 
 const MealPlanShowcase = () => {
   const navigate = useNavigate();
-  const { logMeal: logMealFromContext } = useData();
+  const { logMeal: logMealFromContext, loggedMeals } = useData();
 
   // ============================================================================
   // State Management
@@ -374,6 +374,13 @@ const MealPlanShowcase = () => {
   // Main Content - Meal Templates Display
   // ============================================================================
 
+  // Create a Set of unique keys for today's logged meals for fast lookups
+  // Note: loggedMeals from DataContext already contains only today's meals
+  // (pre-filtered by the backend's daily-summary endpoint)
+  const loggedTodayKeys = new Set(
+    loggedMeals.map(meal => `${meal.name}::${meal.meal_type}`) // Unique key: "Name::Type"
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -474,32 +481,39 @@ const MealPlanShowcase = () => {
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '24px'
       }}>
-        {mealTemplates.map((meal, idx) => (
-          <motion.div
-            key={meal.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 * idx, duration: 0.4 }}
-          >
-            <MealCard
-              meal={{
-                id: meal.id,
-                type: meal.meal_type || 'meal',
-                name: meal.name,
-                calories: meal.calories,
-                description: meal.description || 'No description available',
-                ingredients: meal.ingredients,
-                servings: meal.servings,
-                prep_time_minutes: meal.prep_time_minutes,
-                cook_time_minutes: meal.cook_time_minutes,
-                instructions: meal.instructions,
-                nutrition: meal.nutrition_info
-              }}
-              onClick={() => setSelectedMeal(meal)}
-              onLogMeal={handleLogMeal}
-            />
-          </motion.div>
-        ))}
+        {mealTemplates.map((meal, idx) => {
+          // Create unique key for this template and check if it's been logged today
+          const mealKey = `${meal.name}::${meal.meal_type}`;
+          const isLoggedToday = loggedTodayKeys.has(mealKey);
+
+          return (
+            <motion.div
+              key={meal.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * idx, duration: 0.4 }}
+            >
+              <MealCard
+                meal={{
+                  id: meal.id,
+                  type: meal.meal_type || 'meal',
+                  name: meal.name,
+                  calories: meal.calories,
+                  description: meal.description || 'No description available',
+                  ingredients: meal.ingredients,
+                  servings: meal.servings,
+                  prep_time_minutes: meal.prep_time_minutes,
+                  cook_time_minutes: meal.cook_time_minutes,
+                  instructions: meal.instructions,
+                  nutrition: meal.nutrition_info
+                }}
+                onClick={() => setSelectedMeal(meal)}
+                onLogMeal={handleLogMeal}
+                isLoggedToday={isLoggedToday}
+              />
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Meal Detail Modal */}
