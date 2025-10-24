@@ -17,16 +17,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateMealPlan } from '../../services/mealPlanApi';
-import { getMeals, logMealForToday } from '../../services/mealsApi';
+import { getMeals } from '../../services/mealsApi';
 import { motion } from 'framer-motion';
 import { ChefHat, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
 import MealCard from './MealCard';
 import MealDetailModal from './MealDetailModal';
-import { useDashboard } from '../../contexts/DashboardContext';
+import { useData } from '../../context/DataContext.jsx';
 
 const MealPlanShowcase = () => {
   const navigate = useNavigate();
-  const { updateSummary } = useDashboard();
+  const { logMeal: logMealFromContext } = useData();
 
   // ============================================================================
   // State Management
@@ -114,11 +114,8 @@ const MealPlanShowcase = () => {
    */
   const handleLogMeal = async (mealTemplate) => {
     try {
-      // Call the new endpoint that logs the meal AND returns dashboard summary
-      const dashboardSummary = await logMealForToday(mealTemplate.id);
-
-      // Update the dashboard context with the new summary
-      updateSummary(dashboardSummary);
+      // Call DataContext logMeal which handles API and refetch
+      await logMealFromContext(mealTemplate.id);
 
       // Navigate to dashboard tab
       navigate('/?tab=dashboard');

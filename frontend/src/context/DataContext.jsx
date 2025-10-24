@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
-import { getMeals, deleteLoggedMeal, updateLoggedMeal, logManualCalories, fetchMealsForDate, fetchNutritionSummaryForDate } from '../services/mealsApi';
+import { getMeals, deleteLoggedMeal, updateLoggedMeal, logManualCalories, fetchMealsForDate, fetchNutritionSummaryForDate, setCalorieGoal } from '../services/mealsApi';
 
 const DataContext = createContext();
 
@@ -108,6 +108,16 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  const setGoal = async (goalCalories) => {
+    try {
+      await setCalorieGoal(goalCalories);
+      await fetchData(); // Re-sync to get updated goal
+    } catch (error) {
+      console.error("Error setting calorie goal:", error);
+      throw error; // Re-throw so component can handle UI error state
+    }
+  };
+
   const value = {
     loggedMeals,
     mealPlans,
@@ -117,6 +127,7 @@ export const DataProvider = ({ children }) => {
     updateLog,
     deleteLog,
     logMeal,
+    setGoal,
     getMealsForDate,
     getNutritionSummaryForDate,
   };

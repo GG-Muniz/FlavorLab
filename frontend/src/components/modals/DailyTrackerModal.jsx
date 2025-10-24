@@ -1,15 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, Calculator, Target, Flame, TrendingUp, Plus, ChevronDown, Utensils, Edit, Trash2 } from 'lucide-react';
-import { setCalorieGoal, logManualCalories } from '../../services/mealsApi';
-import { useDashboard } from '../../contexts/DashboardContext';
 import { useData } from '../../context/DataContext.jsx';
 
 const DailyTrackerModal = ({ isOpen, onClose }) => {
-  // Get data from DashboardContext for updates only
-  const { updateSummary } = useDashboard();
-
   // Get centralized data from DataContext (includes summary)
-  const { loggedMeals, mealPlans, summary, isLoading, addLog, updateLog, deleteLog, logMeal } = useData();
+  const { loggedMeals, mealPlans, summary, isLoading, addLog, updateLog, deleteLog, logMeal, setGoal } = useData();
 
   // Only keep input form state local
   const [goalInput, setGoalInput] = useState('');
@@ -20,6 +15,7 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
   // Tab state
   const [activeTab, setActiveTab] = useState('log-intake');
 
+  // Success message state
   const [successMessage, setSuccessMessage] = useState('');
 
   // Edit state
@@ -59,8 +55,6 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
       return;
     }
     await updateLog(editingMeal.log_id, editMealType, parseInt(editCalories));
-    setSuccessMessage('Meal updated successfully!');
-    setTimeout(() => setSuccessMessage(''), 3000);
 
     // Close edit modal
     setIsEditModalOpen(false);
@@ -83,23 +77,15 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
   const handleSaveGoal = async () => {
     if (goalInput && !isNaN(goalInput)) {
       try {
-        setIsLoading(true);
-        setError(null);
-
-        // Call API which returns updated dashboard summary
-        const updatedSummary = await setCalorieGoal(Number(goalInput));
-
-        // Update the global context with new data
-        updateSummary(updatedSummary);
+        // Call DataContext setGoal which handles API and refetch
+        await setGoal(Number(goalInput));
 
         // Reset input
         setGoalInput('');
         console.log('Calorie goal saved successfully');
       } catch (err) {
         console.error('Error saving calorie goal:', err);
-        setError('Failed to save calorie goal. Please try again.');
-      } finally {
-        setIsLoading(false);
+        alert('Failed to save calorie goal. Please try again.');
       }
     }
   };
@@ -112,7 +98,7 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
   const handleAddIntake = async () => {
     if (calorieInput && !isNaN(calorieInput) && mealName.trim()) {
       await addLog(mealName, Number(calorieInput));
-      setSuccessMessage('Calorie intake logged successfully!');
+      setSuccessMessage('Meal logged successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
 
       // Reset inputs
@@ -301,20 +287,6 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
               Meal Plans
             </button>
           </div>
-          {/* Error Message */}
-          {successMessage && (
-            <div style={{
-              padding: '12px 16px',
-              background: '#fef2f2',
-              border: '1px solid #fecaca',
-              borderRadius: '12px',
-              marginBottom: '16px',
-              color: '#991b1b',
-              fontSize: '14px'
-            }}>
-              {successMessage}
-            </div>
-          )}
 
           {/* Success Message */}
           {successMessage && (

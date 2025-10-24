@@ -392,38 +392,66 @@ async def log_meal_for_today(
     current_user: models.User = Depends(get_current_active_user),
 ) -> DailyCaloriesSummaryResponse:
     """
-    Log a meal template as consumed for today and return updated dashboard summary.
+    Create a NEW logged meal entry from an existing meal template.
 
     This endpoint:
-    1. Finds the specified meal and verifies ownership
-    2. Updates it to source=LOGGED with date_logged=today
-    3. Calculates total calories consumed today
-    4. Fetches user's daily calorie goal
-    5. Returns complete dashboard summary
+    1. Finds the specified meal template and verifies ownership
+    2. Verifies it is a GENERATED template (not already logged)
+    3. CREATES A NEW meal record with source=LOGGED and date_logged=today
+    4. Preserves the original template for future use
+    5. Calculates total calories consumed today
+    6. Fetches user's daily calorie goal
+    7. Returns complete dashboard summary
+
+    CRITICAL: This creates a new database record. The template remains unchanged
+    and can be logged multiple times, with each log getting its own timestamp.
     """
     from ..models.calorie_tracking import DailyCalorieGoal
 
     # Get today's date
     today = date.today()
 
-    # Find the meal
-    meal = db.query(Meal).filter(
+    # Find the meal TEMPLATE to use as source
+    template = db.query(Meal).filter(
         Meal.id == meal_id,
         Meal.user_id == current_user.id
     ).first()
 
-    if not meal:
+    if not template:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Meal with ID {meal_id} not found"
+            detail=f"Meal template with ID {meal_id} not found"
         )
 
-    # Update meal to logged status
-    meal.source = MealSource.LOGGED
-    meal.date_logged = today
-    meal.updated_at = datetime.now(UTC)  # Explicitly set timestamp to now
+    # Verify this is a template (source=GENERATED), not an already-logged meal
+    if template.source != MealSource.GENERATED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Meal {meal_id} is not a template (source={template.source.value}). Only GENERATED meals can be logged."
+        )
+
+    # CRITICAL FIX: Create a NEW meal record for the log entry
+    # This preserves the original template and allows multiple logs
+    logged_meal = Meal(
+        user_id=current_user.id,
+        name=template.name,
+        meal_type=template.meal_type,
+        calories=template.calories,
+        description=template.description,
+        ingredients=template.ingredients,
+        servings=template.servings,
+        prep_time_minutes=template.prep_time_minutes,
+        cook_time_minutes=template.cook_time_minutes,
+        instructions=template.instructions,
+        nutrition_info=template.nutrition_info,
+        source=MealSource.LOGGED,  # Mark as logged entry
+        date_logged=today,  # Set log date
+        # created_at and updated_at will be auto-set to NOW by database
+    )
+
+    db.add(logged_meal)
     db.commit()
-    db.refresh(meal)
+    db.refresh(logged_meal)
 
     # Calculate total consumed today
     todays_meals = db.query(Meal).filter(
