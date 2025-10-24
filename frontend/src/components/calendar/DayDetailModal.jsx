@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar as CalendarIcon, TrendingUp, FileText } from 'lucide-react';
 import moment from 'moment';
 
-const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave, onDelete }) => {
+const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave, onDelete, isLoading }) => {
   const [note, setNote] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editedNote, setEditedNote] = useState('');
@@ -193,7 +193,42 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
               overflowY: 'auto',
               padding: '24px'
             }}>
-              {hasMealLog ? (
+              {isLoading ? (
+                /* LOADING STATE */
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '48px 20px',
+                  minHeight: '200px'
+                }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    border: '4px solid #f3f4f6',
+                    borderTop: '4px solid #22c55e',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                  <style>
+                    {`
+                      @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                      }
+                    `}
+                  </style>
+                  <p style={{
+                    marginTop: '16px',
+                    fontSize: '14px',
+                    color: '#6b7280',
+                    fontWeight: '500'
+                  }}>
+                    Loading meal data...
+                  </p>
+                </div>
+              ) : hasMealLog ? (
                 /* STATE 1: Meal Log Display - Show meal summary */
                 <>
                   {/* Daily Totals Summary */}

@@ -179,3 +179,33 @@ export async function updateLoggedMeal(mealId, mealType, calories) {
   if (!res.ok) throw new Error(data?.detail || 'Failed to update logged meal');
   return data; // Returns complete dashboard summary
 }
+
+/**
+ * Get nutrition summary for a specific date.
+ * Used by Calendar to display historical daily totals.
+ * @param {string} date - Date in YYYY-MM-DD format
+ * @returns {Promise<Object>} Nutrition summary with total_calories, total_protein_g, total_carbs_g, total_fat_g
+ */
+export async function fetchNutritionSummaryForDate(date) {
+  const res = await fetch(`${API_BASE_URL}/meals/summary/${date}`, {
+    method: 'GET',
+    headers: authHeaders(),
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.detail || 'Failed to fetch nutrition summary');
+  return data;
+}
+
+/**
+ * Get all logged meals for a specific date.
+ * Used by Calendar to display meal history for a selected day.
+ * @param {string} date - Date in YYYY-MM-DD format
+ * @returns {Promise<Array>} Array of logged meals for the specified date
+ */
+export async function fetchMealsForDate(date) {
+  // Get all logged meals
+  const allLoggedMeals = await getMeals('logged');
+
+  // Filter to only those logged on the specified date
+  return allLoggedMeals.filter(meal => meal.date_logged === date);
+}

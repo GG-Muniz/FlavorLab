@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
-import { getMeals, deleteLoggedMeal, updateLoggedMeal, logManualCalories } from '../services/mealsApi';
+import { getMeals, deleteLoggedMeal, updateLoggedMeal, logManualCalories, fetchMealsForDate, fetchNutritionSummaryForDate } from '../services/mealsApi';
 
 const DataContext = createContext();
 
@@ -10,6 +10,7 @@ export const useData = () => {
 export const DataProvider = ({ children }) => {
   const [loggedMeals, setLoggedMeals] = useState([]);
   const [mealPlans, setMealPlans] = useState([]);
+  const [summary, setSummary] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -26,6 +27,7 @@ export const DataProvider = ({ children }) => {
       ]);
       setLoggedMeals(summaryResponse.logged_meals_today);
       setMealPlans(plansResponse);
+      setSummary(summaryResponse); // Store full summary
     } catch (error) {
       console.error("Failed to fetch data", error);
     } finally {
@@ -87,14 +89,36 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  // Calendar-specific functions for fetching historical data
+  const getMealsForDate = async (date) => {
+    try {
+      return await fetchMealsForDate(date);
+    } catch (error) {
+      console.error("Error fetching meals for date:", error);
+      return [];
+    }
+  };
+
+  const getNutritionSummaryForDate = async (date) => {
+    try {
+      return await fetchNutritionSummaryForDate(date);
+    } catch (error) {
+      console.error("Error fetching nutrition summary for date:", error);
+      return { total_calories: 0, total_protein_g: 0, total_carbs_g: 0, total_fat_g: 0 };
+    }
+  };
+
   const value = {
     loggedMeals,
     mealPlans,
+    summary,
     isLoading,
     addLog,
     updateLog,
     deleteLog,
     logMeal,
+    getMealsForDate,
+    getNutritionSummaryForDate,
   };
 
   return (
