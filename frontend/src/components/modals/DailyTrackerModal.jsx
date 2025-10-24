@@ -1,49 +1,82 @@
-import { useState, useEffect } from 'react';
-import { X, Calculator, Target, Flame, TrendingUp, Plus, ChevronDown, Utensils } from 'lucide-react';
-import { setCalorieGoal, logManualCalories, getMeals } from '../../services/mealsApi';
+import { useState, useEffect, useCallback } from 'react';
+import { X, Calculator, Target, Flame, TrendingUp, Plus, ChevronDown, Utensils, Edit, Trash2 } from 'lucide-react';
+import { setCalorieGoal, logManualCalories } from '../../services/mealsApi';
 import { useDashboard } from '../../contexts/DashboardContext';
+import { useData } from '../../context/DataContext.jsx';
 
 const DailyTrackerModal = ({ isOpen, onClose }) => {
   // Get data from DashboardContext instead of local state
   const { summary, updateSummary } = useDashboard();
+
+  // Get centralized data from DataContext
+  const { loggedMeals, mealPlans, isLoading, addLog, updateLog, deleteLog, logMeal } = useData();
 
   // Only keep input form state local
   const [goalInput, setGoalInput] = useState('');
   const [calorieInput, setCalorieInput] = useState('');
   const [mealName, setMealName] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   // Tab state
   const [activeTab, setActiveTab] = useState('log-intake');
 
-  // Meal plans state
-  const [mealPlans, setMealPlans] = useState([]);
-  const [mealPlansLoading, setMealPlansLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Edit state
+  const [editingMeal, setEditingMeal] = useState(null);
+  const [editCalories, setEditCalories] = useState('');
+  const [editMealType, setEditMealType] = useState('');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const mealOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
-  // Fetch meal plans when component mounts
-  useEffect(() => {
-    if (isOpen) {
-      fetchMealPlans();
-    }
-  }, [isOpen]);
 
-  const fetchMealPlans = async () => {
-    try {
-      setMealPlansLoading(true);
-      const plans = await getMeals('generated');
-      setMealPlans(plans);
-    } catch (err) {
-      console.error('Error fetching meal plans:', err);
-      setError('Failed to load meal plans');
-    } finally {
-      setMealPlansLoading(false);
+  // ALL HOOKS MUST BE HERE, AT THE TOP LEVEL
+  const handleLogMealPlan = useCallback(async (plan) => {
+    await logMeal(plan.id);
+    setSuccessMessage('Meal logged successfully!');
+    setTimeout(() => setSuccessMessage(''), 3000);
+  }, [logMeal]);
+
+  const handleDeleteMeal = useCallback(async (mealId) => {
+    if (!confirm('Are you sure you want to delete this meal?')) {
+      return;
     }
-  };
+    await deleteLog(mealId);
+    setSuccessMessage('Meal deleted successfully!');
+    setTimeout(() => setSuccessMessage(''), 3000);
+  }, [deleteLog]);
+
+  const handleEditMeal = useCallback((meal) => {
+    setEditingMeal(meal);
+    setEditCalories(meal.calories.toString());
+    setEditMealType(meal.meal_type || 'Breakfast');
+    setIsEditModalOpen(true);
+  }, []);
+
+  const handleUpdateMeal = useCallback(async () => {
+    if (!editingMeal || !editCalories || !editMealType) {
+      return;
+    }
+    await updateLog(editingMeal.log_id, editMealType, parseInt(editCalories));
+    setSuccessMessage('Meal updated successfully!');
+    setTimeout(() => setSuccessMessage(''), 3000);
+
+    // Close edit modal
+    setIsEditModalOpen(false);
+    setEditingMeal(null);
+    setEditCalories('');
+    setEditMealType('');
+  }, [editingMeal, editCalories, editMealType, updateLog]);
+
+  const handleCancelEdit = useCallback(() => {
+    setIsEditModalOpen(false);
+    setEditingMeal(null);
+    setEditCalories('');
+    setEditMealType('');
+  }, []);
+
+  // --- END OF HOOKS SECTION ---
 
   if (!isOpen) return null;
 
@@ -78,67 +111,13 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
 
   const handleAddIntake = async () => {
     if (calorieInput && !isNaN(calorieInput) && mealName.trim()) {
-      try {
-        setIsLoading(true);
-        setError(null);
+      await addLog(mealName, Number(calorieInput));
+      setSuccessMessage('Calorie intake logged successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
 
-        // Call API which returns updated dashboard summary
-        const updatedSummary = await logManualCalories(mealName, Number(calorieInput));
-
-        // Update the global context with new data
-        updateSummary(updatedSummary);
-
-        // Reset inputs
-        setCalorieInput('');
-        setMealName('');
-
-        console.log('Calorie intake logged successfully');
-      } catch (err) {
-        console.error('Error logging calorie intake:', err);
-        setError('Failed to log calorie intake. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const handleLogMealPlan = async (plan) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      // Use the correct endpoint: POST /api/v1/meals/{meal_id}/log
-      const response = await fetch(`/api/v1/meals/${plan.id}/log`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData?.detail || 'Failed to log meal plan');
-      }
-
-      const updatedSummary = await response.json();
-
-      // Update the global context with new data
-      updateSummary(updatedSummary);
-
-      // Show success message
-      setSuccessMessage('Meal logged successfully!');
-      setTimeout(() => setSuccessMessage(''), 3000); // Clear after 3 seconds
-
-      // Remove the logged meal from the local state
-      setMealPlans(currentMealPlans => currentMealPlans.filter(p => p.id !== plan.id));
-
-      console.log('Meal plan logged successfully');
-    } catch (err) {
-      console.error('Error logging meal plan:', err);
-      setError('Failed to log meal plan. Please try again.');
-    } finally {
-      setIsLoading(false);
+      // Reset inputs
+      setCalorieInput('');
+      setMealName('');
     }
   };
 
@@ -148,11 +127,13 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
   const remaining = summary.remaining;
   const percentage = savedGoal > 0 ? Math.min(Math.round((totalIntake / savedGoal) * 100), 100) : 0;
 
-  // Transform logged meals for display
-  const intakeHistory = summary.logged_meals_today.map((meal, index) => ({
+  // Transform logged meals for display from DataContext
+  const intakeHistory = loggedMeals.map((meal, index) => ({
     id: index,
+    log_id: meal.log_id,
     meal: meal.name,
     calories: meal.calories,
+    meal_type: meal.meal_type,
     timestamp: new Date(meal.logged_at).toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit'
@@ -321,7 +302,7 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
             </button>
           </div>
           {/* Error Message */}
-          {error && (
+          {successMessage && (
             <div style={{
               padding: '12px 16px',
               background: '#fef2f2',
@@ -331,7 +312,7 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
               color: '#991b1b',
               fontSize: '14px'
             }}>
-              {error}
+              {successMessage}
             </div>
           )}
 
@@ -739,7 +720,7 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
                       alignItems: 'center'
                     }}
                   >
-                    <div>
+                    <div style={{ flex: 1 }}>
                       <p style={{
                         fontSize: '14px',
                         fontWeight: '600',
@@ -757,19 +738,74 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
                       </p>
                     </div>
                     <div style={{
-                      padding: '6px 12px',
-                      background: '#f0fdf4',
-                      borderRadius: '8px',
-                      border: '1px solid #bbf7d0'
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
                     }}>
-                      <p style={{
-                        fontSize: '14px',
-                        fontWeight: '700',
-                        color: '#16a34a',
-                        margin: 0
+                      <div style={{
+                        padding: '6px 12px',
+                        background: '#f0fdf4',
+                        borderRadius: '8px',
+                        border: '1px solid #bbf7d0'
                       }}>
-                        {item.calories} cal
-                      </p>
+                        <p style={{
+                          fontSize: '14px',
+                          fontWeight: '700',
+                          color: '#16a34a',
+                          margin: 0
+                        }}>
+                          {item.calories} cal
+                        </p>
+                      </div>
+                      <div style={{
+                        display: 'flex',
+                        gap: '4px'
+                      }}>
+                        <button
+                          onClick={() => handleEditMeal(item)}
+                          style={{
+                            padding: '6px',
+                            background: '#f3f4f6',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#e5e7eb';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = '#f3f4f6';
+                          }}
+                        >
+                          <Edit width={14} height={14} color="#6b7280" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMeal(item.log_id)}
+                          style={{
+                            padding: '6px',
+                            background: '#fef2f2',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#fee2e2';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = '#fef2f2';
+                          }}
+                        >
+                          <Trash2 width={14} height={14} color="#dc2626" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -799,7 +835,7 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
                 </h3>
               </div>
 
-              {mealPlansLoading ? (
+              {isLoading ? (
                 <div style={{
                   padding: '20px',
                   textAlign: 'center',
@@ -952,6 +988,159 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
           )}
         </div>
       </div>
+
+      {/* Edit Meal Modal */}
+      {isEditModalOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={handleCancelEdit}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 2001,
+              backdropFilter: 'blur(4px)'
+            }}
+          />
+
+          {/* Edit Modal */}
+          <div style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '90%',
+            maxWidth: '400px',
+            background: '#ffffff',
+            borderRadius: '16px',
+            boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+            zIndex: 2002,
+            padding: '24px'
+          }}>
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: '700',
+              color: '#111827',
+              margin: '0 0 16px 0'
+            }}>
+              Edit Meal
+            </h3>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#374151',
+                marginBottom: '6px'
+              }}>
+                Meal Type
+              </label>
+              <select
+                value={editMealType}
+                onChange={(e) => setEditMealType(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  background: '#ffffff'
+                }}
+              >
+                {mealOptions.map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#374151',
+                marginBottom: '6px'
+              }}>
+                Calories
+              </label>
+              <input
+                type="number"
+                value={editCalories}
+                onChange={(e) => setEditCalories(e.target.value)}
+                placeholder="Enter calories"
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                onClick={handleCancelEdit}
+                style={{
+                  padding: '10px 20px',
+                  background: '#f3f4f6',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#e5e7eb';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#f3f4f6';
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdateMeal}
+                disabled={isLoading}
+                style={{
+                  padding: '10px 20px',
+                  background: isLoading ? '#9ca3af' : '#8b5cf6',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#ffffff',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isLoading) {
+                    e.currentTarget.style.background = '#7c3aed';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isLoading) {
+                    e.currentTarget.style.background = '#8b5cf6';
+                  }
+                }}
+              >
+                {isLoading ? 'Updating...' : 'Update Meal'}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 };
