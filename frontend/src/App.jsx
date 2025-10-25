@@ -15,6 +15,7 @@ import { getDailyCalorieSummary } from './services/calorieApi';
 import MealPlanShowcase from './components/mealplan/MealPlanShowcase';
 import MealHistory from './components/mealhistory/MealHistory';
 import SmartActionStack from './components/dashboard/SmartActionStack';
+import MacronutrientsCard from './components/dashboard/MacronutrientsCard';
 import { fetchNutritionGoals, fetchDailySummary } from './services/nutritionApi';
 import { getDailySummary } from './services/mealsApi';
 
@@ -922,79 +923,10 @@ const HealthTipOfTheDay = () => {
               </div>
 
               {/* Macronutrients Card */}
-              <Card>
-                <div style={{ position: 'relative' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                    <div style={{
-                      width: 32,
-                      height: 32,
-                      background: '#f0fdf4',
-                      borderRadius: '8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <Target width={20} height={20} color="#22c55e" />
-                    </div>
-                    <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#374151', margin: 0 }}>
-                      Macronutrients
-                    </h3>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Protein</span>
-                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>
-                          {currentNutritionData.protein.current}g / {currentNutritionData.protein.target}g
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '4px', height: '8px' }}>
-                        {Array.from({ length: 10 }).map((_, i) => {
-                          const filled = i < Math.floor((currentNutritionData.protein.current / currentNutritionData.protein.target) * 10);
-                          return (
-                            <div key={i} style={{ flex: 1, background: filled ? '#ef4444' : '#f3f4f6', borderRadius: '4px' }} />
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Carbs</span>
-                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>
-                          {currentNutritionData.carbs.current}g / {currentNutritionData.carbs.target}g
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '4px', height: '8px' }}>
-                        {Array.from({ length: 10 }).map((_, i) => {
-                          const filled = i < Math.floor((currentNutritionData.carbs.current / currentNutritionData.carbs.target) * 10);
-                          return (
-                            <div key={i} style={{ flex: 1, background: filled ? '#fbbf24' : '#f3f4f6', borderRadius: '4px' }} />
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Fat</span>
-                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>
-                          {currentNutritionData.fat.current}g / {currentNutritionData.fat.target}g
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '4px', height: '8px' }}>
-                        {Array.from({ length: 10 }).map((_, i) => {
-                          const filled = i < Math.floor((currentNutritionData.fat.current / currentNutritionData.fat.target) * 10);
-                          return (
-                            <div key={i} style={{ flex: 1, background: filled ? '#8b5cf6' : '#f3f4f6', borderRadius: '4px' }} />
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
+              <MacronutrientsCard
+                macros={summary?.macros}
+                isLoading={isLoading}
+              />
 
               {/* Today's Activity Card */}
               <Card>

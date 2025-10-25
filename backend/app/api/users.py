@@ -514,6 +514,7 @@ async def generate_llm_meal_plan_endpoint(
                     protein_g=meal_data.nutrition.get('protein_g') if hasattr(meal_data, 'nutrition') and meal_data.nutrition else None,
                     carbs_g=meal_data.nutrition.get('carbs_g') if hasattr(meal_data, 'nutrition') and meal_data.nutrition else None,
                     fat_g=meal_data.nutrition.get('fat_g') if hasattr(meal_data, 'nutrition') and meal_data.nutrition else None,
+                    fiber_g=meal_data.nutrition.get('fiber_g') if hasattr(meal_data, 'nutrition') and meal_data.nutrition else None,
                     description=meal_data.description,
                     servings=meal_data.servings if hasattr(meal_data, 'servings') else None,
                     prep_time_minutes=meal_data.prep_time_minutes if hasattr(meal_data, 'prep_time_minutes') else None,
@@ -1080,14 +1081,33 @@ async def set_nutrition_goal(
         DailyCalorieGoal.user_id == current_user.id
     ).first()
 
+    # Calculate macro goals based on calorie goal
+    # Using the ratios from the mission brief:
+    # Protein: 30% of calories (grams = calories * 0.30 / 4)
+    # Carbs: 40% of calories (grams = calories * 0.40 / 4)
+    # Fat: 30% of calories (grams = calories * 0.30 / 9)
+    # Fiber: Fixed 25g
+    protein_goal = (request.goal_calories * 0.30) / 4
+    carbs_goal = (request.goal_calories * 0.40) / 4
+    fat_goal = (request.goal_calories * 0.30) / 9
+    fiber_goal = 25.0  # Fixed goal
+
     if calorie_goal:
         # Update existing goal
         calorie_goal.goal_calories = request.goal_calories
+        calorie_goal.goal_protein_g = protein_goal
+        calorie_goal.goal_carbs_g = carbs_goal
+        calorie_goal.goal_fat_g = fat_goal
+        calorie_goal.goal_fiber_g = fiber_goal
     else:
         # Create new goal
         calorie_goal = DailyCalorieGoal(
             user_id=current_user.id,
-            goal_calories=request.goal_calories
+            goal_calories=request.goal_calories,
+            goal_protein_g=protein_goal,
+            goal_carbs_g=carbs_goal,
+            goal_fat_g=fat_goal,
+            goal_fiber_g=fiber_goal
         )
         db.add(calorie_goal)
 
@@ -1118,11 +1138,35 @@ async def set_nutrition_goal(
         for m in todays_meals
     ]
 
+    # Calculate macro totals from logged meals
+    total_protein = sum(m.protein_g or 0 for m in todays_meals)
+    total_carbs = sum(m.carbs_g or 0 for m in todays_meals)
+    total_fat = sum(m.fat_g or 0 for m in todays_meals)
+    total_fiber = sum(m.fiber_g or 0 for m in todays_meals)
+
     return DailyCaloriesSummaryResponse(
         daily_goal=request.goal_calories,
         total_consumed=int(total_consumed),
         remaining=remaining,
-        logged_meals_today=logged_meals
+        logged_meals_today=logged_meals,
+        macros={
+            "protein": {
+                "consumed": round(total_protein, 1),
+                "goal": round(protein_goal, 1)
+            },
+            "carbs": {
+                "consumed": round(total_carbs, 1),
+                "goal": round(carbs_goal, 1)
+            },
+            "fat": {
+                "consumed": round(total_fat, 1),
+                "goal": round(fat_goal, 1)
+            },
+            "fiber": {
+                "consumed": round(total_fiber, 1),
+                "goal": round(fiber_goal, 1)
+            }
+        }
     )
 
 

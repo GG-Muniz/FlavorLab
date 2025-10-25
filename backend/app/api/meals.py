@@ -30,6 +30,57 @@ from ..schemas.meals import (
 )
 
 
+def extract_macro_nutrients(nutrition_info):
+    """Extract macro nutrients from nutrition_info JSON and return as dict."""
+    if not nutrition_info:
+        return {"protein_g": None, "carbs_g": None, "fat_g": None, "fiber_g": None}
+
+    def parse_nutrient(value):
+        """Parse nutrient value like '35g' or '35' to float."""
+        if not value:
+            return None
+        # Remove 'g' suffix and convert to float
+        try:
+            return float(str(value).replace('g', '').strip())
+        except (ValueError, TypeError):
+            return None
+
+    return {
+        "protein_g": parse_nutrient(nutrition_info.get("protein")),
+        "carbs_g": parse_nutrient(nutrition_info.get("carbs")),
+        "fat_g": parse_nutrient(nutrition_info.get("fat")),
+        "fiber_g": parse_nutrient(nutrition_info.get("fiber"))
+    }
+
+
+def create_macro_response(total_protein, total_carbs, total_fat, total_fiber, calorie_goal):
+    """Helper function to create macro response with consumed and goal values."""
+    # Get macro goals from calorie goal record
+    protein_goal = calorie_goal.goal_protein_g if calorie_goal and calorie_goal.goal_protein_g else 150.0
+    carbs_goal = calorie_goal.goal_carbs_g if calorie_goal and calorie_goal.goal_carbs_g else 200.0
+    fat_goal = calorie_goal.goal_fat_g if calorie_goal and calorie_goal.goal_fat_g else 67.0
+    fiber_goal = calorie_goal.goal_fiber_g if calorie_goal and calorie_goal.goal_fiber_g else 25.0
+
+    return {
+        "protein": {
+            "consumed": round(total_protein, 1),
+            "goal": round(protein_goal, 1)
+        },
+        "carbs": {
+            "consumed": round(total_carbs, 1),
+            "goal": round(carbs_goal, 1)
+        },
+        "fat": {
+            "consumed": round(total_fat, 1),
+            "goal": round(fat_goal, 1)
+        },
+        "fiber": {
+            "consumed": round(total_fiber, 1),
+            "goal": round(fiber_goal, 1)
+        }
+    }
+
+
 router = APIRouter(prefix="/meals", tags=["Meals"])
 
 
@@ -253,12 +304,19 @@ async def log_meal_from_template(
         )
 
     try:
+        # Extract macro nutrients from nutrition_info
+        macro_nutrients = extract_macro_nutrients(template.nutrition_info)
+
         # Create a new meal record copying all data from template
         logged_meal = Meal(
             user_id=current_user.id,
             name=template.name,
             meal_type=template.meal_type,
             calories=template.calories,
+            protein_g=macro_nutrients["protein_g"],
+            carbs_g=macro_nutrients["carbs_g"],
+            fat_g=macro_nutrients["fat_g"],
+            fiber_g=macro_nutrients["fiber_g"],
             description=template.description,
             ingredients=template.ingredients,
             servings=template.servings,
@@ -430,6 +488,9 @@ async def log_meal_for_today(
             detail=f"Meal {meal_id} is not a template (source={template.source.value}). Only GENERATED meals can be logged."
         )
 
+    # Extract macro nutrients from nutrition_info
+    macro_nutrients = extract_macro_nutrients(template.nutrition_info)
+
     # CRITICAL FIX: Create a NEW meal record for the log entry
     # This preserves the original template and allows multiple logs
     logged_meal = Meal(
@@ -437,6 +498,10 @@ async def log_meal_for_today(
         name=template.name,
         meal_type=template.meal_type,
         calories=template.calories,
+        protein_g=macro_nutrients["protein_g"],
+        carbs_g=macro_nutrients["carbs_g"],
+        fat_g=macro_nutrients["fat_g"],
+        fiber_g=macro_nutrients["fiber_g"],
         description=template.description,
         ingredients=template.ingredients,
         servings=template.servings,
@@ -460,6 +525,12 @@ async def log_meal_for_today(
     ).all()
 
     total_consumed = sum(m.calories or 0 for m in todays_meals)
+
+    # Calculate macro totals
+    total_protein = sum(m.protein_g or 0 for m in todays_meals)
+    total_carbs = sum(m.carbs_g or 0 for m in todays_meals)
+    total_fat = sum(m.fat_g or 0 for m in todays_meals)
+    total_fiber = sum(m.fiber_g or 0 for m in todays_meals)
 
     # Get user's daily calorie goal
     calorie_goal = db.query(DailyCalorieGoal).filter(
@@ -485,7 +556,8 @@ async def log_meal_for_today(
         daily_goal=daily_goal,
         total_consumed=int(total_consumed),
         remaining=remaining,
-        logged_meals_today=logged_meals
+        logged_meals_today=logged_meals,
+        macros=create_macro_response(total_protein, total_carbs, total_fat, total_fiber, calorie_goal)
     )
 
 
@@ -535,6 +607,12 @@ async def delete_logged_meal(
 
     total_consumed = sum(m.calories or 0 for m in todays_meals)
 
+    # Calculate macro totals
+    total_protein = sum(m.protein_g or 0 for m in todays_meals)
+    total_carbs = sum(m.carbs_g or 0 for m in todays_meals)
+    total_fat = sum(m.fat_g or 0 for m in todays_meals)
+    total_fiber = sum(m.fiber_g or 0 for m in todays_meals)
+
     # Get user's daily calorie goal
     calorie_goal = db.query(DailyCalorieGoal).filter(
         DailyCalorieGoal.user_id == current_user.id
@@ -559,7 +637,8 @@ async def delete_logged_meal(
         daily_goal=daily_goal,
         total_consumed=int(total_consumed),
         remaining=remaining,
-        logged_meals_today=logged_meals
+        logged_meals_today=logged_meals,
+        macros=create_macro_response(total_protein, total_carbs, total_fat, total_fiber, calorie_goal)
     )
 
 
@@ -613,6 +692,12 @@ async def update_logged_meal(
 
     total_consumed = sum(m.calories or 0 for m in todays_meals)
 
+    # Calculate macro totals
+    total_protein = sum(m.protein_g or 0 for m in todays_meals)
+    total_carbs = sum(m.carbs_g or 0 for m in todays_meals)
+    total_fat = sum(m.fat_g or 0 for m in todays_meals)
+    total_fiber = sum(m.fiber_g or 0 for m in todays_meals)
+
     # Get user's daily calorie goal
     calorie_goal = db.query(DailyCalorieGoal).filter(
         DailyCalorieGoal.user_id == current_user.id
@@ -637,7 +722,8 @@ async def update_logged_meal(
         daily_goal=daily_goal,
         total_consumed=int(total_consumed),
         remaining=remaining,
-        logged_meals_today=logged_meals
+        logged_meals_today=logged_meals,
+        macros=create_macro_response(total_protein, total_carbs, total_fat, total_fiber, calorie_goal)
     )
 
 
@@ -661,12 +747,16 @@ async def log_manual_calories(
     # Get today's date
     today = date.today()
 
-    # Create manual meal entry
+    # Create manual meal entry (no macro nutrients for manual entries)
     manual_meal = Meal(
         user_id=current_user.id,
         name=f"Manual Entry - {request.meal_type}",
         meal_type=request.meal_type,
         calories=request.calories,
+        protein_g=None,  # Manual entries don't have macro data
+        carbs_g=None,
+        fat_g=None,
+        fiber_g=None,
         source=MealSource.LOGGED,
         date_logged=today,
         description=f"Manually logged {request.calories} calories for {request.meal_type}",
@@ -686,6 +776,12 @@ async def log_manual_calories(
     ).all()
 
     total_consumed = sum(m.calories or 0 for m in todays_meals)
+
+    # Calculate macro totals
+    total_protein = sum(m.protein_g or 0 for m in todays_meals)
+    total_carbs = sum(m.carbs_g or 0 for m in todays_meals)
+    total_fat = sum(m.fat_g or 0 for m in todays_meals)
+    total_fiber = sum(m.fiber_g or 0 for m in todays_meals)
 
     # Get user's daily calorie goal
     calorie_goal = db.query(DailyCalorieGoal).filter(
@@ -711,7 +807,8 @@ async def log_manual_calories(
         daily_goal=daily_goal,
         total_consumed=int(total_consumed),
         remaining=remaining,
-        logged_meals_today=logged_meals
+        logged_meals_today=logged_meals,
+        macros=create_macro_response(total_protein, total_carbs, total_fat, total_fiber, calorie_goal)
     )
 
 
