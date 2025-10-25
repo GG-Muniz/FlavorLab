@@ -681,7 +681,7 @@ async def update_logged_meal(
     meal.calories = request.calories
     meal.meal_type = request.meal_type
     meal.updated_at = datetime.now(UTC)
-    
+
     # Update macro fields if provided (for proportional scaling)
     if request.protein is not None:
         meal.protein_g = request.protein
@@ -691,7 +691,7 @@ async def update_logged_meal(
         meal.fat_g = request.fat
     if request.fiber is not None:
         meal.fiber_g = request.fiber
-    
+
     db.commit()
     db.refresh(meal)
 
