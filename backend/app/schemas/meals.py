@@ -127,5 +127,10 @@ class LogManualCaloriesRequest(BaseModel):
     """Request schema for manually logging calories."""
     meal_type: str = Field(..., description="Meal type (e.g., Breakfast, Lunch, Dinner, Snack)")
     calories: int = Field(..., gt=0, description="Calories consumed (must be positive)")
+    # Optional macro fields for proportional scaling
+    protein: Optional[float] = Field(None, description="Protein in grams")
+    carbs: Optional[float] = Field(None, description="Carbohydrates in grams")
+    fat: Optional[float] = Field(None, description="Fat in grams")
+    fiber: Optional[float] = Field(None, description="Fiber in grams")
 
 
