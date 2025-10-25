@@ -336,7 +336,8 @@ async def get_daily_summary(
 async def get_meals(
     source: Optional[str] = Query(None, description="Filter by source: 'generated' or 'logged'"),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_active_user),
+    # TEMPORARY: Auth disabled for development - Remove this comment when auth is ready
+    # current_user: models.User = Depends(get_current_active_user),
 ) -> List[MealResponse]:
     """
     Get all meals for the current user, optionally filtered by source.
@@ -345,7 +346,11 @@ async def get_meals(
     - source=logged: Returns consumed meals (logged to specific dates)
     - source=None: Returns all meals
     """
-    query = db.query(Meal).filter(Meal.user_id == current_user.id)
+    # TEMPORARY: Hardcoded user_id for development
+    # TODO: Replace with current_user.id when auth is enabled
+    user_id = 1
+    
+    query = db.query(Meal).filter(Meal.user_id == user_id)
 
     if source:
         source_upper = source.upper()
