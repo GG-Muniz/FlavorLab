@@ -452,7 +452,8 @@ async def submit_user_survey(
 @router.post("/me/llm-meal-plan", response_model=LLMMealPlanResponse)
 async def generate_llm_meal_plan_endpoint(
     include_recipes: bool = False,
-    current_user: models.User = Depends(get_current_active_user),
+    # TEMPORARY: Auth disabled for development - Remove this comment when auth is ready
+    # current_user: models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -474,6 +475,15 @@ async def generate_llm_meal_plan_endpoint(
         HTTPException 400: If user has no survey data
     """
     try:
+        # TEMPORARY: Hardcoded user_id for development
+        user_id = 1
+        current_user = db.query(models.User).filter(models.User.id == user_id).first()
+        if not current_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
         # Early check: Verify user has survey data before attempting generation
         import json
         if isinstance(current_user.preferences, str):
@@ -529,7 +539,7 @@ async def generate_llm_meal_plan_endpoint(
                 saved_meal_ids.append(new_meal.id)
 
         db.commit()
-        logger.info(f"Saved {len(saved_meal_ids)} generated meals to database for user {current_user.id}")
+        logger.info(f"Saved {len(saved_meal_ids)} generated meals to database for user {user_id}")
 
         # Construct health goal summary
         health_goal_summary = None
