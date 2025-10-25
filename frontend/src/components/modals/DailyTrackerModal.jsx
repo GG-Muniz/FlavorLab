@@ -54,9 +54,9 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
     if (!editingMeal || !editCalories || !editMealType) {
       return;
     }
-    
+
     const newCalories = parseInt(editCalories);
-    
+
     // Guard Clause: Check if macro data exists and if calories are valid for scaling
     if (!editingMeal.protein || editingMeal.calories <= 0) {
       // This is a calorie-only log OR original calories are zero.

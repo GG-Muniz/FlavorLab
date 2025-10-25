@@ -89,7 +89,7 @@ export const DataProvider = ({ children }) => {
             fiber: macroData.fiber
           })
         });
-        
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData?.detail || 'Failed to update logged meal with macros');
