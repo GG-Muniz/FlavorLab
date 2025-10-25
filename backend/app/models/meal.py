@@ -67,6 +67,7 @@ class Meal(Base):
     protein_g = Column(Float, nullable=True)
     carbs_g = Column(Float, nullable=True)
     fat_g = Column(Float, nullable=True)
+    fiber_g = Column(Float, nullable=True)
 
     # Recipe details
     description = Column(Text, nullable=True)

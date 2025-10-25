@@ -42,6 +42,12 @@ def create_daily_summary(user_id: int, db: Session) -> Dict[str, Any]:
     # Calculate total consumed
     total_consumed = sum(meal.calories or 0 for meal in todays_meals)
 
+    # Calculate macro totals
+    total_protein = sum(meal.protein_g or 0 for meal in todays_meals)
+    total_carbs = sum(meal.carbs_g or 0 for meal in todays_meals)
+    total_fat = sum(meal.fat_g or 0 for meal in todays_meals)
+    total_fiber = sum(meal.fiber_g or 0 for meal in todays_meals)
+
     # Calculate remaining
     remaining = daily_goal - total_consumed
 
@@ -69,10 +75,34 @@ def create_daily_summary(user_id: int, db: Session) -> Dict[str, Any]:
             "logged_at": timestamp.isoformat()
         })
 
-    # Return complete state
+    # Get macro goals from calorie goal record
+    protein_goal = calorie_goal.goal_protein_g if calorie_goal and calorie_goal.goal_protein_g else 150.0
+    carbs_goal = calorie_goal.goal_carbs_g if calorie_goal and calorie_goal.goal_carbs_g else 200.0
+    fat_goal = calorie_goal.goal_fat_g if calorie_goal and calorie_goal.goal_fat_g else 67.0
+    fiber_goal = calorie_goal.goal_fiber_g if calorie_goal and calorie_goal.goal_fiber_g else 25.0
+
+    # Return complete state with new macro structure
     return {
         "daily_goal": daily_goal,
         "total_consumed": int(total_consumed),
         "remaining": remaining,
-        "logged_meals_today": logged_meals
+        "logged_meals_today": logged_meals,
+        "macros": {
+            "protein": {
+                "consumed": round(total_protein, 1),
+                "goal": round(protein_goal, 1)
+            },
+            "carbs": {
+                "consumed": round(total_carbs, 1),
+                "goal": round(carbs_goal, 1)
+            },
+            "fat": {
+                "consumed": round(total_fat, 1),
+                "goal": round(fat_goal, 1)
+            },
+            "fiber": {
+                "consumed": round(total_fiber, 1),
+                "goal": round(fiber_goal, 1)
+            }
+        }
     }

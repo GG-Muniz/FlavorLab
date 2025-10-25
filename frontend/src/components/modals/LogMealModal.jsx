@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { X, Search, Plus } from 'lucide-react';
-import { searchIngredients, logMeal } from '../../services/mealsApi';
+import { searchIngredients } from '../../services/mealsApi';
+import { useData } from '../../context/DataContext';
 
 export default function LogMealModal({ isOpen, onClose, onSaved }) {
+  const { refetchAll } = useData();
   const [mealType, setMealType] = useState('Breakfast');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -56,7 +58,25 @@ export default function LogMealModal({ isOpen, onClose, onSaved }) {
         .map(s => ({ ingredient_id: s.id, quantity_grams: parseFloat(s.grams) }))
         .filter(e => !Number.isNaN(e.quantity_grams) && e.quantity_grams > 0);
       if (entries.length === 0) { setError('Add at least one ingredient with grams'); setLoading(false); return; }
-      await logMeal({ log_date: today, meal_type: mealType, entries });
+
+      // Use the meals API to log the meal
+      const response = await fetch('/api/v1/meals/log', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ log_date: today, meal_type: mealType, entries })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData?.detail || 'Failed to log meal');
+      }
+
+      // Trigger global refetch to update all components
+      await refetchAll();
+
       if (onSaved) onSaved();
       onClose();
     } catch (e) {

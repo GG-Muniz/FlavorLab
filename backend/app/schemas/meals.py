@@ -96,12 +96,26 @@ class LoggedMealSummary(BaseModel):
     logged_at: str  # ISO datetime string
 
 
+class MacroData(BaseModel):
+    """Individual macro data with consumed and goal values."""
+    consumed: float = Field(..., description="Amount consumed in grams")
+    goal: float = Field(..., description="Daily goal in grams")
+
+class MacroTotals(BaseModel):
+    """Macronutrient totals for the day with consumed and goal values."""
+    protein: MacroData = Field(..., description="Protein consumed and goal")
+    carbs: MacroData = Field(..., description="Carbohydrates consumed and goal")
+    fat: MacroData = Field(..., description="Fat consumed and goal")
+    fiber: MacroData = Field(..., description="Fiber consumed and goal")
+
+
 class DailyCaloriesSummaryResponse(BaseModel):
     """Complete dashboard summary response after logging a meal."""
     daily_goal: int = Field(..., description="User's daily calorie goal")
     total_consumed: int = Field(..., description="Total calories consumed today")
     remaining: int = Field(..., description="Remaining calories for the day")
     logged_meals_today: List[LoggedMealSummary] = Field(..., description="All meals logged for today")
+    macros: MacroTotals = Field(..., description="Daily macronutrient totals")
 
 
 class SetCalorieGoalRequest(BaseModel):

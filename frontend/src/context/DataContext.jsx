@@ -22,14 +22,34 @@ export const DataProvider = ({ children }) => {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
           }
-        }).then(res => res.json()),
+        }).then(res => {
+          if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+          }
+          return res.json();
+        }),
         getMeals('generated') // Get meal plans
       ]);
-      setLoggedMeals(summaryResponse.logged_meals_today);
-      setMealPlans(plansResponse);
+      setLoggedMeals(summaryResponse.logged_meals_today || []);
+      setMealPlans(plansResponse || []);
       setSummary(summaryResponse); // Store full summary
     } catch (error) {
       console.error("Failed to fetch data", error);
+      // Set fallback data to prevent infinite loading
+      setLoggedMeals([]);
+      setMealPlans([]);
+      setSummary({
+        daily_goal: 2000,
+        total_consumed: 0,
+        remaining: 2000,
+        logged_meals_today: [],
+        macros: {
+          protein: 0,
+          carbs: 0,
+          fat: 0,
+          fiber: 0
+        }
+      });
     } finally {
       setIsLoading(false);
     }
@@ -118,6 +138,10 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  const refetchAll = useCallback(async () => {
+    await fetchData();
+  }, [fetchData]);
+
   const value = {
     loggedMeals,
     mealPlans,
@@ -130,6 +154,7 @@ export const DataProvider = ({ children }) => {
     setGoal,
     getMealsForDate,
     getNutritionSummaryForDate,
+    refetchAll,
   };
 
   return (

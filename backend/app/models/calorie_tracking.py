@@ -2,7 +2,7 @@
 SQLAlchemy models for calorie tracking.
 """
 from datetime import datetime, date
-from sqlalchemy import Column, Integer, String, DateTime, Date, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Date, ForeignKey, Float
 from sqlalchemy.orm import relationship
 from ..database import Base
 
@@ -15,6 +15,11 @@ class DailyCalorieGoal(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
     goal_calories = Column(Integer, nullable=False)
+    # Macro goals (in grams)
+    goal_protein_g = Column(Float, nullable=True)
+    goal_carbs_g = Column(Float, nullable=True)
+    goal_fat_g = Column(Float, nullable=True)
+    goal_fiber_g = Column(Float, nullable=True, default=25.0)  # Fixed 25g fiber goal
     last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationship
