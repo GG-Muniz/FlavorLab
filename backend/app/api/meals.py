@@ -665,7 +665,12 @@ async def log_meal_for_today(
             name=m.name,
             calories=int(m.calories or 0),
             meal_type=m.meal_type or "Unknown",
-            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now(UTC).isoformat()
+            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now(UTC).isoformat(),
+            # Include macro fields for proportional scaling
+            protein=m.protein_g,
+            carbs=m.carbs_g,
+            fat=m.fat_g,
+            fiber=m.fiber_g
         )
         for m in todays_meals
     ]
@@ -746,7 +751,12 @@ async def delete_logged_meal(
             name=m.name,
             calories=int(m.calories or 0),
             meal_type=m.meal_type or "Unknown",
-            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now(UTC).isoformat()
+            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now(UTC).isoformat(),
+            # Include macro fields for proportional scaling
+            protein=m.protein_g,
+            carbs=m.carbs_g,
+            fat=m.fat_g,
+            fiber=m.fiber_g
         )
         for m in todays_meals
     ]
