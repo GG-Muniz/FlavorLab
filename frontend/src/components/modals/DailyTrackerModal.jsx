@@ -153,11 +153,11 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
       hour: '2-digit',
       minute: '2-digit'
     }),
-    // Add the missing macro fields for proportional scaling
-    protein: meal.protein || 0,
-    carbs: meal.carbs || 0,
-    fat: meal.fat || 0,
-    fiber: meal.fiber || 0
+    // Add the missing macro fields for proportional scaling (defensive coding)
+    protein: meal.protein ?? 0,
+    carbs: meal.carbs ?? 0,
+    fat: meal.fat ?? 0,
+    fiber: meal.fiber ?? 0
   }));
 
   return (
