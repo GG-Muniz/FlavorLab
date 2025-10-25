@@ -92,7 +92,7 @@ async def log_meal(
 ) -> DailyCaloriesSummaryResponse:
     """
     Log a meal built from ingredients and return updated dashboard summary.
-    
+
     This endpoint:
     1. Creates a MealLog and MealLogEntry records (for ingredient tracking)
     2. Calculates macronutrients from ingredient entries
@@ -100,7 +100,7 @@ async def log_meal(
     4. Returns updated dashboard summary with macro totals
     """
     from ..models.calorie_tracking import DailyCalorieGoal
-    
+
     try:
         # Create parent log
         meal_log = MealLog(
@@ -957,7 +957,12 @@ async def log_manual_calories(
             name=m.name,
             calories=int(m.calories or 0),
             meal_type=m.meal_type or "Unknown",
-            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now(UTC).isoformat()
+            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now(UTC).isoformat(),
+            # Include macro fields for proportional scaling (even if null for manual logs)
+            protein=m.protein_g,
+            carbs=m.carbs_g,
+            fat=m.fat_g,
+            fiber=m.fiber_g
         )
         for m in todays_meals
     ]
