@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { X, Calculator, Target, Flame, TrendingUp, Plus, ChevronDown, Utensils, Edit, Trash2 } from 'lucide-react';
 import { useData } from '../../context/DataContext.jsx';
 
@@ -71,6 +71,17 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
   }, []);
 
   // --- END OF HOOKS SECTION ---
+
+  // Create derived state for unlogged meal plans (action list behavior)
+  const loggedMealKeys = useMemo(() => {
+    // Create Set of unique keys for meals already logged today
+    return new Set(loggedMeals.map(meal => `${meal.name}::${meal.meal_type}`));
+  }, [loggedMeals]);
+
+  const unloggedMealPlans = useMemo(() => {
+    // Filter mealPlans to show only those not yet logged today
+    return mealPlans.filter(plan => !loggedMealKeys.has(`${plan.name}::${plan.meal_type}`));
+  }, [mealPlans, loggedMealKeys]);
 
   if (!isOpen) return null;
 
@@ -815,7 +826,7 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
                 }}>
                   Loading meal plans...
                 </div>
-              ) : mealPlans.length === 0 ? (
+              ) : unloggedMealPlans.length === 0 ? (
                 <div style={{
                   padding: '32px 20px',
                   textAlign: 'center',
@@ -850,12 +861,12 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
                   overflow: 'hidden',
                   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
                 }}>
-                  {mealPlans.map((plan, index) => (
+                  {unloggedMealPlans.map((plan, index) => (
                     <div
                       key={plan.id}
                       style={{
                         padding: '20px',
-                        borderBottom: index < mealPlans.length - 1 ? '1px solid #f1f5f9' : 'none',
+                        borderBottom: index < unloggedMealPlans.length - 1 ? '1px solid #f1f5f9' : 'none',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'flex-start',

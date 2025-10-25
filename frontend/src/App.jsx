@@ -8,8 +8,8 @@ import DailyTrackerModal from './components/modals/DailyTrackerModal';
 import LogMealModal from './components/modals/LogMealModal';
 import Calendar from './components/calendar/Calendar';
 import { useAuth } from './context/AuthContext';
-import { useDashboard } from './contexts/DashboardContext';
-import { DataProvider } from './context/DataContext.jsx';
+// import { useDashboard } from './contexts/DashboardContext'; // DEPRECATED: Using DataContext
+import { DataProvider, useData } from './context/DataContext.jsx';
 import UpNext from './components/dashboard/UpNext';
 import { getDailyCalorieSummary } from './services/calorieApi';
 import MealPlanShowcase from './components/mealplan/MealPlanShowcase';
@@ -214,7 +214,7 @@ const QuickActionButton = ({ actionKey, action, onClick }) => {
 
 function App() {
   const { user: authUser, loading: authLoading } = useAuth();
-  const { summary, updateSummary } = useDashboard();
+  const { summary } = useData(); // Migrated from DashboardContext to DataContext
   const location = useLocation();
   const navigate = useNavigate();
   const [isAnimating, setIsAnimating] = useState(true);
@@ -285,13 +285,7 @@ function App() {
 
       setNutritionDataState(nutritionState);
 
-      // Also update the dashboard context with the calorie summary
-      updateSummary({
-        daily_goal: goals.calories,
-        total_consumed: totals.calories,
-        remaining: goals.calories - totals.calories,
-        logged_meals_today: []
-      });
+      // Note: DataContext automatically updates via fetchData() - no manual update needed
     } catch (error) {
       console.error('Error fetching nutrition data:', error);
     } finally {
@@ -303,12 +297,7 @@ function App() {
   useEffect(() => {
     const hydrateDashboard = async () => {
       if (authUser && !authLoading) {
-        try {
-          const summary = await getDailySummary();
-          updateSummary(summary);
-        } catch (error) {
-          console.error('Error hydrating dashboard:', error);
-        }
+        // Note: DataContext automatically handles hydration via fetchData() - no manual update needed
       }
     };
 
