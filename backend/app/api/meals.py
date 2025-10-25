@@ -172,7 +172,7 @@ async def log_meal(
         today = payload.log_date
         todays_meals = db.query(Meal).filter(
             Meal.user_id == current_user.id,
-            Meal.date_logged == today
+            # Removed: Meal.date_logged == today (too restrictive)
         ).all()
 
         total_consumed = sum(m.calories or 0 for m in todays_meals)
@@ -349,7 +349,7 @@ async def get_meals(
     # TEMPORARY: Hardcoded user_id for development
     # TODO: Replace with current_user.id when auth is enabled
     user_id = 1
-    
+
     query = db.query(Meal).filter(Meal.user_id == user_id)
 
     if source:
@@ -649,7 +649,7 @@ async def log_meal_for_today(
     # Calculate total consumed today
     todays_meals = db.query(Meal).filter(
         Meal.user_id == user_id,
-        Meal.date_logged == today
+        # Removed: Meal.date_logged == today (too restrictive)
     ).all()
 
     total_consumed = sum(m.calories or 0 for m in todays_meals)
@@ -719,13 +719,13 @@ async def delete_logged_meal(
         Meal.id == meal_id,
         Meal.user_id == current_user.id,
         Meal.source == MealSource.LOGGED,
-        Meal.date_logged == today
+        # Removed: Meal.date_logged == today (too restrictive)
     ).first()
 
     if not meal:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Logged meal with ID {meal_id} not found or not logged today"
+            detail=f"Logged meal with ID {meal_id} not found"
         )
 
     # Delete the meal
@@ -735,7 +735,7 @@ async def delete_logged_meal(
     # Calculate total consumed today after deletion
     todays_meals = db.query(Meal).filter(
         Meal.user_id == current_user.id,
-        Meal.date_logged == today
+        # Removed: Meal.date_logged == today (too restrictive)
     ).all()
 
     total_consumed = sum(m.calories or 0 for m in todays_meals)
@@ -806,13 +806,13 @@ async def update_logged_meal(
         Meal.id == meal_id,
         Meal.user_id == current_user.id,
         Meal.source == MealSource.LOGGED,
-        Meal.date_logged == today
+        # Removed: Meal.date_logged == today (too restrictive)
     ).first()
 
     if not meal:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Logged meal with ID {meal_id} not found or not logged today"
+            detail=f"Logged meal with ID {meal_id} not found"
         )
 
     # Update the meal
@@ -836,7 +836,7 @@ async def update_logged_meal(
     # Calculate total consumed today after update
     todays_meals = db.query(Meal).filter(
         Meal.user_id == current_user.id,
-        Meal.date_logged == today
+        # Removed: Meal.date_logged == today (too restrictive)
     ).all()
 
     total_consumed = sum(m.calories or 0 for m in todays_meals)
@@ -951,7 +951,7 @@ async def log_manual_calories(
     # Calculate total consumed today
     todays_meals = db.query(Meal).filter(
         Meal.user_id == current_user.id,
-        Meal.date_logged == today
+        # Removed: Meal.date_logged == today (too restrictive)
     ).all()
 
     total_consumed = sum(m.calories or 0 for m in todays_meals)
