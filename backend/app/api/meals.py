@@ -88,7 +88,8 @@ router = APIRouter(prefix="/meals", tags=["Meals"])
 async def log_meal(
     payload: MealLogCreate,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_active_user),
+    # TEMPORARY: Auth disabled for development - Remove this comment when auth is ready
+    # current_user: models.User = Depends(get_current_active_user),
 ) -> DailyCaloriesSummaryResponse:
     """
     Log a meal built from ingredients and return updated dashboard summary.
@@ -102,9 +103,12 @@ async def log_meal(
     from ..models.calorie_tracking import DailyCalorieGoal
 
     try:
+        # TEMPORARY: Hardcoded user_id for development
+        user_id = 1
+        
         # Create parent log
         meal_log = MealLog(
-            user_id=current_user.id,
+            user_id=user_id,
             log_date=payload.log_date,
             meal_type=payload.meal_type,
         )
@@ -151,7 +155,7 @@ async def log_meal(
 
         # Create Meal record with calculated macro data
         logged_meal = Meal(
-            user_id=current_user.id,
+            user_id=user_id,
             name=f"Manual Entry - {payload.meal_type}",
             meal_type=payload.meal_type,
             calories=round(total_calories, 1),
@@ -171,7 +175,7 @@ async def log_meal(
         # Calculate total consumed today
         today = payload.log_date
         todays_meals = db.query(Meal).filter(
-            Meal.user_id == current_user.id,
+            Meal.user_id == user_id,
             # Removed: Meal.date_logged == today (too restrictive)
         ).all()
 
@@ -185,7 +189,7 @@ async def log_meal(
 
         # Get user's daily calorie goal
         calorie_goal = db.query(DailyCalorieGoal).filter(
-            DailyCalorieGoal.user_id == current_user.id
+            DailyCalorieGoal.user_id == user_id
         ).first()
 
         daily_goal = calorie_goal.goal_calories if calorie_goal else 2000  # Default 2000
@@ -910,7 +914,8 @@ async def update_logged_meal(
 async def log_manual_calories(
     request: LogManualCaloriesRequest,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_active_user),
+    # TEMPORARY: Auth disabled for development - Remove this comment when auth is ready
+    # current_user: models.User = Depends(get_current_active_user),
 ) -> DailyCaloriesSummaryResponse:
     """
     Manually log calories for a meal and return updated dashboard summary.
@@ -926,9 +931,12 @@ async def log_manual_calories(
     # Get today's date
     today = date.today()
 
+    # TEMPORARY: Hardcoded user_id for development
+    user_id = 1
+    
     # Create manual meal entry (no macro nutrients for manual entries)
     manual_meal = Meal(
-        user_id=current_user.id,
+        user_id=user_id,
         name=f"Manual Entry - {request.meal_type}",
         meal_type=request.meal_type,
         calories=request.calories,
@@ -950,7 +958,7 @@ async def log_manual_calories(
 
     # Calculate total consumed today
     todays_meals = db.query(Meal).filter(
-        Meal.user_id == current_user.id,
+        Meal.user_id == user_id,
         # Removed: Meal.date_logged == today (too restrictive)
     ).all()
 
@@ -964,7 +972,7 @@ async def log_manual_calories(
 
     # Get user's daily calorie goal
     calorie_goal = db.query(DailyCalorieGoal).filter(
-        DailyCalorieGoal.user_id == current_user.id
+        DailyCalorieGoal.user_id == user_id
     ).first()
 
     daily_goal = calorie_goal.goal_calories if calorie_goal else 2000  # Default 2000
