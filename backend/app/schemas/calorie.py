@@ -8,13 +8,13 @@ from pydantic import BaseModel, Field, field_validator
 
 class DailyCalorieGoalSet(BaseModel):
     """Schema for setting daily calorie goal."""
-    goal_calories: int = Field(..., gt=0, le=10000, description="Daily calorie goal (must be positive and reasonable)")
+    goal_calories: float = Field(..., gt=0, le=10000, description="Daily calorie goal (must be positive and reasonable)")
 
 
 class CalorieIntakeLog(BaseModel):
     """Schema for logging calorie intake."""
     meal_type: str = Field(..., description="Type of meal (Breakfast, Lunch, Dinner, Snack)")
-    calories_consumed: int = Field(..., gt=0, le=5000, description="Calories consumed in this meal")
+    calories_consumed: float = Field(..., gt=0, le=5000, description="Calories consumed in this meal")
 
     @field_validator('meal_type')
     @classmethod
@@ -30,7 +30,7 @@ class CalorieIntakeEntryResponse(BaseModel):
     """Schema for calorie intake entry response."""
     id: int
     meal_type: str
-    calories_consumed: int
+    calories_consumed: float
     entry_date: date
     created_at: datetime
 
@@ -40,19 +40,19 @@ class CalorieIntakeEntryResponse(BaseModel):
 
 class DailyCalorieSummaryResponse(BaseModel):
     """Schema for daily calorie summary response."""
-    goal_calories: Optional[int] = Field(None, description="User's daily calorie goal")
-    total_intake: int = Field(..., description="Total calories consumed today")
-    remaining_calories: Optional[int] = Field(None, description="Remaining calories (goal - intake), set to 0 when goal is met/exceeded")
+    goal_calories: Optional[float] = Field(None, description="User's daily calorie goal")
+    total_intake: float = Field(..., description="Total calories consumed today")
+    remaining_calories: Optional[float] = Field(None, description="Remaining calories (goal - intake), set to 0 when goal is met/exceeded")
     percentage: float = Field(..., description="Percentage of goal consumed (capped at 100)")
     goal_exceeded: bool = Field(False, description="True if user has met or exceeded their daily goal")
-    excess_calories: Optional[int] = Field(None, description="Calories over goal if exceeded, otherwise None")
+    excess_calories: Optional[float] = Field(None, description="Calories over goal if exceeded, otherwise None")
     entries: List[CalorieIntakeEntryResponse] = Field(default_factory=list, description="List of today's intake entries")
     entry_date: date = Field(..., description="Date for this summary")
 
 
 class UserCalorieGoalResponse(BaseModel):
     """Schema for user calorie goal response."""
-    goal_calories: int
+    goal_calories: float
     last_updated: datetime
     message: str = "Calorie goal updated successfully"
 

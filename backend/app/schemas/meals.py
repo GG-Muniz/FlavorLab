@@ -58,7 +58,7 @@ class MealResponse(BaseModel):
     user_id: int
     name: str
     meal_type: Optional[str] = None
-    calories: int
+    calories: float
     description: Optional[str] = None
     ingredients: Optional[List[str]] = None
     servings: Optional[int] = None
@@ -91,7 +91,7 @@ class LoggedMealSummary(BaseModel):
     """Summary of a single logged meal for dashboard display."""
     log_id: int
     name: str
-    calories: int
+    calories: float
     meal_type: str
     logged_at: str  # ISO datetime string
     # Optional macro fields for proportional scaling
@@ -125,13 +125,13 @@ class DailyCaloriesSummaryResponse(BaseModel):
 
 class SetCalorieGoalRequest(BaseModel):
     """Request schema for setting user's daily calorie goal."""
-    goal_calories: int = Field(..., gt=0, description="Daily calorie goal (must be positive)")
+    goal_calories: float = Field(..., gt=0, description="Daily calorie goal (must be positive)")
 
 
 class LogManualCaloriesRequest(BaseModel):
     """Request schema for manually logging calories."""
     meal_type: str = Field(..., description="Meal type (e.g., Breakfast, Lunch, Dinner, Snack)")
-    calories: int = Field(..., gt=0, description="Calories consumed (must be positive)")
+    calories: float = Field(..., gt=0, description="Calories consumed (must be positive)")
     # Optional macro fields for proportional scaling
     protein: Optional[float] = Field(None, description="Protein in grams")
     carbs: Optional[float] = Field(None, description="Carbohydrates in grams")

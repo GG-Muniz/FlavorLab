@@ -13,7 +13,7 @@ class MealItem(BaseModel):
     """Schema for a single meal item."""
     type: str = Field(..., description="Type of meal (breakfast, lunch, dinner, snack)")
     name: str = Field(..., description="Name of the meal")
-    calories: int = Field(..., description="Estimated calories for this meal")
+    calories: float = Field(..., description="Estimated calories for this meal")
     description: str = Field(..., description="Description of the meal and its ingredients")
     ingredients: Optional[List[str]] = Field(None, description="List of ingredients with measurements")
     servings: Optional[int] = Field(None, description="Number of servings")
@@ -38,7 +38,7 @@ class MealPlanResponse(BaseModel):
     """
     plan: List[DailyMealPlan] = Field(..., description="List of daily meal plans")
     total_days: int = Field(..., description="Total number of days in the plan")
-    average_calories_per_day: int = Field(..., description="Average daily calorie intake")
+    average_calories_per_day: float = Field(..., description="Average daily calorie intake")
     health_goal_summary: Optional[str] = Field(
         None,
         description="Summary of how this meal plan addresses the user's health goals"
