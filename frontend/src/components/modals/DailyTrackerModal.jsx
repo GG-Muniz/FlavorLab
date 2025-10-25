@@ -54,7 +54,25 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
     if (!editingMeal || !editCalories || !editMealType) {
       return;
     }
-    await updateLog(editingMeal.log_id, editMealType, parseInt(editCalories));
+    
+    const newCalories = parseInt(editCalories);
+    
+    // Guard Clause: Check if macro data exists and if calories are valid for scaling
+    if (!editingMeal.protein || editingMeal.calories <= 0) {
+      // This is a calorie-only log OR original calories are zero.
+      // We can only update the calories.
+      await updateLog(editingMeal.log_id, editMealType, newCalories);
+    } else {
+      // This is a full nutritional log. We must scale the macros.
+      const ratio = newCalories / editingMeal.calories;
+      const macroData = {
+        protein: editingMeal.protein * ratio,
+        carbs: editingMeal.carbs * ratio,
+        fat: editingMeal.fat * ratio,
+        fiber: editingMeal.fiber * ratio
+      };
+      await updateLog(editingMeal.log_id, editMealType, newCalories, macroData);
+    }
 
     // Close edit modal
     setIsEditModalOpen(false);
@@ -134,7 +152,12 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
     timestamp: new Date(meal.logged_at).toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit'
-    })
+    }),
+    // Add the missing macro fields for proportional scaling
+    protein: meal.protein || 0,
+    carbs: meal.carbs || 0,
+    fat: meal.fat || 0,
+    fiber: meal.fiber || 0
   }));
 
   return (

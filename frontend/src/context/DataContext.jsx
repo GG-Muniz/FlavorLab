@@ -70,9 +70,34 @@ export const DataProvider = ({ children }) => {
     }
   };
 
-  const updateLog = async (logId, mealType, calories) => {
+  const updateLog = async (logId, mealType, calories, macroData = null) => {
     try {
-      await updateLoggedMeal(logId, mealType, calories);
+      if (macroData) {
+        // Update with macro scaling - extend the API call to include macro data
+        const response = await fetch(`/api/v1/meals/${logId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+          },
+          body: JSON.stringify({
+            meal_type: mealType,
+            calories: calories,
+            protein: macroData.protein,
+            carbs: macroData.carbs,
+            fat: macroData.fat,
+            fiber: macroData.fiber
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData?.detail || 'Failed to update logged meal with macros');
+        }
+      } else {
+        // Update calories only
+        await updateLoggedMeal(logId, mealType, calories);
+      }
       await fetchData(); // Re-sync
     } catch (error) {
       console.error("Error updating meal:", error);
