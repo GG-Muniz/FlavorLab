@@ -1173,7 +1173,8 @@ async def set_nutrition_goal(
 @router.get("/me/daily-summary", response_model=DailyCaloriesSummaryResponse)
 async def get_daily_summary(
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_active_user),
+    # TEMPORARY: Auth disabled for development - Remove this comment when auth is ready
+    # current_user: models.User = Depends(get_current_active_user),
 ) -> DailyCaloriesSummaryResponse:
     """
     Get the current day's nutrition summary for dashboard hydration.
@@ -1184,8 +1185,12 @@ async def get_daily_summary(
     """
     from ..services.daily_summary_service import create_daily_summary
 
+    # TEMPORARY: Hardcoded user_id for development
+    # TODO: Replace with current_user.id when auth is enabled
+    user_id = 1
+
     # Get authoritative dashboard state
-    summary = create_daily_summary(current_user.id, db)
+    summary = create_daily_summary(user_id, db)
 
     return DailyCaloriesSummaryResponse(**summary)
 

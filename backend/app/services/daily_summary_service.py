@@ -57,7 +57,7 @@ def create_daily_summary(user_id: int, db: Session) -> Dict[str, Any]:
     for meal in todays_meals:
         # Get meal name - handle manual entries
         meal_name = meal.name
-        if meal.source.value == 'LOGGED' and meal_name.startswith('Manual Entry'):
+        if meal.source == 'LOGGED' and meal_name.startswith('Manual Entry'):
             # Use meal_type as the display name for manual entries
             meal_name = meal.meal_type or 'Unknown'
 
