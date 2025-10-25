@@ -63,7 +63,8 @@ export const DataProvider = ({ children }) => {
 
   const addLog = async (mealName, calories) => {
     try {
-      await logManualCalories(mealName, calories);
+      // CRITICAL FIX: Round calories to integer to prevent Pydantic validation errors
+      await logManualCalories(mealName, Math.round(calories));
       await fetchData(); // Re-sync
     } catch (error) {
       console.error("Error logging meal:", error);
@@ -74,6 +75,7 @@ export const DataProvider = ({ children }) => {
     try {
       if (macroData) {
         // Update with macro scaling - extend the API call to include macro data
+        // CRITICAL FIX: Round all decimal values to prevent Pydantic validation errors
         const response = await fetch(`/api/v1/meals/${logId}`, {
           method: 'PUT',
           headers: {
@@ -82,11 +84,11 @@ export const DataProvider = ({ children }) => {
           },
           body: JSON.stringify({
             meal_type: mealType,
-            calories: calories,
-            protein: macroData.protein,
-            carbs: macroData.carbs,
-            fat: macroData.fat,
-            fiber: macroData.fiber
+            calories: Math.round(calories), // Round calories to integer
+            protein: parseFloat(macroData.protein.toFixed(1)), // Round to 1 decimal
+            carbs: parseFloat(macroData.carbs.toFixed(1)), // Round to 1 decimal
+            fat: parseFloat(macroData.fat.toFixed(1)), // Round to 1 decimal
+            fiber: parseFloat(macroData.fiber.toFixed(1)) // Round to 1 decimal
           })
         });
 

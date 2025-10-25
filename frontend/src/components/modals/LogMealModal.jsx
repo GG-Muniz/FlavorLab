@@ -55,7 +55,7 @@ export default function LogMealModal({ isOpen, onClose, onSaved }) {
       setLoading(true); setError(null);
       const today = new Date().toISOString().slice(0,10);
       const entries = selected
-        .map(s => ({ ingredient_id: s.id, quantity_grams: parseFloat(s.grams) }))
+        .map(s => ({ ingredient_id: s.id, quantity_grams: Math.round(parseFloat(s.grams)) })) // CRITICAL FIX: Round to integer
         .filter(e => !Number.isNaN(e.quantity_grams) && e.quantity_grams > 0);
       if (entries.length === 0) { setError('Add at least one ingredient with grams'); setLoading(false); return; }
 
