@@ -8,7 +8,8 @@ import SignUp from './components/auth/SignUp.jsx'
 import ForgotPassword from './components/auth/ForgotPassword.jsx'
 import ResetPassword from './components/auth/ResetPassword.jsx'
 import { AuthProvider, useAuth } from './context/AuthContext.jsx'
-import { DashboardProvider } from './contexts/DashboardContext.jsx'
+// import { DashboardProvider } from './contexts/DashboardContext.jsx' // DEPRECATED
+import { DataProvider } from './context/DataContext.jsx'
 import OnboardingWizard from './components/onboarding/OnboardingWizard.jsx'
 import ProfilePage from './components/profile/ProfilePage.jsx'
 import AppLayout from './components/layout/AppLayout.jsx'
@@ -40,7 +41,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ThemeProvider>
       <AuthProvider>
-        <DashboardProvider>
+        <DataProvider>
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login onLogin={() => {}} />} />
@@ -63,7 +64,7 @@ createRoot(document.getElementById('root')).render(
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>
-        </DashboardProvider>
+        </DataProvider>
       </AuthProvider>
     </ThemeProvider>
   </StrictMode>,
