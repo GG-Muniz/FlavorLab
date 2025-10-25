@@ -565,7 +565,8 @@ async def get_calendar_links(
 async def log_meal_for_today(
     meal_id: int = Path(..., description="ID of the meal to log"),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_active_user),
+    # TEMPORARY: Auth disabled for development - Remove this comment when auth is ready
+    # current_user: models.User = Depends(get_current_active_user),
 ) -> DailyCaloriesSummaryResponse:
     """
     Create a NEW logged meal entry from an existing meal template.
@@ -587,10 +588,14 @@ async def log_meal_for_today(
     # Get today's date
     today = date.today()
 
+    # TEMPORARY: Hardcoded user_id for development
+    # TODO: Replace with current_user.id when auth is enabled
+    user_id = 1
+
     # Find the meal TEMPLATE to use as source
     template = db.query(Meal).filter(
         Meal.id == meal_id,
-        Meal.user_id == current_user.id
+        Meal.user_id == user_id
     ).first()
 
     if not template:
@@ -612,7 +617,7 @@ async def log_meal_for_today(
     # CRITICAL FIX: Create a NEW meal record for the log entry
     # This preserves the original template and allows multiple logs
     logged_meal = Meal(
-        user_id=current_user.id,
+        user_id=user_id,
         name=template.name,
         meal_type=template.meal_type,
         calories=template.calories,
@@ -638,7 +643,7 @@ async def log_meal_for_today(
 
     # Calculate total consumed today
     todays_meals = db.query(Meal).filter(
-        Meal.user_id == current_user.id,
+        Meal.user_id == user_id,
         Meal.date_logged == today
     ).all()
 
@@ -652,7 +657,7 @@ async def log_meal_for_today(
 
     # Get user's daily calorie goal
     calorie_goal = db.query(DailyCalorieGoal).filter(
-        DailyCalorieGoal.user_id == current_user.id
+        DailyCalorieGoal.user_id == user_id
     ).first()
 
     daily_goal = calorie_goal.goal_calories if calorie_goal else 2000  # Default 2000
