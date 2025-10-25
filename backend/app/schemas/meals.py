@@ -94,6 +94,11 @@ class LoggedMealSummary(BaseModel):
     calories: int
     meal_type: str
     logged_at: str  # ISO datetime string
+    # Optional macro fields for proportional scaling
+    protein: Optional[float] = Field(None, description="Protein in grams")
+    carbs: Optional[float] = Field(None, description="Carbohydrates in grams")
+    fat: Optional[float] = Field(None, description="Fat in grams")
+    fiber: Optional[float] = Field(None, description="Fiber in grams")
 
 
 class MacroData(BaseModel):

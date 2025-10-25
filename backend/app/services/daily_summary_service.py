@@ -72,7 +72,12 @@ def create_daily_summary(user_id: int, db: Session) -> Dict[str, Any]:
             "name": meal_name,
             "calories": int(meal.calories or 0),
             "meal_type": meal.meal_type or "Unknown",
-            "logged_at": timestamp.isoformat()
+            "logged_at": timestamp.isoformat(),
+            # Add macro fields for proportional scaling
+            "protein": meal.protein_g or 0,
+            "carbs": meal.carbs_g or 0,
+            "fat": meal.fat_g or 0,
+            "fiber": meal.fiber_g or 0
         })
 
     # Get macro goals from calorie goal record
