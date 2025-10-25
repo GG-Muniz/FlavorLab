@@ -214,7 +214,7 @@ const QuickActionButton = ({ actionKey, action, onClick }) => {
 
 function App() {
   const { user: authUser, loading: authLoading } = useAuth();
-  const { summary } = useData(); // Migrated from DashboardContext to DataContext
+  const { summary, isLoading } = useData(); // Migrated from DashboardContext to DataContext
   const location = useLocation();
   const navigate = useNavigate();
   const [isAnimating, setIsAnimating] = useState(true);
@@ -541,6 +541,55 @@ const HealthTipOfTheDay = () => {
   const currentNutritionData = nutritionData || nutritionDataState;
 
   // App is only rendered behind a ProtectedRoute; no local login gate needed
+
+  // Loading guard for DataContext - prevents null summary crashes
+  if (isLoading || !summary) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#f9fafb',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            background: '#f0fdf4',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px',
+            animation: 'pulse 2s infinite'
+          }}>
+            <div style={{
+              width: 24,
+              height: 24,
+              background: '#22c55e',
+              borderRadius: '50%'
+            }} />
+          </div>
+          <h3 style={{
+            fontSize: '18px',
+            fontWeight: '600',
+            color: '#1f2937',
+            margin: '0 0 8px 0'
+          }}>
+            Loading Dashboard...
+          </h3>
+          <p style={{
+            fontSize: '14px',
+            color: '#6b7280',
+            margin: 0
+          }}>
+            Fetching your nutrition data
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading && !authLoading) {
     return (
