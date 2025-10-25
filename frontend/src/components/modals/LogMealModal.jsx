@@ -74,7 +74,8 @@ export default function LogMealModal({ isOpen, onClose, onSaved }) {
         throw new Error(errorData?.detail || 'Failed to log meal');
       }
 
-      // Trigger global refetch to update all components
+      // The API now returns updated dashboard summary, no need for separate refetch
+      // The response will be handled by the parent component's refetchAll
       await refetchAll();
 
       if (onSaved) onSaved();

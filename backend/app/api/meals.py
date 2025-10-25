@@ -84,13 +84,23 @@ def create_macro_response(total_protein, total_carbs, total_fat, total_fiber, ca
 router = APIRouter(prefix="/meals", tags=["Meals"])
 
 
-@router.post("/log", response_model=MealLogResponse)
+@router.post("/log", response_model=DailyCaloriesSummaryResponse)
 async def log_meal(
     payload: MealLogCreate,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_active_user),
-) -> MealLogResponse:
-    """Create a meal log with entries for the current user."""
+) -> DailyCaloriesSummaryResponse:
+    """
+    Log a meal built from ingredients and return updated dashboard summary.
+    
+    This endpoint:
+    1. Creates a MealLog and MealLogEntry records (for ingredient tracking)
+    2. Calculates macronutrients from ingredient entries
+    3. Creates a Meal record with calculated macro data
+    4. Returns updated dashboard summary with macro totals
+    """
+    from ..models.calorie_tracking import DailyCalorieGoal
+    
     try:
         # Create parent log
         meal_log = MealLog(
@@ -110,19 +120,127 @@ async def log_meal(
             )
             db.add(entry)
 
+        # Calculate macronutrients from ingredient entries
+        ingredient_ids = [e.ingredient_id for e in payload.entries]
+        ingredients = db.query(Entity).filter(Entity.id.in_(ingredient_ids)).all()
+        by_id = {str(ing.id): ing for ing in ingredients}
+
+        def _value(attrs, key):
+            v = (attrs or {}).get(key)
+            if isinstance(v, dict):
+                return float(v.get("value", 0.0) or 0.0)
+            return float(v or 0.0)
+
+        total_calories = 0.0
+        total_protein_g = 0.0
+        total_carbs_g = 0.0
+        total_fat_g = 0.0
+        total_fiber_g = 0.0
+
+        for entry in payload.entries:
+            ing = by_id.get(str(entry.ingredient_id))
+            if not ing:
+                continue
+            attrs = ing.attributes or {}
+            factor = (float(entry.quantity_grams) or 0.0) / 100.0
+            total_calories += factor * _value(attrs, "calories")
+            total_protein_g += factor * _value(attrs, "protein_g")
+            total_carbs_g += factor * _value(attrs, "carbs_g")
+            total_fat_g += factor * _value(attrs, "fat_g")
+            total_fiber_g += factor * _value(attrs, "fiber_g")
+
+        # Create Meal record with calculated macro data
+        logged_meal = Meal(
+            user_id=current_user.id,
+            name=f"Manual Entry - {payload.meal_type}",
+            meal_type=payload.meal_type,
+            calories=round(total_calories, 1),
+            protein_g=round(total_protein_g, 1),
+            carbs_g=round(total_carbs_g, 1),
+            fat_g=round(total_fat_g, 1),
+            fiber_g=round(total_fiber_g, 1),
+            source=MealSource.LOGGED,
+            date_logged=payload.log_date
+        )
+        db.add(logged_meal)
+
         db.commit()
         db.refresh(meal_log)
+        db.refresh(logged_meal)
 
-        # Build response
-        entries_resp: List[MealLogEntryResponse] = [
-            MealLogEntryResponse.model_validate(entry) for entry in meal_log.entries
+        # Calculate total consumed today
+        today = payload.log_date
+        todays_meals = db.query(Meal).filter(
+            Meal.user_id == current_user.id,
+            Meal.date_logged == today
+        ).all()
+
+        total_consumed = sum(m.calories or 0 for m in todays_meals)
+
+        # Calculate macro totals
+        total_protein = sum(m.protein_g or 0 for m in todays_meals)
+        total_carbs = sum(m.carbs_g or 0 for m in todays_meals)
+        total_fat = sum(m.fat_g or 0 for m in todays_meals)
+        total_fiber = sum(m.fiber_g or 0 for m in todays_meals)
+
+        # Get user's daily calorie goal
+        calorie_goal = db.query(DailyCalorieGoal).filter(
+            DailyCalorieGoal.user_id == current_user.id
+        ).first()
+
+        daily_goal = calorie_goal.goal_calories if calorie_goal else 2000  # Default 2000
+        remaining = daily_goal - total_consumed
+
+        # Build logged meals summary
+        logged_meals = [
+            LoggedMealSummary(
+                log_id=m.id,
+                name=m.name,
+                calories=int(m.calories or 0),
+                meal_type=m.meal_type or "Unknown",
+                logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now(UTC).isoformat(),
+                # Include macro fields for proportional scaling
+                protein=m.protein_g,
+                carbs=m.carbs_g,
+                fat=m.fat_g,
+                fiber=m.fiber_g
+            )
+            for m in todays_meals
         ]
-        return MealLogResponse(
-            id=meal_log.id,
-            log_date=meal_log.log_date,
-            meal_type=meal_log.meal_type,
-            entries=entries_resp,
+
+        # Use the same macro calculation logic as daily summary service
+        protein_goal = calorie_goal.goal_protein_g if calorie_goal and calorie_goal.goal_protein_g else 150.0
+        carbs_goal = calorie_goal.goal_carbs_g if calorie_goal and calorie_goal.goal_carbs_g else 200.0
+        fat_goal = calorie_goal.goal_fat_g if calorie_goal and calorie_goal.goal_fat_g else 67.0
+        fiber_goal = calorie_goal.goal_fiber_g if calorie_goal and calorie_goal.goal_fiber_g else 25.0
+
+        macros = {
+            "protein": {
+                "consumed": round(total_protein, 1),
+                "goal": round(protein_goal, 1)
+            },
+            "carbs": {
+                "consumed": round(total_carbs, 1),
+                "goal": round(carbs_goal, 1)
+            },
+            "fat": {
+                "consumed": round(total_fat, 1),
+                "goal": round(fat_goal, 1)
+            },
+            "fiber": {
+                "consumed": round(total_fiber, 1),
+                "goal": round(fiber_goal, 1)
+            }
+        }
+
+        return DailyCaloriesSummaryResponse(
+            daily_goal=daily_goal,
+            total_consumed=int(total_consumed),
+            remaining=remaining,
+            logged_meals_today=logged_meals,
+            macros=macros
         )
+
     except HTTPException:
         db.rollback()
         raise
