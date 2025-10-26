@@ -18,6 +18,10 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
   const [journalLoading, setJournalLoading] = useState(false);
   const [journalError, setJournalError] = useState(null);
 
+  // Tab and journal window state
+  const [activeTab, setActiveTab] = useState('meals');
+  const [showJournalWindow, setShowJournalWindow] = useState(false);
+
   // Load journal note when modal opens
   // IMPORTANT: This useEffect MUST be before the early return to comply with Rules of Hooks
   useEffect(() => {
@@ -88,15 +92,25 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
     }
   };
 
-  // Handle journal edit start
+  // Handle journal edit start - open writing window
   const handleJournalEdit = () => {
+    setShowJournalWindow(true);
     setIsJournalEditing(true);
   };
 
-  // Handle journal edit cancel
+  // Handle journal edit cancel - close writing window
   const handleJournalCancel = () => {
+    setShowJournalWindow(false);
     setIsJournalEditing(false);
     setJournalError(null);
+  };
+
+  // Handle journal save and close window
+  const handleJournalSaveAndClose = async () => {
+    await handleJournalSave();
+    if (!journalError) {
+      setShowJournalWindow(false);
+    }
   };
 
   // Early return AFTER all hooks have been called
@@ -201,35 +215,35 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(102, 126, 234, 0.3)',
-              backdropFilter: 'blur(8px)',
-              zIndex: 1000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '20px'
-            }}
-          />
-
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        <motion.div
+          key="backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(102, 126, 234, 0.3)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+        />
+      )}
+      {isOpen && (
+        <motion.div
+          key="modal"
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             style={{
               position: 'fixed',
               top: '50%',
@@ -436,45 +450,8 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                     </div>
                   </motion.div>
 
-                  {/* Logged Meals List */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <h3 style={{
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: '#6b7280',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      marginBottom: '12px'
-                    }}>
-                      Meals
-                    </h3>
-                    <div style={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: '8px',
-                      alignItems: 'center'
-                    }}>
-                      {dayData.meals.map((meal, index) => {
-                        // Extract meal type from meal string (e.g., "breakfast: Oatmeal" -> "breakfast")
-                        const mealType = meal.split(':')[0]?.trim() || 'meal';
-                        const mealName = meal.split(':').slice(1).join(':').trim() || meal;
 
-                        return (
-                          <MealTag
-                            key={index}
-                            meal={mealName}
-                            mealType={mealType}
-                          />
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-
-                  {/* Journal Section */}
+                  {/* Tab Navigation */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -482,170 +459,128 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                   >
                     <div style={{
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: '12px'
+                      gap: '4px',
+                      marginBottom: '16px',
+                      borderBottom: '1px solid #e5e7eb'
                     }}>
-                      <h3 style={{
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#6b7280',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                        margin: 0
-                      }}>
+                      <button
+                        onClick={() => setActiveTab('meals')}
+                        style={{
+                          padding: '8px 16px',
+                          background: activeTab === 'meals' ? '#ffffff' : 'transparent',
+                          border: 'none',
+                          borderBottom: activeTab === 'meals' ? '2px solid #3b82f6' : '2px solid transparent',
+                          borderRadius: '8px 8px 0 0',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: activeTab === 'meals' ? '#3b82f6' : '#6b7280',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        Meals
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('journal')}
+                        style={{
+                          padding: '8px 16px',
+                          background: activeTab === 'journal' ? '#ffffff' : 'transparent',
+                          border: 'none',
+                          borderBottom: activeTab === 'journal' ? '2px solid #3b82f6' : '2px solid transparent',
+                          borderRadius: '8px 8px 0 0',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: activeTab === 'journal' ? '#3b82f6' : '#6b7280',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
                         Journal
-                      </h3>
-                      {!isJournalEditing && journalNote && (
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                      </button>
+                    </div>
+
+                    {/* Tab Content */}
+                    {activeTab === 'meals' ? (
+                      <div style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '8px',
+                        alignItems: 'center'
+                      }}>
+                        {dayData.meals.map((meal, index) => {
+                          // Extract meal type from meal string (e.g., "breakfast: Oatmeal" -> "breakfast")
+                          const mealType = meal.split(':')[0]?.trim() || 'meal';
+                          const mealName = meal.split(':').slice(1).join(':').trim() || meal;
+
+                          return (
+                            <MealTag
+                              key={index}
+                              meal={mealName}
+                              mealType={mealType}
+                            />
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      /* Journal Tab Content */
+                      <div>
+                        {journalError && (
+                          <div style={{
+                            background: '#fef2f2',
+                            border: '1px solid #fecaca',
+                            color: '#dc2626',
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            marginBottom: '12px'
+                          }}>
+                            {journalError}
+                          </div>
+                        )}
+
+                        {journalNote ? (
+                          <div style={{
+                            background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                            borderLeft: '4px solid #0ea5e9',
+                            color: '#0c4a6e',
+                            padding: '16px',
+                            borderRadius: '12px',
+                            fontSize: '14px',
+                            lineHeight: '1.6',
+                            whiteSpace: 'pre-wrap',
+                            marginBottom: '12px'
+                          }}>
+                            {journalNote}
+                          </div>
+                        ) : (
+                          <div style={{
+                            background: '#f9fafb',
+                            border: '2px dashed #d1d5db',
+                            borderRadius: '12px',
+                            padding: '24px',
+                            textAlign: 'center',
+                            color: '#6b7280',
+                            fontSize: '14px',
+                            marginBottom: '12px'
+                          }}>
+                            <FileText width={24} height={24} style={{ marginBottom: '8px', opacity: 0.5 }} />
+                            <div>No journal entry for this day</div>
+                          </div>
+                        )}
+
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                           <button
                             onClick={handleJournalEdit}
                             disabled={journalLoading}
                             style={{
-                              padding: '6px 12px',
-                              background: '#f3f4f6',
-                              border: '1px solid #d1d5db',
-                              borderRadius: '8px',
-                              fontSize: '12px',
-                              fontWeight: '500',
-                              color: '#6b7280',
-                              cursor: journalLoading ? 'not-allowed' : 'pointer',
-                              opacity: journalLoading ? 0.5 : 1,
-                              transition: 'all 0.2s',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!journalLoading) {
-                                e.currentTarget.style.background = '#e5e7eb';
-                                e.currentTarget.style.borderColor = '#9ca3af';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!journalLoading) {
-                                e.currentTarget.style.background = '#f3f4f6';
-                                e.currentTarget.style.borderColor = '#d1d5db';
-                              }
-                            }}
-                          >
-                            <Edit3 width={12} height={12} />
-                            Edit
-                          </button>
-                          <button
-                            onClick={handleJournalDelete}
-                            disabled={journalLoading}
-                            style={{
-                              padding: '6px 12px',
-                              background: '#fef2f2',
-                              border: '1px solid #fecaca',
-                              borderRadius: '8px',
-                              fontSize: '12px',
-                              fontWeight: '500',
-                              color: '#dc2626',
-                              cursor: journalLoading ? 'not-allowed' : 'pointer',
-                              opacity: journalLoading ? 0.5 : 1,
-                              transition: 'all 0.2s',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!journalLoading) {
-                                e.currentTarget.style.background = '#fee2e2';
-                                e.currentTarget.style.borderColor = '#fca5a5';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!journalLoading) {
-                                e.currentTarget.style.background = '#fef2f2';
-                                e.currentTarget.style.borderColor = '#fecaca';
-                              }
-                            }}
-                          >
-                            <Trash2 width={12} height={12} />
-                            Delete
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    {journalError && (
-                      <div style={{
-                        background: '#fef2f2',
-                        border: '1px solid #fecaca',
-                        color: '#dc2626',
-                        padding: '8px 12px',
-                        borderRadius: '8px',
-                        fontSize: '13px',
-                        marginBottom: '12px'
-                      }}>
-                        {journalError}
-                      </div>
-                    )}
-
-                    {isJournalEditing ? (
-                      <div style={{
-                        background: '#ffffff',
-                        border: '2px solid #e5e7eb',
-                        borderRadius: '12px',
-                        padding: '16px'
-                      }}>
-                        <textarea
-                          value={journalNote}
-                          onChange={(e) => setJournalNote(e.target.value)}
-                          placeholder="Write your thoughts about this day..."
-                          style={{
-                            width: '100%',
-                            minHeight: '120px',
-                            padding: '12px',
-                            fontSize: '14px',
-                            lineHeight: '1.5',
-                            color: '#374151',
-                            background: 'transparent',
-                            border: 'none',
-                            borderRadius: '8px',
-                            resize: 'vertical',
-                            fontFamily: 'inherit',
-                            outline: 'none'
-                          }}
-                        />
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'flex-end',
-                          gap: '8px',
-                          marginTop: '12px'
-                        }}>
-                          <button
-                            onClick={handleJournalCancel}
-                            disabled={journalLoading}
-                            style={{
                               padding: '8px 16px',
-                              background: '#f3f4f6',
-                              border: '1px solid #d1d5db',
-                              borderRadius: '8px',
-                              fontSize: '13px',
-                              fontWeight: '500',
-                              color: '#6b7280',
-                              cursor: journalLoading ? 'not-allowed' : 'pointer',
-                              opacity: journalLoading ? 0.5 : 1,
-                              transition: 'all 0.2s'
-                            }}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={handleJournalSave}
-                            disabled={journalLoading || !journalNote.trim()}
-                            style={{
-                              padding: '8px 16px',
-                              background: journalNote.trim() ? '#22c55e' : '#d1d5db',
+                              background: '#3b82f6',
                               border: 'none',
                               borderRadius: '8px',
                               fontSize: '13px',
                               fontWeight: '500',
-                              color: journalNote.trim() ? '#ffffff' : '#9ca3af',
-                              cursor: (journalLoading || !journalNote.trim()) ? 'not-allowed' : 'pointer',
+                              color: '#ffffff',
+                              cursor: journalLoading ? 'not-allowed' : 'pointer',
                               opacity: journalLoading ? 0.5 : 1,
                               transition: 'all 0.2s',
                               display: 'flex',
@@ -653,55 +588,34 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                               gap: '4px'
                             }}
                           >
-                            <Save width={12} height={12} />
-                            {journalLoading ? 'Saving...' : 'Save'}
+                            <Edit3 width={12} height={12} />
+                            {journalNote ? 'Edit' : 'Add'} Journal Entry
                           </button>
+                          {journalNote && (
+                            <button
+                              onClick={handleJournalDelete}
+                              disabled={journalLoading}
+                              style={{
+                                padding: '8px 16px',
+                                background: '#ef4444',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontSize: '13px',
+                                fontWeight: '500',
+                                color: '#ffffff',
+                                cursor: journalLoading ? 'not-allowed' : 'pointer',
+                                opacity: journalLoading ? 0.5 : 1,
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <Trash2 width={12} height={12} />
+                              Delete
+                            </button>
+                          )}
                         </div>
-                      </div>
-                    ) : journalNote ? (
-                      <div style={{
-                        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-                        borderLeft: '4px solid #0ea5e9',
-                        color: '#0c4a6e',
-                        padding: '16px',
-                        borderRadius: '12px',
-                        fontSize: '14px',
-                        lineHeight: '1.6',
-                        whiteSpace: 'pre-wrap'
-                      }}>
-                        {journalNote}
-                      </div>
-                    ) : (
-                      <div style={{
-                        background: '#f9fafb',
-                        border: '2px dashed #d1d5db',
-                        borderRadius: '12px',
-                        padding: '24px',
-                        textAlign: 'center',
-                        color: '#6b7280',
-                        fontSize: '14px'
-                      }}>
-                        <FileText width={24} height={24} style={{ marginBottom: '8px', opacity: 0.5 }} />
-                        <div>No journal entry for this day</div>
-                        <button
-                          onClick={handleJournalEdit}
-                          disabled={journalLoading}
-                          style={{
-                            marginTop: '12px',
-                            padding: '8px 16px',
-                            background: '#3b82f6',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontSize: '13px',
-                            fontWeight: '500',
-                            color: '#ffffff',
-                            cursor: journalLoading ? 'not-allowed' : 'pointer',
-                            opacity: journalLoading ? 0.5 : 1,
-                            transition: 'all 0.2s'
-                          }}
-                        >
-                          Add Journal Entry
-                        </button>
                       </div>
                     )}
                   </motion.div>
@@ -1099,8 +1013,211 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
               )}
             </div>
           </motion.div>
-        </>
       )}
+
+      {/* Journal Writing Window Modal */}
+      <AnimatePresence>
+        {showJournalWindow && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1001,
+              padding: '20px'
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                handleJournalCancel();
+              }
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              style={{
+                background: '#ffffff',
+                borderRadius: '16px',
+                padding: '24px',
+                width: '100%',
+                maxWidth: '600px',
+                maxHeight: '80vh',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
+              {/* Header */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '20px',
+                paddingBottom: '16px',
+                borderBottom: '1px solid #e5e7eb'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <FileText width={20} height={20} style={{ color: '#3b82f6' }} />
+                  <h2 style={{
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    color: '#111827',
+                    margin: 0
+                  }}>
+                    Journal Entry
+                  </h2>
+                </div>
+                <button
+                  onClick={handleJournalCancel}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '20px',
+                    color: '#6b7280',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    borderRadius: '4px',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#f3f4f6';
+                    e.currentTarget.style.color = '#374151';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'none';
+                    e.currentTarget.style.color = '#6b7280';
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Date Display */}
+              <div style={{
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                padding: '12px',
+                marginBottom: '20px',
+                fontSize: '14px',
+                color: '#475569',
+                fontWeight: '500'
+              }}>
+                📅 {formattedDate}
+              </div>
+
+              {/* Error Display */}
+              {journalError && (
+                <div style={{
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  color: '#dc2626',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  marginBottom: '16px'
+                }}>
+                  {journalError}
+                </div>
+              )}
+
+              {/* Textarea */}
+              <textarea
+                value={journalNote}
+                onChange={(e) => setJournalNote(e.target.value)}
+                placeholder="Write your thoughts about this day... What did you eat? How did you feel? Any insights or reflections?"
+                style={{
+                  width: '100%',
+                  minHeight: '200px',
+                  padding: '16px',
+                  fontSize: '14px',
+                  lineHeight: '1.6',
+                  color: '#374151',
+                  background: '#ffffff',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '12px',
+                  resize: 'vertical',
+                  fontFamily: 'inherit',
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                  flex: 1
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#3b82f6';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#e5e7eb';
+                }}
+              />
+
+              {/* Action Buttons */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '12px',
+                marginTop: '20px',
+                paddingTop: '16px',
+                borderTop: '1px solid #e5e7eb'
+              }}>
+                <button
+                  onClick={handleJournalCancel}
+                  disabled={journalLoading}
+                  style={{
+                    padding: '10px 20px',
+                    background: '#f3f4f6',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#6b7280',
+                    cursor: journalLoading ? 'not-allowed' : 'pointer',
+                    opacity: journalLoading ? 0.5 : 1,
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleJournalSaveAndClose}
+                  disabled={journalLoading || !journalNote.trim()}
+                  style={{
+                    padding: '10px 20px',
+                    background: journalNote.trim() ? '#22c55e' : '#d1d5db',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: journalNote.trim() ? '#ffffff' : '#9ca3af',
+                    cursor: (journalLoading || !journalNote.trim()) ? 'not-allowed' : 'pointer',
+                    opacity: journalLoading ? 0.5 : 1,
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Save width={14} height={14} />
+                  {journalLoading ? 'Saving...' : 'Save & Close'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AnimatePresence>
   );
 };
