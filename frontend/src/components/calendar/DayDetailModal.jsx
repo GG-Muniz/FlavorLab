@@ -306,40 +306,40 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                       gap: '8px',
                       alignItems: 'center'
                     }}>
-                      <NutritionTag 
-                        label="Calories" 
-                        value={dayData.totals.calories} 
-                        unit=" kcal" 
-                        icon="🔥" 
-                        color="#fef2f2" 
+                      <NutritionTag
+                        label="Calories"
+                        value={dayData.totals.calories}
+                        unit=" kcal"
+                        icon="🔥"
+                        color="#fef2f2"
                       />
-                      <NutritionTag 
-                        label="Protein" 
-                        value={dayData.totals.protein} 
-                        unit="g" 
-                        icon="🥩" 
-                        color="#f0fdf4" 
+                      <NutritionTag
+                        label="Protein"
+                        value={dayData.totals.protein}
+                        unit="g"
+                        icon="🥩"
+                        color="#f0fdf4"
                       />
-                      <NutritionTag 
-                        label="Carbs" 
-                        value={dayData.totals.carbs} 
-                        unit="g" 
-                        icon="🌾" 
-                        color="#fffbeb" 
+                      <NutritionTag
+                        label="Carbs"
+                        value={dayData.totals.carbs}
+                        unit="g"
+                        icon="🌾"
+                        color="#fffbeb"
                       />
-                      <NutritionTag 
-                        label="Fat" 
-                        value={dayData.totals.fat} 
-                        unit="g" 
-                        icon="🥑" 
-                        color="#f0f9ff" 
+                      <NutritionTag
+                        label="Fat"
+                        value={dayData.totals.fat}
+                        unit="g"
+                        icon="🥑"
+                        color="#f0f9ff"
                       />
-                      <NutritionTag 
-                        label="Fiber" 
-                        value={dayData.totals.fiber} 
-                        unit="g" 
-                        icon="🌿" 
-                        color="#f0fdf4" 
+                      <NutritionTag
+                        label="Fiber"
+                        value={dayData.totals.fiber}
+                        unit="g"
+                        icon="🌿"
+                        color="#f0fdf4"
                       />
                     </div>
                   </motion.div>

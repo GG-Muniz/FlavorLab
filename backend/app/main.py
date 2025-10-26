@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from .api import health, users, entities, relationships, flavor, calorie_tracker, nutrition, tips, meals
+from .api import health, users, entities, relationships, flavor, calorie_tracker, nutrition, tips, meals, journal
 from .database import engine, Base, SessionLocal, ensure_user_columns
 from .config import get_settings
 
@@ -94,6 +94,7 @@ app.include_router(relationships.router, prefix=settings.api_prefix, tags=["Rela
 app.include_router(flavor.router, prefix=settings.api_prefix, tags=["Flavor"])
 app.include_router(calorie_tracker.router, prefix=settings.api_prefix, tags=["Calorie Tracking"])
 app.include_router(meals.router, prefix=settings.api_prefix, tags=["Meals"])
+app.include_router(journal.router, prefix=settings.api_prefix, tags=["Journal"])
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

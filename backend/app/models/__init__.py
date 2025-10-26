@@ -9,6 +9,7 @@ from .relationship import RelationshipEntity
 from .user import User
 from .calorie_tracking import DailyCalorieGoal, CalorieIntakeEntry
 from .meal import MealLog, MealLogEntry
+from .daily_note import DailyNote
 
 __all__ = [
     "Entity",
@@ -21,4 +22,5 @@ __all__ = [
     "CalorieIntakeEntry",
     "MealLog",
     "MealLogEntry",
+    "DailyNote",
 ]
