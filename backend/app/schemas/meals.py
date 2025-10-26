@@ -46,6 +46,7 @@ class DailyNutritionSummary(BaseModel):
     total_protein_g: float
     total_carbs_g: float
     total_fat_g: float
+    total_fiber_g: float
 
 
 # ============================================================================

@@ -334,6 +334,13 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                         icon="🥑" 
                         color="#f0f9ff" 
                       />
+                      <NutritionTag 
+                        label="Fiber" 
+                        value={dayData.totals.fiber} 
+                        unit="g" 
+                        icon="🌿" 
+                        color="#f0fdf4" 
+                      />
                     </div>
                   </motion.div>
 
@@ -363,9 +370,9 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                         // Extract meal type from meal string (e.g., "breakfast: Oatmeal" -> "breakfast")
                         const mealType = meal.split(':')[0]?.trim() || 'meal';
                         const mealName = meal.split(':').slice(1).join(':').trim() || meal;
-                        
+
                         return (
-                          <MealTag 
+                          <MealTag
                             key={index}
                             meal={mealName}
                             mealType={mealType}

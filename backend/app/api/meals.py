@@ -270,7 +270,7 @@ async def get_daily_summary(
     # TEMPORARY: Hardcoded user_id for development
     # TODO: Replace with current_user.id when auth is enabled
     user_id = 1
-    
+
     # Fetch all logged meals for the user/date from Meal table
     meals = (
         db.query(Meal)
@@ -280,7 +280,7 @@ async def get_daily_summary(
 
     if not meals:
         return DailyNutritionSummary(
-            total_calories=0.0, total_protein_g=0.0, total_carbs_g=0.0, total_fat_g=0.0
+            total_calories=0.0, total_protein_g=0.0, total_carbs_g=0.0, total_fat_g=0.0, total_fiber_g=0.0
         )
 
     # Sum up nutrition values from logged meals
@@ -288,12 +288,14 @@ async def get_daily_summary(
     total_protein_g = sum(float(meal.protein_g or 0) for meal in meals)
     total_carbs_g = sum(float(meal.carbs_g or 0) for meal in meals)
     total_fat_g = sum(float(meal.fat_g or 0) for meal in meals)
+    total_fiber_g = sum(float(meal.fiber_g or 0) for meal in meals)
 
     return DailyNutritionSummary(
         total_calories=round(total_calories, 2),
         total_protein_g=round(total_protein_g, 2),
         total_carbs_g=round(total_carbs_g, 2),
         total_fat_g=round(total_fat_g, 2),
+        total_fiber_g=round(total_fiber_g, 2),
     )
 
 

@@ -100,7 +100,8 @@ const Calendar = () => {
             calories: Math.round(nutritionSummary.total_calories || 0),
             protein: Math.round(nutritionSummary.total_protein_g || 0),
             carbs: Math.round(nutritionSummary.total_carbs_g || 0),
-            fat: Math.round(nutritionSummary.total_fat_g || 0)
+            fat: Math.round(nutritionSummary.total_fat_g || 0),
+            fiber: Math.round(nutritionSummary.total_fiber_g || 0)
           }
         });
 
