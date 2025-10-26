@@ -60,6 +60,20 @@ export const DataProvider = ({ children }) => {
     fetchData();
   }, [fetchData]);
 
+  // Get the last logged meal (most recent)
+  const getLastLoggedMeal = useCallback(() => {
+    if (!loggedMeals || loggedMeals.length === 0) return null;
+
+    // Sort by created_at or logged_at timestamp (most recent first)
+    const sorted = [...loggedMeals].sort((a, b) => {
+      const dateA = new Date(a.created_at || a.logged_at || 0);
+      const dateB = new Date(b.created_at || b.logged_at || 0);
+      return dateB - dateA;
+    });
+
+    return sorted[0];
+  }, [loggedMeals]);
+
   // --- COMPLETE CRUD FUNCTIONS ---
 
   const addLog = async (mealName, calories) => {
@@ -182,6 +196,7 @@ export const DataProvider = ({ children }) => {
     setGoal,
     getMealsForDate,
     getNutritionSummaryForDate,
+    getLastLoggedMeal,
     refetchAll,
     // Journal functions
     getJournalNote,
