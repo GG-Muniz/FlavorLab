@@ -51,6 +51,11 @@ def create_daily_summary(user_id: int, db: Session) -> Dict[str, Any]:
     # Calculate remaining
     remaining = daily_goal - total_consumed
 
+    # Calculate percentage and goal exceeded status
+    percentage = min(100.0, (total_consumed / daily_goal * 100) if daily_goal > 0 else 0.0)
+    goal_exceeded = total_consumed >= daily_goal
+    excess_calories = max(0, total_consumed - daily_goal) if goal_exceeded else None
+
     # Build logged meals list
     logged_meals: List[Dict[str, Any]] = []
 
@@ -70,7 +75,7 @@ def create_daily_summary(user_id: int, db: Session) -> Dict[str, Any]:
         logged_meals.append({
             "log_id": meal.id,
             "name": meal_name,
-            "calories": int(meal.calories or 0),
+            "calories": float(meal.calories or 0),
             "meal_type": meal.meal_type or "Unknown",
             "logged_at": timestamp.isoformat(),
             # Add macro fields for proportional scaling
@@ -88,9 +93,9 @@ def create_daily_summary(user_id: int, db: Session) -> Dict[str, Any]:
 
     # Return complete state with new macro structure
     return {
-        "daily_goal": daily_goal,
+        "daily_goal": int(daily_goal),
         "total_consumed": int(total_consumed),
-        "remaining": remaining,
+        "remaining": int(remaining),
         "logged_meals_today": logged_meals,
         "macros": {
             "protein": {

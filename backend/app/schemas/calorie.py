@@ -38,6 +38,19 @@ class CalorieIntakeEntryResponse(BaseModel):
         from_attributes = True
 
 
+class LoggedMealEntry(BaseModel):
+    """Schema for logged meal entry in daily summary."""
+    log_id: int
+    name: str
+    calories: float
+    meal_type: str
+    logged_at: str
+    protein: float = 0
+    carbs: float = 0
+    fat: float = 0
+    fiber: float = 0
+
+
 class DailyCalorieSummaryResponse(BaseModel):
     """Schema for daily calorie summary response."""
     goal_calories: Optional[float] = Field(None, description="User's daily calorie goal")
@@ -46,7 +59,7 @@ class DailyCalorieSummaryResponse(BaseModel):
     percentage: float = Field(..., description="Percentage of goal consumed (capped at 100)")
     goal_exceeded: bool = Field(False, description="True if user has met or exceeded their daily goal")
     excess_calories: Optional[float] = Field(None, description="Calories over goal if exceeded, otherwise None")
-    entries: List[CalorieIntakeEntryResponse] = Field(default_factory=list, description="List of today's intake entries")
+    logged_meals_today: List[LoggedMealEntry] = Field(default_factory=list, description="List of today's intake entries")
     entry_date: date = Field(..., description="Date for this summary")
 
 

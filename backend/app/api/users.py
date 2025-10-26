@@ -1089,7 +1089,7 @@ async def set_nutrition_goal(
 
     # TEMPORARY: Hardcoded user_id for development
     user_id = 1
-    
+
     # Find or create calorie goal
     calorie_goal = db.query(DailyCalorieGoal).filter(
         DailyCalorieGoal.user_id == user_id
@@ -1146,7 +1146,7 @@ async def set_nutrition_goal(
         LoggedMealSummary(
             log_id=m.id,
             name=m.name,
-            calories=int(m.calories or 0),
+            calories=float(m.calories or 0),
             meal_type=m.meal_type or "Unknown",
             logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now(UTC).isoformat()
         )

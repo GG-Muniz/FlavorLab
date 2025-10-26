@@ -105,7 +105,7 @@ async def log_meal(
     try:
         # TEMPORARY: Hardcoded user_id for development
         user_id = 1
-        
+
         # Create parent log
         meal_log = MealLog(
             user_id=user_id,
@@ -200,7 +200,7 @@ async def log_meal(
             LoggedMealSummary(
                 log_id=m.id,
                 name=m.name,
-                calories=int(m.calories or 0),
+                calories=float(m.calories or 0),
                 meal_type=m.meal_type or "Unknown",
                 logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now(UTC).isoformat(),
                 # Include macro fields for proportional scaling
@@ -702,7 +702,8 @@ async def log_meal_for_today(
 async def delete_logged_meal(
     meal_id: int = Path(..., description="ID of the logged meal to delete"),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_active_user),
+    # TEMPORARY: Auth disabled for development - Remove this comment when auth is ready
+    # current_user: models.User = Depends(get_current_active_user),
 ) -> DailyCaloriesSummaryResponse:
     """
     Delete a logged meal and return updated dashboard summary.
@@ -718,10 +719,13 @@ async def delete_logged_meal(
     # Get today's date
     today = date.today()
 
+    # TEMPORARY: Hardcoded user_id for development
+    user_id = 1
+
     # Find the meal
     meal = db.query(Meal).filter(
         Meal.id == meal_id,
-        Meal.user_id == current_user.id,
+        Meal.user_id == user_id,
         Meal.source == MealSource.LOGGED,
         # Removed: Meal.date_logged == today (too restrictive)
     ).first()
@@ -738,7 +742,7 @@ async def delete_logged_meal(
 
     # Calculate total consumed today after deletion
     todays_meals = db.query(Meal).filter(
-        Meal.user_id == current_user.id,
+        Meal.user_id == user_id,
         # Removed: Meal.date_logged == today (too restrictive)
     ).all()
 
@@ -752,7 +756,7 @@ async def delete_logged_meal(
 
     # Get user's daily calorie goal
     calorie_goal = db.query(DailyCalorieGoal).filter(
-        DailyCalorieGoal.user_id == current_user.id
+        DailyCalorieGoal.user_id == user_id
     ).first()
 
     daily_goal = calorie_goal.goal_calories if calorie_goal else 2000  # Default 2000
@@ -789,7 +793,8 @@ async def update_logged_meal(
     meal_id: int = Path(..., description="ID of the logged meal to update"),
     request: LogManualCaloriesRequest = ...,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_active_user),
+    # TEMPORARY: Auth disabled for development - Remove this comment when auth is ready
+    # current_user: models.User = Depends(get_current_active_user),
 ) -> DailyCaloriesSummaryResponse:
     """
     Update a logged meal's calories and meal type, return updated dashboard summary.
@@ -805,10 +810,13 @@ async def update_logged_meal(
     # Get today's date
     today = date.today()
 
+    # TEMPORARY: Hardcoded user_id for development
+    user_id = 1
+
     # Find the meal
     meal = db.query(Meal).filter(
         Meal.id == meal_id,
-        Meal.user_id == current_user.id,
+        Meal.user_id == user_id,
         Meal.source == MealSource.LOGGED,
         # Removed: Meal.date_logged == today (too restrictive)
     ).first()
@@ -839,7 +847,7 @@ async def update_logged_meal(
 
     # Calculate total consumed today after update
     todays_meals = db.query(Meal).filter(
-        Meal.user_id == current_user.id,
+        Meal.user_id == user_id,
         # Removed: Meal.date_logged == today (too restrictive)
     ).all()
 
@@ -853,7 +861,7 @@ async def update_logged_meal(
 
     # Get user's daily calorie goal
     calorie_goal = db.query(DailyCalorieGoal).filter(
-        DailyCalorieGoal.user_id == current_user.id
+        DailyCalorieGoal.user_id == user_id
     ).first()
 
     daily_goal = calorie_goal.goal_calories if calorie_goal else 2000  # Default 2000
@@ -933,17 +941,17 @@ async def log_manual_calories(
 
     # TEMPORARY: Hardcoded user_id for development
     user_id = 1
-    
-    # Create manual meal entry (no macro nutrients for manual entries)
+
+    # Create manual meal entry (set macros to 0 for manual entries without macro data)
     manual_meal = Meal(
         user_id=user_id,
         name=f"Manual Entry - {request.meal_type}",
         meal_type=request.meal_type,
         calories=request.calories,
-        protein_g=None,  # Manual entries don't have macro data
-        carbs_g=None,
-        fat_g=None,
-        fiber_g=None,
+        protein_g=0.0,  # Default to 0 instead of NULL to prevent serialization errors
+        carbs_g=0.0,
+        fat_g=0.0,
+        fiber_g=0.0,
         source=MealSource.LOGGED,
         date_logged=today,
         description=f"Manually logged {request.calories} calories for {request.meal_type}",
