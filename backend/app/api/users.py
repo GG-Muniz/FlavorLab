@@ -483,7 +483,7 @@ async def generate_llm_meal_plan_endpoint(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
-        
+
         # Early check: Verify user has survey data before attempting generation
         import json
         if isinstance(current_user.preferences, str):
@@ -1069,7 +1069,8 @@ async def verify_user_account(
 async def set_nutrition_goal(
     request: SetCalorieGoalRequest,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_active_user),
+    # TEMPORARY: Auth disabled for development - Remove this comment when auth is ready
+    # current_user: models.User = Depends(get_current_active_user),
 ) -> DailyCaloriesSummaryResponse:
     """
     Set or update the user's daily calorie goal and return updated dashboard summary.
@@ -1086,9 +1087,12 @@ async def set_nutrition_goal(
     # Get today's date
     today = date.today()
 
+    # TEMPORARY: Hardcoded user_id for development
+    user_id = 1
+    
     # Find or create calorie goal
     calorie_goal = db.query(DailyCalorieGoal).filter(
-        DailyCalorieGoal.user_id == current_user.id
+        DailyCalorieGoal.user_id == user_id
     ).first()
 
     # Calculate macro goals based on calorie goal
@@ -1097,9 +1101,10 @@ async def set_nutrition_goal(
     # Carbs: 40% of calories (grams = calories * 0.40 / 4)
     # Fat: 30% of calories (grams = calories * 0.30 / 9)
     # Fiber: Fixed 25g
-    protein_goal = (request.goal_calories * 0.30) / 4
-    carbs_goal = (request.goal_calories * 0.40) / 4
-    fat_goal = (request.goal_calories * 0.30) / 9
+    # CRITICAL FIX: Round all values to prevent database precision issues
+    protein_goal = round((request.goal_calories * 0.30) / 4, 1)
+    carbs_goal = round((request.goal_calories * 0.40) / 4, 1)
+    fat_goal = round((request.goal_calories * 0.30) / 9, 1)
     fiber_goal = 25.0  # Fixed goal
 
     if calorie_goal:
@@ -1112,7 +1117,7 @@ async def set_nutrition_goal(
     else:
         # Create new goal
         calorie_goal = DailyCalorieGoal(
-            user_id=current_user.id,
+            user_id=user_id,
             goal_calories=request.goal_calories,
             goal_protein_g=protein_goal,
             goal_carbs_g=carbs_goal,
@@ -1126,7 +1131,7 @@ async def set_nutrition_goal(
 
     # Calculate total consumed today from logged meals
     todays_meals = db.query(Meal).filter(
-        Meal.user_id == current_user.id,
+        Meal.user_id == user_id,
         Meal.date_logged == today
     ).all()
 

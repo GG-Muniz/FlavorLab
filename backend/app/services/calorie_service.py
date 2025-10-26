@@ -9,7 +9,7 @@ from sqlalchemy import func
 from ..models.calorie_tracking import DailyCalorieGoal, CalorieIntakeEntry
 
 
-def set_user_daily_calorie_goal(db: Session, user_id: int, goal_calories: int) -> DailyCalorieGoal:
+def set_user_daily_calorie_goal(db: Session, user_id: int, goal_calories: float) -> DailyCalorieGoal:
     """
     Create or update the user's daily calorie goal.
 
