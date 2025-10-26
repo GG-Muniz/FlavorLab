@@ -10,6 +10,8 @@ import Calendar from './components/calendar/Calendar';
 import { useAuth } from './context/AuthContext';
 // import { useDashboard } from './contexts/DashboardContext'; // DEPRECATED: Using DataContext
 import { DataProvider, useData } from './context/DataContext.jsx';
+import { getTimeAgo } from './utils/timeHelpers';
+import { parseMealsPerDay } from './utils/mealsHelpers';
 import UpNext from './components/dashboard/UpNext';
 import { getDailyCalorieSummary } from './services/calorieApi';
 import MealPlanShowcase from './components/mealplan/MealPlanShowcase';
@@ -50,13 +52,6 @@ const iconConfig = {
     history: { icon: History, label: 'Meal History' },
     calendar: { icon: CalendarIcon, label: 'Calendar' }
   },
-  quickActions: {
-    mealData: { icon: Apple, label: 'Meal Data', color: 'orange' },
-    dietGoals: { icon: Target, label: 'Diet Goals', color: 'yellow' },
-    // barcodeScanner: { icon: Scan, label: 'Barcode Scanner', color: 'cyan' },
-    ingredientDatabase: { icon: BookOpen, label: 'Ingredient Database', color: 'green' },
-    foodLog: { icon: BarChart3, label: 'Food Log', color: 'purple' }
-  }
 };
 
 // Service classes
@@ -215,18 +210,26 @@ const QuickActionButton = ({ actionKey, action, onClick }) => {
 
 function App() {
   const { user: authUser, loading: authLoading } = useAuth();
-  const { summary, isLoading } = useData(); // Migrated from DashboardContext to DataContext
+  const { summary, isLoading, getLastLoggedMeal, loggedMeals } = useData(); // Migrated from DashboardContext to DataContext
   const location = useLocation();
   const navigate = useNavigate();
   const [isAnimating, setIsAnimating] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const user = authUser || { id: '123', name: 'User' };
+
+  // Get last logged meal for display
+  const lastMeal = getLastLoggedMeal();
+
+  // Count today's logged meals (backend already filters to today in logged_meals_today)
+  const mealsLoggedCount = loggedMeals?.length || 0;
+
+  // Get user's meal goal from profile (defaults to 5 if not set)
+  const userMealGoal = parseMealsPerDay(authUser?.dietary_preferences?.meals_per_day);
   // NutriTest is now accessible via /nutritest route from Profile page only
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]); //Despues va a venir del API
   const [showCalorieModal, setShowCalorieModal] = useState(false);
-  const [showQuickActionsMenu, setShowQuickActionsMenu] = useState(false);
 
   // Calculate unread count from notifications array
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
@@ -524,20 +527,6 @@ const HealthTipOfTheDay = () => {
   );
 };
 
-  const handleActionClick = async (actionKey) => {
-    console.log('Action clicked:', actionKey);
-
-    // Close the menu
-    setShowQuickActionsMenu(false);
-
-    // Handle specific actions
-    if (actionKey === 'calorieCounter') {
-      setShowCalorieCounter(true);
-    }
-
-    // TODO: Add handlers for other quick actions
-    // Service integration would go here
-  };
 
   const currentNutritionData = nutritionData || nutritionDataState;
 
@@ -680,145 +669,6 @@ const HealthTipOfTheDay = () => {
               <span>{navItem.label}</span>
             </button>
           ))}
-
-          {/* Quick Actions Dropdown Button */}
-          <div style={{ position: 'relative', marginLeft: 'auto' }}>
-            <button
-              onClick={() => setShowQuickActionsMenu(!showQuickActionsMenu)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px 20px',
-                background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '12px',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 4px 6px -1px rgb(34 197 94 / 0.3)',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 10px 15px -3px rgb(34 197 94 / 0.4)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgb(34 197 94 / 0.3)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              <Zap width={16} height={16} color="#ffffff" />
-              <span>Quick Actions</span>
-            </button>
-
-            {/* Dropdown Menu */}
-            {showQuickActionsMenu && (
-              <>
-                {/* Backdrop to close menu when clicking outside */}
-                <div
-                  onClick={() => setShowQuickActionsMenu(false)}
-                  style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    zIndex: 10
-                  }}
-                />
-
-                {/* Dropdown Content */}
-                <div style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 8px)',
-                  right: 0,
-                  minWidth: '320px',
-                  background: 'var(--color-gray-100)',
-                  borderRadius: '16px',
-                  boxShadow: '0 24px 48px -12px rgba(0,0,0,0.6)',
-                  border: '2px solid var(--color-gray-200)',
-                  padding: '8px',
-                  zIndex: 20,
-                  animation: 'slideDown 0.2s ease-out'
-                }}>
-                  <style>
-                    {`
-                      @keyframes slideDown {
-                        from {
-                          opacity: 0;
-                          transform: translateY(-8px);
-                        }
-                        to {
-                          opacity: 1;
-                          transform: translateY(0);
-                        }
-                      }
-                    `}
-                  </style>
-
-                  {Object.entries(iconConfig.quickActions).map(([key, action]) => {
-                    const IconComponent = action.icon;
-                    const colorMap = {
-                      green: { bg: '#f0fdf4', hover: '#dcfce7', text: '#16a34a' },
-                      orange: { bg: '#fff7ed', hover: '#ffedd5', text: '#ea580c' },
-                      yellow: { bg: '#fefce8', hover: '#fef3c7', text: '#d97706' },
-                      cyan: { bg: '#ecfeff', hover: '#cffafe', text: '#0891b2' },
-                      purple: { bg: '#faf5ff', hover: '#f3e8ff', text: '#9333ea' }
-                    };
-                    const colors = colorMap[action.color] || colorMap.green;
-
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => handleActionClick(key)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          width: '100%',
-                          padding: '12px 16px',
-                          background: 'transparent',
-                          border: 'none',
-                          borderRadius: '12px',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                          textAlign: 'left'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'var(--menu-hover-bg)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'transparent';
-                        }}
-                      >
-                        <div style={{
-                          width: '40px',
-                          height: '40px',
-                          background: colors.bg,
-                          borderRadius: '10px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0
-                        }}>
-                          <IconComponent width={20} height={20} color={colors.text} />
-                        </div>
-                        <span style={{
-                          fontSize: '14px',
-                          fontWeight: '700',
-                          color: 'var(--text-primary)'
-                        }}>
-                          {action.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
         </div>
 
         {/* Dashboard Content */}
@@ -920,6 +770,57 @@ const HealthTipOfTheDay = () => {
                     </div>
                   </div>
                 </Card>
+
+                {/* Calorie Deficit Card - Coming Soon */}
+                <Card>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                      <div style={{
+                        width: 32,
+                        height: 32,
+                        background: '#fef3c7',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <TrendingUp width={20} height={20} color="#f59e0b" />
+                      </div>
+                      <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#374151', margin: 0 }}>
+                        Calorie Deficit
+                      </h3>
+                    </div>
+
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '20px 16px',
+                      background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                      borderRadius: '12px',
+                      border: '2px dashed #f59e0b'
+                    }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <p style={{
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: '#92400e',
+                          margin: '0 0 4px 0'
+                        }}>
+                          Coming Soon...
+                        </p>
+                        <p style={{
+                          fontSize: '12px',
+                          color: '#a16207',
+                          margin: 0,
+                          opacity: 0.8
+                        }}>
+                          Track your calorie deficit goals
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
               </div>
 
               {/* Macronutrients Card */}
@@ -949,15 +850,30 @@ const HealthTipOfTheDay = () => {
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '16px',
-                      background: '#f9fafb',
-                      borderRadius: '12px'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    {/* Meals Logged - Interactive */}
+                    <div
+                      onClick={() => setShowCalorieCounter(true)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '16px',
+                        background: '#f9fafb',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        position: 'relative'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#f3f4f6';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = '#f9fafb';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
                         <div style={{
                           width: 40,
                           height: 40,
@@ -969,12 +885,40 @@ const HealthTipOfTheDay = () => {
                         }}>
                           <Apple width={20} height={20} color="#ea580c" />
                         </div>
-                        <div>
-                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#111827' }}>Meals Logged</div>
-                          <div style={{ fontSize: '12px', color: '#6b7280' }}>3 of 5 meals</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#111827' }}>
+                            Meals Logged
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                            {mealsLoggedCount} of {userMealGoal} meals
+                          </div>
+                          {lastMeal && (
+                            <div style={{
+                              fontSize: '11px',
+                              color: '#9ca3af',
+                              marginTop: '2px',
+                              fontStyle: 'italic'
+                            }}>
+                              {lastMeal.name} • {getTimeAgo(lastMeal.created_at || lastMeal.logged_at)}
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>3</div>
+                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
+                        {mealsLoggedCount}
+                      </div>
+
+                      {/* Hover tooltip indicator */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '8px',
+                        right: '8px',
+                        fontSize: '10px',
+                        color: '#9ca3af',
+                        opacity: 0.6
+                      }}>
+                        Click to log
+                      </div>
                     </div>
 
                     <div style={{
