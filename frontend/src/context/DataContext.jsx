@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
 import { getMeals, deleteLoggedMeal, updateLoggedMeal, logManualCalories, fetchMealsForDate, fetchNutritionSummaryForDate, setCalorieGoal } from '../services/mealsApi';
+import { getJournalNote, saveJournalNote, deleteJournalNote } from '../services/journalApi';
 
 const DataContext = createContext();
 
@@ -182,6 +183,10 @@ export const DataProvider = ({ children }) => {
     getMealsForDate,
     getNutritionSummaryForDate,
     refetchAll,
+    // Journal functions
+    getJournalNote,
+    saveJournalNote,
+    deleteJournalNote,
   };
 
   return (
