@@ -6,42 +6,34 @@ import { useData } from '../../context/DataContext';
 
 const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave, onDelete, isLoading }) => {
   const { getJournalNote, saveJournalNote, deleteJournalNote } = useData();
-  
+
   // Existing note state (for backward compatibility)
   const [note, setNote] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editedNote, setEditedNote] = useState('');
-  
+
   // New journal state
   const [journalNote, setJournalNote] = useState('');
   const [isJournalEditing, setIsJournalEditing] = useState(false);
   const [journalLoading, setJournalLoading] = useState(false);
   const [journalError, setJournalError] = useState(null);
 
-  if (!selectedDate) return null;
-
-  // Format the date nicely
-  const formattedDate = moment(selectedDate).format('dddd, MMMM D, YYYY');
-  const dateKey = moment(selectedDate).format('YYYY-MM-DD');
-
-  // Determine which state to render based on data structure
-  const hasMealLog = dayData && dayData.totals;
-  const hasNoteOnly = dayData && dayData.note && !dayData.totals;
-
   // Load journal note when modal opens
+  // IMPORTANT: This useEffect MUST be before the early return to comply with Rules of Hooks
   useEffect(() => {
     if (isOpen && selectedDate) {
-      loadJournalNote();
+      const dateKey = moment(selectedDate).format('YYYY-MM-DD');
+      loadJournalNote(dateKey);
     }
   }, [isOpen, selectedDate]);
 
   // Load journal note for the selected date
-  const loadJournalNote = async () => {
+  const loadJournalNote = async (dateKey) => {
     if (!selectedDate) return;
-    
+
     setJournalLoading(true);
     setJournalError(null);
-    
+
     try {
       const journalData = await getJournalNote(dateKey);
       if (journalData) {
@@ -60,10 +52,11 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
   // Handle journal note save
   const handleJournalSave = async () => {
     if (!selectedDate || !journalNote.trim()) return;
-    
+
+    const dateKey = moment(selectedDate).format('YYYY-MM-DD');
     setJournalLoading(true);
     setJournalError(null);
-    
+
     try {
       await saveJournalNote(dateKey, journalNote.trim());
       setIsJournalEditing(false);
@@ -78,10 +71,11 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
   // Handle journal note delete
   const handleJournalDelete = async () => {
     if (!selectedDate) return;
-    
+
+    const dateKey = moment(selectedDate).format('YYYY-MM-DD');
     setJournalLoading(true);
     setJournalError(null);
-    
+
     try {
       await deleteJournalNote(dateKey);
       setJournalNote('');
@@ -104,6 +98,17 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
     setIsJournalEditing(false);
     setJournalError(null);
   };
+
+  // Early return AFTER all hooks have been called
+  if (!selectedDate) return null;
+
+  // Format the date nicely
+  const formattedDate = moment(selectedDate).format('dddd, MMMM D, YYYY');
+  const dateKey = moment(selectedDate).format('YYYY-MM-DD');
+
+  // Determine which state to render based on data structure
+  const hasMealLog = dayData && dayData.totals;
+  const hasNoteOnly = dayData && dayData.note && !dayData.totals;
 
   // NutritionTag component for displaying nutrition values as chips
   const NutritionTag = ({ label, value, unit, icon, color }) => (
