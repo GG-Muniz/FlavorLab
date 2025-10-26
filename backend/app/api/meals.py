@@ -260,69 +260,34 @@ async def log_meal(
 async def get_daily_summary(
     log_date: date = Path(..., description="Summary date (YYYY-MM-DD)"),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_active_user),
+    # TEMPORARY: Auth disabled for development - Remove this comment when auth is ready
+    # current_user: models.User = Depends(get_current_active_user),
 ) -> DailyNutritionSummary:
     """
     Aggregate daily nutrition by summing entries joined with ingredient nutrition per 100g.
     Calculation for each entry: (quantity_grams / 100) * per100g_value
     """
-    # Fetch all entries for the user/date
-    logs: List[MealLog] = (
-        db.query(MealLog)
-        .filter(MealLog.user_id == current_user.id, MealLog.log_date == log_date)
+    # TEMPORARY: Hardcoded user_id for development
+    # TODO: Replace with current_user.id when auth is enabled
+    user_id = 1
+    
+    # Fetch all logged meals for the user/date from Meal table
+    meals = (
+        db.query(Meal)
+        .filter(Meal.user_id == user_id, Meal.date_logged == log_date)
         .all()
     )
 
-    if not logs:
+    if not meals:
         return DailyNutritionSummary(
             total_calories=0.0, total_protein_g=0.0, total_carbs_g=0.0, total_fat_g=0.0
         )
 
-    # Collect all entries
-    entry_ids: List[int] = [log.id for log in logs]
-    entries: List[MealLogEntry] = (
-        db.query(MealLogEntry).filter(MealLogEntry.meal_log_id.in_(entry_ids)).all()
-    )
-
-    if not entries:
-        return DailyNutritionSummary(
-            total_calories=0.0, total_protein_g=0.0, total_carbs_g=0.0, total_fat_g=0.0
-        )
-
-    # Load ingredients mapping for faster joins
-    ingredient_ids = list({e.ingredient_id for e in entries})
-    if not ingredient_ids:
-        return DailyNutritionSummary(
-            total_calories=0.0, total_protein_g=0.0, total_carbs_g=0.0, total_fat_g=0.0
-        )
-
-    ingredients = (
-        db.query(Entity).filter(Entity.id.in_(ingredient_ids)).all()
-    )
-    by_id = {str(ing.id): ing for ing in ingredients}
-
-    total_calories = 0.0
-    total_protein_g = 0.0
-    total_carbs_g = 0.0
-    total_fat_g = 0.0
-
-    def _value(attrs, key):
-        v = (attrs or {}).get(key)
-        if isinstance(v, dict):
-            return float(v.get("value", 0.0) or 0.0)
-        return float(v or 0.0)
-
-    for entry in entries:
-        ing = by_id.get(str(entry.ingredient_id))
-        if not ing:
-            # Skip unknown ingredients
-            continue
-        attrs = ing.attributes or {}
-        factor = (float(entry.quantity_grams) or 0.0) / 100.0
-        total_calories += factor * _value(attrs, "calories")
-        total_protein_g += factor * _value(attrs, "protein_g")
-        total_carbs_g += factor * _value(attrs, "carbs_g")
-        total_fat_g += factor * _value(attrs, "fat_g")
+    # Sum up nutrition values from logged meals
+    total_calories = sum(float(meal.calories or 0) for meal in meals)
+    total_protein_g = sum(float(meal.protein_g or 0) for meal in meals)
+    total_carbs_g = sum(float(meal.carbs_g or 0) for meal in meals)
+    total_fat_g = sum(float(meal.fat_g or 0) for meal in meals)
 
     return DailyNutritionSummary(
         total_calories=round(total_calories, 2),
