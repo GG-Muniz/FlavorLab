@@ -18,6 +18,44 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
   const hasMealLog = dayData && dayData.totals;
   const hasNoteOnly = dayData && dayData.note && !dayData.totals;
 
+  // NutritionTag component for displaying nutrition values as chips
+  const NutritionTag = ({ label, value, unit, icon, color }) => (
+    <div style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '6px',
+      background: color || '#f3f4f6',
+      color: '#374151',
+      padding: '8px 12px',
+      borderRadius: '20px',
+      fontSize: '14px',
+      fontWeight: '600',
+      border: '1px solid #e5e7eb'
+    }}>
+      <span style={{ fontSize: '16px' }}>{icon}</span>
+      <span>{label}: {value}{unit}</span>
+    </div>
+  );
+
+  // MealTag component for displaying meals as chips
+  const MealTag = ({ meal, mealType }) => (
+    <div style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '6px',
+      background: '#fef3c7',
+      color: '#92400e',
+      padding: '6px 12px',
+      borderRadius: '16px',
+      fontSize: '13px',
+      fontWeight: '500',
+      border: '1px solid #fbbf24'
+    }}>
+      <span style={{ fontSize: '12px', textTransform: 'capitalize' }}>{mealType}:</span>
+      <span>{meal}</span>
+    </div>
+  );
+
   // Handle save note (for new days)
   const handleSaveNote = () => {
     if (!note.trim()) return;
@@ -263,114 +301,39 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                       </h3>
                     </div>
                     <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(2, 1fr)',
-                      gap: '16px'
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '8px',
+                      alignItems: 'center'
                     }}>
-                      {/* Calories */}
-                      <div>
-                        <div style={{
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          color: '#6b7280',
-                          marginBottom: '4px'
-                        }}>
-                          Calories
-                        </div>
-                        <div style={{
-                          fontSize: '24px',
-                          fontWeight: '700',
-                          color: '#111827'
-                        }}>
-                          {dayData.totals.calories}
-                          <span style={{
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: '#6b7280',
-                            marginLeft: '4px'
-                          }}>
-                            kcal
-                          </span>
-                        </div>
-                      </div>
-                      {/* Protein */}
-                      <div>
-                        <div style={{
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          color: '#6b7280',
-                          marginBottom: '4px'
-                        }}>
-                          Protein
-                        </div>
-                        <div style={{
-                          fontSize: '24px',
-                          fontWeight: '700',
-                          color: '#111827'
-                        }}>
-                          {dayData.totals.protein}
-                          <span style={{
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: '#6b7280',
-                            marginLeft: '4px'
-                          }}>
-                            g
-                          </span>
-                        </div>
-                      </div>
-                      {/* Carbs */}
-                      <div>
-                        <div style={{
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          color: '#6b7280',
-                          marginBottom: '4px'
-                        }}>
-                          Carbs
-                        </div>
-                        <div style={{
-                          fontSize: '24px',
-                          fontWeight: '700',
-                          color: '#111827'
-                        }}>
-                          {dayData.totals.carbs}
-                          <span style={{
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: '#6b7280',
-                            marginLeft: '4px'
-                          }}>
-                            g
-                          </span>
-                        </div>
-                      </div>
-                      {/* Fat */}
-                      <div>
-                        <div style={{
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          color: '#6b7280',
-                          marginBottom: '4px'
-                        }}>
-                          Fat
-                        </div>
-                        <div style={{
-                          fontSize: '24px',
-                          fontWeight: '700',
-                          color: '#111827'
-                        }}>
-                          {dayData.totals.fat}
-                          <span style={{
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: '#6b7280',
-                            marginLeft: '4px'
-                          }}>
-                            g
-                          </span>
-                        </div>
-                      </div>
+                      <NutritionTag 
+                        label="Calories" 
+                        value={dayData.totals.calories} 
+                        unit=" kcal" 
+                        icon="🔥" 
+                        color="#fef2f2" 
+                      />
+                      <NutritionTag 
+                        label="Protein" 
+                        value={dayData.totals.protein} 
+                        unit="g" 
+                        icon="🥩" 
+                        color="#f0fdf4" 
+                      />
+                      <NutritionTag 
+                        label="Carbs" 
+                        value={dayData.totals.carbs} 
+                        unit="g" 
+                        icon="🌾" 
+                        color="#fffbeb" 
+                      />
+                      <NutritionTag 
+                        label="Fat" 
+                        value={dayData.totals.fat} 
+                        unit="g" 
+                        icon="🥑" 
+                        color="#f0f9ff" 
+                      />
                     </div>
                   </motion.div>
 
@@ -388,45 +351,27 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                       letterSpacing: '0.5px',
                       marginBottom: '12px'
                     }}>
-                      Logged Meals
+                      Meals
                     </h3>
                     <div style={{
-                      background: '#f9fafb',
-                      borderRadius: '12px',
-                      padding: '16px',
-                      border: '1px solid #f3f4f6'
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '8px',
+                      alignItems: 'center'
                     }}>
-                      <ul style={{
-                        listStyle: 'none',
-                        padding: 0,
-                        margin: 0,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px'
-                      }}>
-                        {dayData.meals.map((meal, index) => (
-                          <li
+                      {dayData.meals.map((meal, index) => {
+                        // Extract meal type from meal string (e.g., "breakfast: Oatmeal" -> "breakfast")
+                        const mealType = meal.split(':')[0]?.trim() || 'meal';
+                        const mealName = meal.split(':').slice(1).join(':').trim() || meal;
+                        
+                        return (
+                          <MealTag 
                             key={index}
-                            style={{
-                              fontSize: '15px',
-                              fontWeight: '500',
-                              color: '#374151',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px'
-                            }}
-                          >
-                            <div style={{
-                              width: '6px',
-                              height: '6px',
-                              borderRadius: '50%',
-                              background: '#22c55e',
-                              flexShrink: 0
-                            }} />
-                            {meal}
-                          </li>
-                        ))}
-                      </ul>
+                            meal={mealName}
+                            mealType={mealType}
+                          />
+                        );
+                      })}
                     </div>
                   </motion.div>
                 </>
