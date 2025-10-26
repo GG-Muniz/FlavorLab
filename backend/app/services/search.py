@@ -342,7 +342,7 @@ class SearchService:
         by_classification = {stat.primary_classification: stat.count for stat in classification_stats}
         
         # Recent additions (last 30 days)
-        from datetime import datetime, timedelta, UTC
+        from datetime import datetime, timedelta, timezone as UTC
         thirty_days_ago = datetime.now(UTC) - timedelta(days=30)
         recent_additions = db.query(Entity).filter(
             Entity.created_at >= thirty_days_ago

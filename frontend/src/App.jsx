@@ -40,7 +40,6 @@ import {
 const iconConfig = {
   navigation: {
     dashboard: { icon: LayoutDashboard, label: 'Dashboard' },
-    recipes: { icon: ChefHat, label: 'Recipe Generator' },
     mealplans: { icon: ChefHat, label: 'Meal Plans' },
     history: { icon: History, label: 'Meal History' },
     calendar: { icon: CalendarIcon, label: 'Calendar' }

@@ -29,7 +29,7 @@ def set_user_daily_calorie_goal(db: Session, user_id: int, goal_calories: int) -
     if existing_goal:
         # Update existing goal
         existing_goal.goal_calories = goal_calories
-        existing_goal.last_updated = datetime.utcnow()
+        existing_goal.last_updated = datetime.now(UTC.utc)
         db.commit()
         db.refresh(existing_goal)
         return existing_goal

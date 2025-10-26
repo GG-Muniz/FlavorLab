@@ -25,7 +25,7 @@ const Login = ({ onLogin }) => {
       }
       await login(email, password);
       if (onLogin) onLogin();
-      navigate('/');
+      navigate('/app');
     } catch (e) {
       setError(e?.message || 'Invalid credentials');
     }

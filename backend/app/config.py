@@ -60,6 +60,9 @@ class Settings(BaseSettings):
 
     # LLM settings
     anthropic_api_key: str = Field(..., json_schema_extra={"env": "ANTHROPIC_API_KEY"})
+    openai_api_key: Optional[str] = Field(default=None, json_schema_extra={"env": "OPENAI_API_KEY"})
+    llm_provider: str = Field(default="anthropic", json_schema_extra={"env": "LLM_PROVIDER"})  # "anthropic" or "openai"
+    llm_model: str = Field(default="claude-3-5-haiku-20241022", json_schema_extra={"env": "LLM_MODEL"})
 
 
 # Global settings instance

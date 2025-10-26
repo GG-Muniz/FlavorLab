@@ -25,7 +25,7 @@ export default function SignUp() {
       await register(email, password);
       // Auto-login and go to onboarding
       await login(email, password);
-      navigate('/onboarding');
+      navigate('/app/onboarding');
     } catch (e) {
       setError(e?.message || 'Registration failed');
     } finally {

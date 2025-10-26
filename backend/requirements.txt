@@ -25,6 +25,7 @@ requests==2.31.0
 
 # AI/LLM integration
 anthropic==0.39.0
+openai==1.54.0
 
 # Development and testing
 pytest==8.4.2

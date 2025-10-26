@@ -1,7 +1,7 @@
 """
-LLM service for generating personalized meal plans using Claude Haiku.
+LLM service for generating personalized meal plans using Claude Haiku or ChatGPT.
 
-This module provides functionality to interact with the Anthropic Claude API
+This module provides functionality to interact with Anthropic Claude API and OpenAI API
 to generate AI-powered meal plans based on user survey data and preferences.
 """
 
@@ -9,6 +9,7 @@ import json
 import logging
 from typing import List, Dict, Any, Optional
 from anthropic import AsyncAnthropic
+from openai import AsyncOpenAI
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
@@ -26,9 +27,10 @@ class LLMResponseError(Exception):
     pass
 
 
-# Initialize the async Anthropic client
+# Initialize the async clients
 settings = get_settings()
-client = AsyncAnthropic(api_key=settings.anthropic_api_key)
+anthropic_client = AsyncAnthropic(api_key=settings.anthropic_api_key)
+openai_client = AsyncOpenAI(api_key=settings.openai_api_key) if settings.openai_api_key else None
 
 
 def generate_meal_plan_prompt(survey_data: dict, num_days: int, include_recipes: bool, preferred_ingredients: Optional[List[str]] = None) -> str:
@@ -53,16 +55,51 @@ def generate_meal_plan_prompt(survey_data: dict, num_days: int, include_recipes:
     allergies = survey_data.get("allergies", [])
     primary_goal = survey_data.get("primaryGoal", "")
 
-    # Format allergies for critical constraint
-    allergy_constraint = ""
+    # Format critical constraints (allergies, dietary restrictions, disliked ingredients)
+    critical_constraints = ""
+    constraint_sections = []
+
+    # Allergy constraints - highest priority
     if allergies:
         allergy_list = ", ".join(allergies)
-        allergy_constraint = f"""
-## CRITICAL ALLERGY CONSTRAINT
-The user has the following allergies: {allergy_list}
-YOU MUST NEVER include these ingredients in any meal. This is a safety requirement.
-Double-check every ingredient against this allergy list before including it.
-"""
+        constraint_sections.append(f"""
+🚨 ALLERGY SAFETY CONSTRAINT 🚨
+The user has LIFE-THREATENING allergies to: {allergy_list}
+ABSOLUTELY FORBIDDEN: Never include these ingredients or any derivatives.
+- Check EVERY ingredient, seasoning, and garnish
+- Avoid related terms (e.g., "dairy" means no milk, cheese, butter, cream, yogurt, whey, casein)
+- When in doubt, exclude the ingredient
+This is a MEDICAL SAFETY requirement - violations could harm the user.
+""")
+
+    # Dietary restrictions - must be strictly followed
+    if dietary_restrictions:
+        restriction_details = {
+            "vegan": "NO animal products (meat, poultry, fish, seafood, eggs, dairy, honey)",
+            "vegetarian": "NO meat, poultry, fish, or seafood (eggs and dairy are OK)",
+            "gluten-free": "NO wheat, barley, rye, malt, or derivatives (bread, pasta, flour, beer, soy sauce)",
+            "dairy-free": "NO milk, cheese, butter, cream, yogurt, whey, casein, or derivatives",
+            "keto": "HIGH fat, MODERATE protein, VERY LOW carbs (<20g net carbs per day)",
+            "paleo": "NO grains, legumes, dairy, refined sugar, or processed foods"
+        }
+        restriction_list = [restriction_details.get(r, r) for r in dietary_restrictions]
+        constraint_sections.append(f"""
+DIETARY RESTRICTION MANDATE:
+{chr(10).join(f"- {r}" for r in restriction_list)}
+Verify that EVERY meal and ingredient complies with these restrictions.
+""")
+
+    # Disliked ingredients - must be avoided
+    if disliked_ingredients:
+        disliked_list = ", ".join(disliked_ingredients)
+        constraint_sections.append(f"""
+DISLIKED INGREDIENTS TO AVOID:
+The user dislikes: {disliked_list}
+Do NOT include these ingredients or feature them prominently in any meal.
+""")
+
+    if constraint_sections:
+        critical_constraints = "\n" + "\n".join(constraint_sections)
 
     # Determine meal structure
     meal_structure_map = {
@@ -105,6 +142,7 @@ Based on the user's health goals, prioritize using the following ingredients in 
         "name": "Meal Name",
         "calories": 400,
         "description": "Brief description",
+        "tags": ["Gluten-Free", "High-Protein", "Quick-Meal"]
     }
     if include_recipes:
         example_meal.update({
@@ -118,9 +156,31 @@ Based on the user's health goals, prioritize using the following ingredients in 
     example_day = {"day": "Day 1", "meals": [example_meal]}
     example_json = json.dumps([example_day], indent=2)
 
-    # Build the complete prompt
+    # Build the complete prompt with constraints at the top
     prompt = f"""You are FlavorLab's expert nutritionist and meal planning AI. Create a personalized {num_days}-day meal plan.
-{allergy_constraint}
+{critical_constraints}
+## CONSTRAINT VERIFICATION CHECKLIST
+Before finalizing each meal, verify:
+✓ Contains NO allergens or their derivatives
+✓ Complies with ALL dietary restrictions (check each ingredient)
+✓ Excludes ALL disliked ingredients
+✓ Uses appropriate ingredient names (e.g., "coconut cream" not "cream", "almond butter" not "butter")
+
+## CONSTRAINT CONFIRMATION TAGGING MANDATE
+For each meal you generate, you MUST populate the 'tags' array with labels that explicitly confirm you have respected the user's survey data. This is the most critical step for building user trust. Follow these rules precisely:
+
+1. **Dietary Restrictions (MANDATORY):** For EVERY dietary restriction the user has (e.g., 'gluten-free', 'vegetarian', 'keto'), you MUST add a corresponding tag (e.g., "Gluten-Free", "Vegetarian", "Keto"). This confirms compliance.
+
+2. **Allergies (MANDATORY):** For EVERY allergy the user has (e.g., 'dairy', 'peanuts', 'shellfish'), you MUST add a corresponding "X-Free" tag (e.g., "Dairy-Free", "Peanut-Free", "Shellfish-Free"). This confirms safety. Include ALL allergy tags even if they seem obvious (e.g., "Shellfish-Free" for vegetarian meals).
+
+3. **Health Goal Tagging (CRITICAL):** For each meal, you MUST analyze its ingredients and nutritional benefits. If the meal directly supports one or more of the user's selected Health Goals (e.g., {', '.join(health_pillars)}), you MUST add a tag for EACH supported goal. The tag MUST be the EXACT name of the Health Goal from the user profile. This is the primary way the user will see the value of their personalized plan. Every meal should support at least one health goal.
+
+4. **Disliked Ingredients (OPTIONAL):** If the user dislikes an ingredient (e.g., 'cilantro'), and the meal avoids it, you MAY add a "No [Ingredient]" tag, but this is less critical.
+
+5. **STRICTLY FORBIDDEN - No Generic Tags:** Do NOT add ANY generic nutritional tags like "High-Protein", "High-Fiber", "Low-Carb", "Quick-Meal", "Heart-Healthy", etc. These do not confirm user constraints and undermine trust. The ONLY acceptable tags are those that directly mirror the user's stated dietary restrictions, allergies, and health pillar names.
+
+**Example:** If the user is 'gluten-free', 'vegetarian', has a 'dairy' allergy, and selected 'Improved Digestion' as a health pillar, a valid meal's tags would be ["Gluten-Free", "Vegetarian", "Dairy-Free", "Improved Digestion"].
+
 ## DAILY MEAL STRUCTURE MANDATE
 Each day MUST have exactly this structure: {meal_structure}
 
@@ -133,10 +193,11 @@ Each day MUST have exactly this structure: {meal_structure}
 {preferred_ingredients_section}
 ## REQUIREMENTS
 1. Address all health goals through food choices
-2. Respect all dietary restrictions strictly
-3. Avoid all disliked ingredients
+2. Respect all dietary restrictions strictly (see detailed restrictions above)
+3. Avoid all disliked ingredients completely
 4. Match the specified meal complexity level
 5. Each day must follow the meal structure: {meal_structure}
+6. Use specific ingredient names to avoid ambiguity (e.g., "plant-based milk" instead of "milk")
 {recipe_section}
 
 ## JSON-ONLY MANDATE
@@ -150,20 +211,169 @@ Generate the {num_days}-day meal plan now as pure JSON:"""
     return prompt
 
 
+async def generate_llm_meal_plan_anthropic(
+    survey_data: dict,
+    num_days: int,
+    include_recipes: bool,
+    preferred_ingredient_names: Optional[List[str]],
+    user_id: int,
+    model: str = "claude-3-5-haiku-20241022"
+) -> List[DailyMealPlan]:
+    """
+    Generate meal plan using Anthropic Claude API.
+
+    Args:
+        survey_data: User's survey data
+        num_days: Number of days for the meal plan
+        include_recipes: Whether to include detailed recipe information
+        preferred_ingredient_names: List of preferred ingredient names
+        user_id: User ID for logging
+        model: Claude model to use
+
+    Returns:
+        List[DailyMealPlan]: Validated list of daily meal plans
+    """
+    prompt = generate_meal_plan_prompt(
+        survey_data,
+        num_days,
+        include_recipes,
+        preferred_ingredients=preferred_ingredient_names if preferred_ingredient_names else None
+    )
+
+    logger.info(f"Generating meal plan with Anthropic Claude ({model}) for user {user_id}")
+
+    message = await anthropic_client.messages.create(
+        model=model,
+        max_tokens=8000,
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+    )
+
+    response_text = message.content[0].text.strip()
+    logger.debug(f"Claude response: {response_text[:500]}...")
+
+    try:
+        meal_plan_data = json.loads(response_text)
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse Claude response as JSON: {e}")
+        logger.error(f"Response text: {response_text}")
+        raise LLMResponseError(f"Claude returned invalid JSON: {e}")
+
+    validated_plans = [DailyMealPlan.model_validate(day) for day in meal_plan_data]
+    logger.info(f"Successfully generated and validated {len(validated_plans)} days with Claude")
+    return validated_plans
+
+
+async def generate_llm_meal_plan_openai(
+    survey_data: dict,
+    num_days: int,
+    include_recipes: bool,
+    preferred_ingredient_names: Optional[List[str]],
+    user_id: int,
+    model: str = "gpt-4o-mini"
+) -> List[DailyMealPlan]:
+    """
+    Generate meal plan using OpenAI ChatGPT API.
+
+    Args:
+        survey_data: User's survey data
+        num_days: Number of days for the meal plan
+        include_recipes: Whether to include detailed recipe information
+        preferred_ingredient_names: List of preferred ingredient names
+        user_id: User ID for logging
+        model: OpenAI model to use (gpt-4o-mini or gpt-4o)
+
+    Returns:
+        List[DailyMealPlan]: Validated list of daily meal plans
+    """
+    if not openai_client:
+        raise LLMResponseError("OpenAI client not initialized. Check OPENAI_API_KEY in .env")
+
+    prompt = generate_meal_plan_prompt(
+        survey_data,
+        num_days,
+        include_recipes,
+        preferred_ingredients=preferred_ingredient_names if preferred_ingredient_names else None
+    )
+
+    logger.info(f"Generating meal plan with OpenAI ({model}) for user {user_id}")
+
+    response = await openai_client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are FlavorLab's expert nutritionist. Respond with valid JSON only, no markdown or code blocks."
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        response_format={"type": "json_object"},
+        max_tokens=8000,
+        temperature=0.7
+    )
+
+    response_text = response.choices[0].message.content.strip()
+    logger.debug(f"OpenAI response: {response_text[:500]}...")
+
+    try:
+        # OpenAI might wrap in a root object, handle both cases
+        parsed_json = json.loads(response_text)
+
+        # If it's a single day object with "day" and "meals" keys, wrap it in an array
+        if isinstance(parsed_json, dict) and "day" in parsed_json and "meals" in parsed_json:
+            meal_plan_data = [parsed_json]
+        # If wrapped in a root key, try to extract the array
+        elif isinstance(parsed_json, dict) and len(parsed_json) == 1:
+            value = list(parsed_json.values())[0]
+            # Check if the value is already an array or needs wrapping
+            if isinstance(value, list):
+                meal_plan_data = value
+            elif isinstance(value, dict) and "day" in value:
+                meal_plan_data = [value]
+            else:
+                meal_plan_data = value
+        else:
+            meal_plan_data = parsed_json
+
+        # Ensure it's a list
+        if not isinstance(meal_plan_data, list):
+            raise ValueError("Response is not a list of daily meal plans")
+
+    except (json.JSONDecodeError, ValueError) as e:
+        logger.error(f"Failed to parse OpenAI response as JSON: {e}")
+        logger.error(f"Response text: {response_text}")
+        raise LLMResponseError(f"OpenAI returned invalid JSON: {e}")
+
+    validated_plans = [DailyMealPlan.model_validate(day) for day in meal_plan_data]
+    logger.info(f"Successfully generated and validated {len(validated_plans)} days with OpenAI")
+    return validated_plans
+
+
 async def generate_llm_meal_plan(
     user: User,
     num_days: int = 1,
     include_recipes: bool = False,
-    db: Session = None
+    db: Session = None,
+    provider: Optional[str] = None,
+    model: Optional[str] = None
 ) -> List[DailyMealPlan]:
     """
-    Generate a personalized meal plan using Claude Haiku LLM.
+    Generate a personalized meal plan using Claude Haiku or ChatGPT.
 
     Args:
         user: User model with preferences containing survey_data
         num_days: Number of days for the meal plan (default: 1)
         include_recipes: Whether to include detailed recipe information (default: False)
         db: Database session for fetching preferred ingredients (optional)
+        provider: LLM provider to use ("anthropic" or "openai", defaults to config)
+        model: Specific model to use (defaults to config or provider default)
 
     Returns:
         List[DailyMealPlan]: Validated list of daily meal plans
@@ -206,53 +416,36 @@ async def generate_llm_meal_plan(
                 preferred_ingredient_names = [ing.name for ing in unique_ingredients]
                 logger.info(f"Found {len(preferred_ingredient_names)} preferred ingredients for user {user.id}")
 
-        # Generate the prompt
-        prompt = generate_meal_plan_prompt(
-            survey_data,
-            num_days,
-            include_recipes,
-            preferred_ingredients=preferred_ingredient_names if preferred_ingredient_names else None
-        )
+        # Determine provider and model
+        selected_provider = provider or settings.llm_provider
+        selected_model = model or settings.llm_model
 
-        logger.info(f"Generating LLM meal plan for user {user.id} ({num_days} days, recipes={include_recipes})")
-
-        # Make async API call to Claude Haiku
-        message = await client.messages.create(
-            model="claude-3-haiku-20240307",
-            max_tokens=4096,  # Haiku's max token limit
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
-        )
-
-        # Extract the response content
-        response_text = message.content[0].text.strip()
-        logger.debug(f"LLM response: {response_text[:500]}...")
-
-        # Parse JSON response
-        try:
-            meal_plan_data = json.loads(response_text)
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse LLM response as JSON: {e}")
-            logger.error(f"Response text: {response_text}")
-            raise LLMResponseError(f"LLM returned invalid JSON: {e}")
-
-        # Validate against Pydantic model
-        try:
-            validated_plans = [DailyMealPlan.model_validate(day) for day in meal_plan_data]
-            logger.info(f"Successfully generated and validated {len(validated_plans)} days")
-            return validated_plans
-        except ValidationError as e:
-            logger.error(f"Failed to validate LLM response against schema: {e}")
-            logger.error(f"Meal plan data: {meal_plan_data}")
-            raise LLMResponseError(f"LLM response does not match expected schema: {e}")
+        # Route to appropriate provider
+        if selected_provider == "openai":
+            return await generate_llm_meal_plan_openai(
+                survey_data=survey_data,
+                num_days=num_days,
+                include_recipes=include_recipes,
+                preferred_ingredient_names=preferred_ingredient_names,
+                user_id=user.id,
+                model=selected_model if selected_model.startswith("gpt-") else "gpt-4o-mini"
+            )
+        else:  # Default to Anthropic
+            return await generate_llm_meal_plan_anthropic(
+                survey_data=survey_data,
+                num_days=num_days,
+                include_recipes=include_recipes,
+                preferred_ingredient_names=preferred_ingredient_names,
+                user_id=user.id,
+                model=selected_model if selected_model.startswith("claude-") else "claude-3-5-haiku-20241022"
+            )
 
     except (ValueError, LLMResponseError):
         # Re-raise expected errors
         raise
+    except ValidationError as e:
+        logger.error(f"Failed to validate LLM response against schema: {e}")
+        raise LLMResponseError(f"LLM response does not match expected schema: {e}")
     except Exception as e:
         # Catch any unexpected errors
         logger.error(f"Unexpected error generating LLM meal plan: {e}")

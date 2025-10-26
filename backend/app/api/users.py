@@ -176,16 +176,17 @@ async def get_current_user_profile(
 ):
     """
     Get current user's profile information.
-    
+
     Args:
         current_user: Current authenticated user
-        
+
     Returns:
         UserProfileResponse: User profile information
     """
     try:
+        logger.info(f"GET /me for user {current_user.id}. Preferences: {current_user.preferences}")
         return UserProfileResponse.model_validate(current_user)
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -253,10 +254,15 @@ async def update_current_user_profile(
         # Update preferences when explicitly provided (including None to clear)
         if 'preferences' in user_data.model_fields_set:
             current_user.preferences = user_data.preferences
-        
+            # Mark the field as modified to ensure SQLAlchemy detects the JSON change
+            from sqlalchemy.orm.attributes import flag_modified
+            flag_modified(current_user, "preferences")
+            logger.info(f"Updated preferences for user {current_user.id}: {current_user.preferences}")
+
         db.commit()
         db.refresh(current_user)
-        
+
+        logger.info(f"User {current_user.id} profile updated. Final preferences: {current_user.preferences}")
         return UserProfileResponse.model_validate(current_user)
         
     except HTTPException:
@@ -841,7 +847,7 @@ async def get_user_statistics(
         verified_users = db.query(models.User).filter(models.User.is_verified == True).count()
         
         # Recent registrations (last 30 days)
-        thirty_days_ago = datetime.datetime.now(datetime.UTC) - timedelta(days=30)
+        thirty_days_ago = datetime.datetime.now(datetime.timezone.utc) - timedelta(days=30)
         recent_registrations = db.query(models.User).filter(
             models.User.created_at >= thirty_days_ago
         ).count()

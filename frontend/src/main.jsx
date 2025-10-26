@@ -18,6 +18,7 @@ import IngredientBrowserPage from './pages/IngredientBrowserPage.jsx'
 import IngredientDetailPage from './pages/IngredientDetailPage.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
 import NutriTest from './components/onboarding/NutriTest.jsx'
+import LandingPage from './pages/LandingPage.jsx'
 
 function ProtectedRoute({ children }) {
   const { token, loading } = useAuth();
@@ -41,12 +42,15 @@ createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <BrowserRouter>
           <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login onLogin={() => {}} />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
-            <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+            {/* Protected App Routes */}
+            <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route index element={<App />} />
               <Route path="onboarding" element={<OnboardingWizard />} />
               <Route path="profile" element={<ProfilePage />} />

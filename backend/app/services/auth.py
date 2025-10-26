@@ -66,7 +66,7 @@ class AuthService:
         Always enforce exp > current time by at least 60 seconds.
         """
         # Current UTC timestamp (aware)
-        now_utc = datetime.datetime.now(datetime.UTC)
+        now_utc = datetime.datetime.now(datetime.timezone.utc)
         now_ts = int(now_utc.timestamp())
         # Local timezone offset in seconds (aware, no deprecations)
         local_offset = now_utc.astimezone().utcoffset()
@@ -264,7 +264,7 @@ class AuthService:
         Generate a short‑lived JWT token for password reset.
         Encodes the email as subject and a purpose claim.
         """
-        now_utc = datetime.datetime.now(datetime.UTC)
+        now_utc = datetime.datetime.now(datetime.timezone.utc)
         exp_dt = now_utc + datetime.timedelta(minutes=max(1, int(expires_minutes)))
         exp_ts = int(exp_dt.timestamp())
         payload = {"sub": email, "prp": "password_reset", "exp": exp_ts}
@@ -420,5 +420,5 @@ def get_token_expiration_time() -> datetime:
     Returns:
         datetime: Token expiration time
     """
-    return datetime.datetime.now(datetime.UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    return datetime.datetime.now(datetime.timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 

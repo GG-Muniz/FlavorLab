@@ -8,7 +8,7 @@ for ingredients, nutrients, and compounds.
 from sqlalchemy import Column, Integer, String, Text, JSON, DateTime, Boolean, ForeignKey, func
 from sqlalchemy.orm import relationship, Session, Query
 from sqlalchemy.orm.attributes import flag_modified
-from datetime import datetime, UTC
+from datetime import datetime, timezone as UTC
 from typing import Dict, Any, Optional, List
 from ..database import Base
 from .health_pillars import get_pillar_ids_for_outcome

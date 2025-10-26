@@ -10,7 +10,7 @@ export default function AppLayout() {
     <div style={{ minHeight: '100vh', background: 'var(--color-gray-50)' }}>
       <header style={{ background: 'var(--color-gray-100)', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)', borderBottom: '2px solid var(--color-gray-200)' }}>
         <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '0 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '64px' }}>
-          <Link to="/?tab=dashboard" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+          <Link to="/app" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
             <div style={{ width: 40, height: 40, background: '#22c55e', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)' }}>
               <Apple width={24} height={24} color="#ffffff" strokeWidth={2.5} />
             </div>
