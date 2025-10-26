@@ -90,16 +90,12 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
 
   // --- END OF HOOKS SECTION ---
 
-  // Create derived state for unlogged meal plans (action list behavior)
+  // Create derived state to track which meals are already logged today
+  // (for visual indicator only - doesn't prevent re-logging)
   const loggedMealKeys = useMemo(() => {
     // Create Set of unique keys for meals already logged today
     return new Set(loggedMeals.map(meal => `${meal.name}::${meal.meal_type}`));
   }, [loggedMeals]);
-
-  const unloggedMealPlans = useMemo(() => {
-    // Filter mealPlans to show only those not yet logged today
-    return mealPlans.filter(plan => !loggedMealKeys.has(`${plan.name}::${plan.meal_type}`));
-  }, [mealPlans, loggedMealKeys]);
 
   if (!isOpen) return null;
 
@@ -849,7 +845,7 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
                 }}>
                   Loading meal plans...
                 </div>
-              ) : unloggedMealPlans.length === 0 ? (
+              ) : mealPlans.length === 0 ? (
                 <div style={{
                   padding: '32px 20px',
                   textAlign: 'center',
@@ -884,56 +880,70 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
                   overflow: 'hidden',
                   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
                 }}>
-                  {unloggedMealPlans.map((plan, index) => (
-                    <div
-                      key={plan.id}
-                      style={{
-                        padding: '20px',
-                        borderBottom: index < unloggedMealPlans.length - 1 ? '1px solid #f1f5f9' : 'none',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        gap: '16px'
-                      }}
-                    >
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        {/* Meal Name - Primary */}
-                        <h4 style={{
-                          fontSize: '16px',
-                          fontWeight: '700',
-                          color: '#1e293b',
-                          margin: '0 0 8px 0',
-                          lineHeight: '1.3'
-                        }}>
-                          {plan.name}
-                        </h4>
-
-                        {/* Meal Type & Calories - Secondary */}
-                        <div style={{
+                  {mealPlans.map((plan, index) => {
+                    const isAlreadyLogged = loggedMealKeys.has(`${plan.name}::${plan.meal_type}`);
+                    return (
+                      <div
+                        key={plan.id}
+                        style={{
+                          padding: '20px',
+                          borderBottom: index < mealPlans.length - 1 ? '1px solid #f1f5f9' : 'none',
                           display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          marginBottom: '8px'
-                        }}>
-                          <span style={{
-                            fontSize: '13px',
-                            fontWeight: '600',
-                            color: '#ea580c',
-                            background: '#fef3c7',
-                            padding: '2px 8px',
-                            borderRadius: '6px',
-                            textTransform: 'capitalize'
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                          gap: '16px'
+                        }}
+                      >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          {/* Meal Name - Primary */}
+                          <h4 style={{
+                            fontSize: '16px',
+                            fontWeight: '700',
+                            color: '#1e293b',
+                            margin: '0 0 8px 0',
+                            lineHeight: '1.3'
                           }}>
-                            {plan.meal_type}
-                          </span>
-                          <span style={{
-                            fontSize: '13px',
-                            fontWeight: '600',
-                            color: '#ea580c'
+                            {plan.name}
+                          </h4>
+
+                          {/* Meal Type & Calories - Secondary */}
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginBottom: '8px'
                           }}>
-                            {plan.calories} cal
-                          </span>
-                        </div>
+                            <span style={{
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#ea580c',
+                              background: '#fef3c7',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              textTransform: 'capitalize'
+                            }}>
+                              {plan.meal_type}
+                            </span>
+                            <span style={{
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#ea580c'
+                            }}>
+                              {plan.calories} cal
+                            </span>
+                            {isAlreadyLogged && (
+                              <span style={{
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                color: '#10b981',
+                                background: '#d1fae5',
+                                padding: '2px 8px',
+                                borderRadius: '6px'
+                              }}>
+                                ✓ Logged
+                              </span>
+                            )}
+                          </div>
 
                         {/* Description - Tertiary */}
                         {plan.description && (
@@ -987,7 +997,8 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
                         {isLoading ? 'Logging...' : 'Log'}
                       </button>
                     </div>
-                  ))}
+                  );
+                })}
                 </div>
               )}
             </div>

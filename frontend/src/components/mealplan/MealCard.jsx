@@ -245,18 +245,37 @@ const MealCard = ({ meal, onClick, onLogMeal, isLoggedToday }) => {
           paddingTop: '16px',
           borderTop: '1px solid #f3f4f6',
           display: 'flex',
+          flexDirection: 'column',
           gap: '8px'
         }}>
+          {/* "Logged Today" Badge - shown when meal is already logged */}
+          {isLoggedToday && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              <span style={{
+                fontSize: '12px',
+                fontWeight: '600',
+                color: '#10b981',
+                background: '#d1fae5',
+                padding: '4px 10px',
+                borderRadius: '6px'
+              }}>
+                ✓ Logged Today
+              </span>
+            </div>
+          )}
+
+          {/* Log Button - always enabled */}
           <motion.button
-            whileHover={!isLoggedToday ? { scale: 1.02 } : {}}
-            whileTap={!isLoggedToday ? { scale: 0.98 } : {}}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={(e) => {
               e.stopPropagation(); // Prevent card click
-              if (!isLoggedToday) {
-                onLogMeal(meal);
-              }
+              onLogMeal(meal);
             }}
-            disabled={isLoggedToday}
             style={{
               flex: 1,
               display: 'flex',
@@ -264,19 +283,18 @@ const MealCard = ({ meal, onClick, onLogMeal, isLoggedToday }) => {
               justifyContent: 'center',
               gap: '6px',
               padding: '10px 16px',
-              background: isLoggedToday ? '#9ca3af' : '#22c55e',
+              background: '#22c55e',
               color: 'white',
               border: 'none',
               borderRadius: '10px',
               fontSize: '13px',
               fontWeight: '600',
-              cursor: isLoggedToday ? 'not-allowed' : 'pointer',
-              opacity: isLoggedToday ? 0.7 : 1,
+              cursor: 'pointer',
               transition: 'all 0.2s'
             }}
           >
-            {!isLoggedToday && <Calendar width={16} height={16} />}
-            {isLoggedToday ? 'Logged ✔' : 'Log for Today'}
+            <Calendar width={16} height={16} />
+            Log for Today
           </motion.button>
         </div>
       )}
