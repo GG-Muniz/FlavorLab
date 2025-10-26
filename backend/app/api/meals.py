@@ -489,7 +489,8 @@ async def log_meal_from_template(
 async def get_calendar_links(
     meal_id: int = Path(..., description="ID of the meal to create calendar links for"),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_active_user),
+    # TEMPORARY: Auth disabled for development - Remove this comment when auth is ready
+    # current_user: models.User = Depends(get_current_active_user),
 ) -> CalendarLinksResponse:
     """
     Generate "Magic Links" for adding a meal to personal calendars.
@@ -500,10 +501,13 @@ async def get_calendar_links(
 
     These links allow users to add meal events without direct API integration.
     """
+    # TEMPORARY: Hardcoded user_id for development
+    user_id = 1
+
     # Fetch the meal
     meal = db.query(Meal).filter(
         Meal.id == meal_id,
-        Meal.user_id == current_user.id
+        Meal.user_id == user_id
     ).first()
 
     if not meal:
