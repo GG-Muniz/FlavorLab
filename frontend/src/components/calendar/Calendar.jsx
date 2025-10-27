@@ -161,8 +161,8 @@ const Calendar = () => {
   return (
     <div style={{
       background: '#ffffff',
-      borderRadius: '20px',
-      padding: '24px',
+      borderRadius: '16px',
+      padding: '20px',
       boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
       border: '1px solid #f3f4f6'
     }}>
@@ -171,10 +171,10 @@ const Calendar = () => {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '24px'
+        marginBottom: '16px'
       }}>
         <h2 style={{
-          fontSize: '20px',
+          fontSize: '18px',
           fontWeight: '700',
           color: '#111827',
           margin: 0
@@ -307,36 +307,50 @@ const Calendar = () => {
                 gap: '4px',
                 fontSize: '14px',
                 fontWeight: '600',
-                border: isTodayDate ? '2px solid #22c55e' : '1px solid transparent',
-                borderRadius: '12px',
+                border: hasLog 
+                  ? '2px solid #22c55e' 
+                  : isTodayDate 
+                    ? '2px solid #22c55e' 
+                    : '1px solid #e5e7eb',
+                borderRadius: '10px',
                 background: isSelected
                   ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
-                  : 'transparent',
+                  : isTodayDate 
+                    ? '#f0fdf4' 
+                    : '#ffffff',
                 color: isSelected ? '#ffffff' : isTodayDate ? '#22c55e' : '#374151',
                 cursor: 'pointer',
-                transition: 'all 0.2s',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 position: 'relative',
-                padding: '8px'
+                padding: '8px',
+                minHeight: '60px'
               }}
               onMouseEnter={(e) => {
                 if (!isSelected) {
-                  e.currentTarget.style.background = '#f3f4f6';
+                  e.currentTarget.style.transform = 'scale(1.05) translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.15)';
+                  e.currentTarget.style.background = '#f0fdf4';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isSelected) {
-                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.transform = 'scale(1) translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.background = isTodayDate ? '#f0fdf4' : '#ffffff';
                 }
               }}
             >
               <span>{day.getDate()}</span>
               {hasLog && (
                 <div style={{
-                  width: '6px',
-                  height: '6px',
+                  position: 'absolute',
+                  bottom: '6px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '4px',
+                  height: '4px',
                   borderRadius: '50%',
-                  background: isSelected ? '#ffffff' : '#22c55e',
-                  marginTop: '2px'
+                  background: isSelected ? '#ffffff' : '#22c55e'
                 }} />
               )}
             </button>

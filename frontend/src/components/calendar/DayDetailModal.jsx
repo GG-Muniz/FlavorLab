@@ -130,16 +130,16 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
       display: 'inline-flex',
       alignItems: 'center',
       gap: '6px',
-      background: color || '#f3f4f6',
+      background: `${color}15`, // 15 is alpha for subtle bg
       color: '#374151',
-      padding: '8px 12px',
-      borderRadius: '20px',
-      fontSize: '14px',
+      padding: '6px 12px',
+      borderRadius: '8px',
+      fontSize: '13px',
       fontWeight: '600',
-      border: '1px solid #e5e7eb'
+      border: `1px solid ${color}40`
     }}>
-      <span style={{ fontSize: '16px' }}>{icon}</span>
-      <span>{label}: {value}{unit}</span>
+      <span style={{ fontSize: '14px' }}>{icon}</span>
+      <span style={{ color: color, fontWeight: '700' }}>{label}: {value}{unit}</span>
     </div>
   );
 
@@ -149,15 +149,27 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
       display: 'inline-flex',
       alignItems: 'center',
       gap: '6px',
-      background: '#fef3c7',
-      color: '#92400e',
-      padding: '6px 12px',
-      borderRadius: '16px',
+      background: '#f9fafb',
+      color: '#374151',
+      padding: '12px',
+      borderRadius: '10px',
       fontSize: '13px',
       fontWeight: '500',
-      border: '1px solid #fbbf24'
-    }}>
-      <span style={{ fontSize: '12px', textTransform: 'capitalize' }}>{mealType}:</span>
+      borderLeft: '3px solid #22c55e',
+      marginBottom: '8px',
+      transition: 'all 0.2s',
+      cursor: 'default'
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = '#f0fdf4';
+      e.currentTarget.style.transform = 'translateX(4px)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = '#f9fafb';
+      e.currentTarget.style.transform = 'translateX(0)';
+    }}
+    >
+      <span style={{ fontSize: '12px', textTransform: 'capitalize', color: '#22c55e', fontWeight: '600' }}>{mealType}:</span>
       <span>{meal}</span>
     </div>
   );
@@ -215,35 +227,35 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+          <motion.div
           key="backdrop"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(102, 126, 234, 0.3)',
-            backdropFilter: 'blur(8px)',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px'
-          }}
-        />
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(102, 126, 234, 0.3)',
+              backdropFilter: 'blur(8px)',
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px'
+            }}
+          />
       )}
       {isOpen && (
-        <motion.div
+          <motion.div
           key="modal"
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             style={{
               position: 'fixed',
               top: '50%',
@@ -264,7 +276,7 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
           >
             {/* Header */}
             <div style={{
-              padding: '24px',
+              padding: '20px',
               borderBottom: '1px solid #f3f4f6',
               display: 'flex',
               justifyContent: 'space-between',
@@ -280,7 +292,7 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  marginBottom: '8px'
+                  marginBottom: '6px'
                 }}>
                   <CalendarIcon
                     width={20}
@@ -288,7 +300,7 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                     color={hasMealLog ? '#16a34a' : '#d97706'}
                   />
                   <h2 style={{
-                    fontSize: '24px',
+                    fontSize: '20px',
                     fontWeight: '700',
                     color: '#111827',
                     margin: 0
@@ -335,7 +347,7 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
             <div style={{
               flex: 1,
               overflowY: 'auto',
-              padding: '24px'
+              padding: '20px'
             }}>
               {isLoading ? (
                 /* LOADING STATE */
@@ -417,39 +429,45 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                         value={dayData.totals.calories}
                         unit=" kcal"
                         icon="🔥"
-                        color="#fef2f2"
+                        color="#ef4444"
                       />
                       <NutritionTag
                         label="Protein"
                         value={dayData.totals.protein}
                         unit="g"
                         icon="🥩"
-                        color="#f0fdf4"
+                        color="#22c55e"
                       />
                       <NutritionTag
                         label="Carbs"
                         value={dayData.totals.carbs}
                         unit="g"
                         icon="🌾"
-                        color="#fffbeb"
+                        color="#3b82f6"
                       />
                       <NutritionTag
                         label="Fat"
                         value={dayData.totals.fat}
                         unit="g"
                         icon="🥑"
-                        color="#f0f9ff"
+                        color="#eab308"
                       />
                       <NutritionTag
                         label="Fiber"
                         value={dayData.totals.fiber}
                         unit="g"
                         icon="🌿"
-                        color="#f0fdf4"
+                        color="#a855f7"
                       />
-                    </div>
+                        </div>
                   </motion.div>
 
+                  {/* Section Divider */}
+                  <div style={{
+                    height: '1px',
+                    background: 'linear-gradient(to right, transparent, #e5e7eb, transparent)',
+                    margin: '20px 0'
+                  }} />
 
                   {/* Tab Navigation */}
                   <motion.div
@@ -457,7 +475,7 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                   >
-                    <div style={{
+                        <div style={{
                       display: 'flex',
                       gap: '4px',
                       marginBottom: '16px',
@@ -467,15 +485,25 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                         onClick={() => setActiveTab('meals')}
                         style={{
                           padding: '8px 16px',
-                          background: activeTab === 'meals' ? '#ffffff' : 'transparent',
+                          background: activeTab === 'meals' ? '#22c55e' : 'transparent',
                           border: 'none',
-                          borderBottom: activeTab === 'meals' ? '2px solid #3b82f6' : '2px solid transparent',
+                          borderBottom: activeTab === 'meals' ? '2px solid #22c55e' : '2px solid transparent',
                           borderRadius: '8px 8px 0 0',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: activeTab === 'meals' ? '#3b82f6' : '#6b7280',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                          color: activeTab === 'meals' ? '#ffffff' : '#6b7280',
                           cursor: 'pointer',
                           transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (activeTab !== 'meals') {
+                            e.currentTarget.style.background = '#f0fdf4';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (activeTab !== 'meals') {
+                            e.currentTarget.style.background = 'transparent';
+                          }
                         }}
                       >
                         Meals
@@ -484,24 +512,34 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                         onClick={() => setActiveTab('journal')}
                         style={{
                           padding: '8px 16px',
-                          background: activeTab === 'journal' ? '#ffffff' : 'transparent',
+                          background: activeTab === 'journal' ? '#22c55e' : 'transparent',
                           border: 'none',
-                          borderBottom: activeTab === 'journal' ? '2px solid #3b82f6' : '2px solid transparent',
+                          borderBottom: activeTab === 'journal' ? '2px solid #22c55e' : '2px solid transparent',
                           borderRadius: '8px 8px 0 0',
                           fontSize: '14px',
                           fontWeight: '600',
-                          color: activeTab === 'journal' ? '#3b82f6' : '#6b7280',
+                          color: activeTab === 'journal' ? '#ffffff' : '#6b7280',
                           cursor: 'pointer',
                           transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (activeTab !== 'journal') {
+                            e.currentTarget.style.background = '#f0fdf4';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (activeTab !== 'journal') {
+                            e.currentTarget.style.background = 'transparent';
+                          }
                         }}
                       >
                         Journal
                       </button>
-                    </div>
+                        </div>
 
                     {/* Tab Content */}
                     {activeTab === 'meals' ? (
-                      <div style={{
+                        <div style={{
                         display: 'flex',
                         flexWrap: 'wrap',
                         gap: '8px',
@@ -520,12 +558,12 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                             />
                           );
                         })}
-                      </div>
+                        </div>
                     ) : (
                       /* Journal Tab Content */
                       <div>
                         {journalError && (
-                          <div style={{
+                        <div style={{
                             background: '#fef2f2',
                             border: '1px solid #fecaca',
                             color: '#dc2626',
@@ -535,11 +573,11 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                             marginBottom: '12px'
                           }}>
                             {journalError}
-                          </div>
+                        </div>
                         )}
 
                         {journalNote ? (
-                          <div style={{
+                        <div style={{
                             background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
                             borderLeft: '4px solid #0ea5e9',
                             color: '#0c4a6e',
@@ -551,21 +589,21 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                             marginBottom: '12px'
                           }}>
                             {journalNote}
-                          </div>
+                        </div>
                         ) : (
-                          <div style={{
+                        <div style={{
                             background: '#f9fafb',
                             border: '2px dashed #d1d5db',
                             borderRadius: '12px',
                             padding: '24px',
                             textAlign: 'center',
-                            color: '#6b7280',
+                          color: '#6b7280',
                             fontSize: '14px',
                             marginBottom: '12px'
                           }}>
                             <FileText width={24} height={24} style={{ marginBottom: '8px', opacity: 0.5 }} />
                             <div>No journal entry for this day</div>
-                          </div>
+                        </div>
                         )}
 
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
@@ -583,7 +621,7 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                               cursor: journalLoading ? 'not-allowed' : 'pointer',
                               opacity: journalLoading ? 0.5 : 1,
                               transition: 'all 0.2s',
-                              display: 'flex',
+                        display: 'flex',
                               alignItems: 'center',
                               gap: '4px'
                             }}
@@ -595,19 +633,19 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                             <button
                               onClick={handleJournalDelete}
                               disabled={journalLoading}
-                              style={{
+                            style={{
                                 padding: '8px 16px',
                                 background: '#ef4444',
                                 border: 'none',
                                 borderRadius: '8px',
                                 fontSize: '13px',
-                                fontWeight: '500',
+                              fontWeight: '500',
                                 color: '#ffffff',
                                 cursor: journalLoading ? 'not-allowed' : 'pointer',
                                 opacity: journalLoading ? 0.5 : 1,
                                 transition: 'all 0.2s',
-                                display: 'flex',
-                                alignItems: 'center',
+                              display: 'flex',
+                              alignItems: 'center',
                                 gap: '4px'
                               }}
                             >
@@ -615,7 +653,7 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                               Delete
                             </button>
                           )}
-                        </div>
+                    </div>
                       </div>
                     )}
                   </motion.div>
