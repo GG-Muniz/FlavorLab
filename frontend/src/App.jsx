@@ -50,7 +50,7 @@ const iconConfig = {
     recipes: { icon: ChefHat, label: 'Recipe Generator' },
     mealplans: { icon: ChefHat, label: 'Meal Plans' },
     history: { icon: History, label: 'Meal History' },
-    calendar: { icon: CalendarIcon, label: 'Calendar' }
+    calendar: { icon: CalendarIcon, label: 'Journal' }
   },
 };
 
