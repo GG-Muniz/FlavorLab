@@ -176,6 +176,8 @@ async def log_meal(
         today = payload.log_date
         todays_meals = db.query(Meal).filter(
             Meal.user_id == user_id,
+            Meal.date_logged == today,
+            Meal.source == MealSource.LOGGED
         ).all()
 
         total_consumed = sum(m.calories or 0 for m in todays_meals)
@@ -623,6 +625,8 @@ async def log_meal_for_today(
     # Calculate total consumed today
     todays_meals = db.query(Meal).filter(
         Meal.user_id == user_id,
+        Meal.date_logged == today,
+        Meal.source == MealSource.LOGGED
     ).all()
 
     total_consumed = sum(m.calories or 0 for m in todays_meals)
@@ -816,6 +820,8 @@ async def update_logged_meal(
     # Calculate total consumed today after update
     todays_meals = db.query(Meal).filter(
         Meal.user_id == user_id,
+        Meal.date_logged == today,
+        Meal.source == MealSource.LOGGED
     ).all()
 
     total_consumed = sum(m.calories or 0 for m in todays_meals)
@@ -934,6 +940,8 @@ async def log_manual_calories(
     # Calculate total consumed today
     todays_meals = db.query(Meal).filter(
         Meal.user_id == user_id,
+        Meal.date_logged == today,
+        Meal.source == MealSource.LOGGED
     ).all()
 
     total_consumed = sum(m.calories or 0 for m in todays_meals)
