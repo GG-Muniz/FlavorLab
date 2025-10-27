@@ -53,7 +53,9 @@ export default function LogMealModal({ isOpen, onClose, onSaved }) {
   const save = async () => {
     try {
       setLoading(true); setError(null);
-      const today = new Date().toISOString().slice(0,10);
+      // Use local date to avoid timezone issues (UTC date could be tomorrow in some timezones)
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const entries = selected
         .map(s => ({ ingredient_id: s.id, quantity_grams: Math.round(parseFloat(s.grams)) })) // CRITICAL FIX: Round to integer
         .filter(e => !Number.isNaN(e.quantity_grams) && e.quantity_grams > 0);

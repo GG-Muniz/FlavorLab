@@ -194,7 +194,7 @@ async def log_meal(
         ).first()
 
         daily_goal = calorie_goal.goal_calories if calorie_goal else 2000  # Default 2000
-        remaining = daily_goal - total_consumed
+        remaining = int(daily_goal - total_consumed)
 
         # Build logged meals summary
         logged_meals = [
@@ -643,7 +643,7 @@ async def log_meal_for_today(
     ).first()
 
     daily_goal = calorie_goal.goal_calories if calorie_goal else 2000  # Default 2000
-    remaining = daily_goal - total_consumed
+    remaining = int(daily_goal - total_consumed)
 
     # Build logged meals summary
     logged_meals = [
@@ -733,7 +733,7 @@ async def delete_logged_meal(
     ).first()
 
     daily_goal = calorie_goal.goal_calories if calorie_goal else 2000  # Default 2000
-    remaining = daily_goal - total_consumed
+    remaining = int(daily_goal - total_consumed)
 
     # Build logged meals summary
     logged_meals = [
@@ -838,7 +838,7 @@ async def update_logged_meal(
     ).first()
 
     daily_goal = calorie_goal.goal_calories if calorie_goal else 2000  # Default 2000
-    remaining = daily_goal - total_consumed
+    remaining = int(daily_goal - total_consumed)
 
     # Build logged meals summary
     logged_meals = [
@@ -958,7 +958,7 @@ async def log_manual_calories(
     ).first()
 
     daily_goal = calorie_goal.goal_calories if calorie_goal else 2000  # Default 2000
-    remaining = daily_goal - total_consumed
+    remaining = int(daily_goal - total_consumed)
 
     # Build logged meals summary
     logged_meals = [
