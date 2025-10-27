@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import flavorLabIcon from '../assets/healthlab-icon.png';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -53,10 +54,10 @@ export default function LandingPage() {
         }
 
         .landing-page {
-            --primary: #10B981;
-            --primary-dark: #059669;
-            --primary-light: #34D399;
-            --primary-lighter: #6EE7B7;
+            --primary: #3E9B5F;
+            --primary-dark: #2d7a47;
+            --primary-light: #5fb67d;
+            --primary-lighter: #9FD356;
             --secondary: #3B82F6;
             --background: #FFFFFF;
             --surface: #F9FAFB;
@@ -70,7 +71,7 @@ export default function LandingPage() {
             --accent-blue: #DBEAFE;
             --accent-purple: #EDE9FE;
             --accent-pink: #FCE7F3;
-            --gradient-primary: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            --gradient-primary: linear-gradient(135deg, #9FD356 0%, #3E9B5F 100%);
             --gradient-dark: linear-gradient(135deg, #1F2937 0%, #111827 100%);
             --gradient-light: linear-gradient(180deg, #FFFFFF 0%, #F9FAFB 100%);
             --gradient-mesh: radial-gradient(at 40% 20%, hsla(152, 68%, 50%, 0.15) 0px, transparent 50%),
@@ -464,119 +465,364 @@ export default function LandingPage() {
         }
 
         .dashboard-content {
-            padding: 2rem;
-            background: var(--surface);
+            padding: 0;
+            background: #f5f5f5;
         }
 
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .dashboard-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .dashboard-date {
-            color: var(--text-muted);
-            font-size: 0.875rem;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .metric-card {
+        .dashboard-nav {
             background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 0;
+        }
+
+        .dashboard-nav-item {
+            padding: 1rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
             transition: all 0.3s ease;
         }
 
-        .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        .dashboard-nav-item:first-child {
+            background: #3E9B5F;
+            color: white;
+            border-bottom: 3px solid #2d7a47;
         }
 
-        .metric-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--accent-blue);
-            border-radius: 8px;
+        .dashboard-main {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .calories-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .calories-header {
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin-bottom: 1rem;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .calories-icon {
+            color: #3E9B5F;
             font-size: 1.25rem;
         }
 
-        .metric-card:nth-child(2) .metric-icon { background: var(--accent-yellow); }
-        .metric-card:nth-child(3) .metric-icon { background: var(--accent-purple); }
-        .metric-card:nth-child(4) .metric-icon { background: var(--accent-pink); }
+        .calories-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
 
-        .metric-value {
+        .calories-progress {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 1.5rem auto;
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-bg {
+            fill: none;
+            stroke: #f0f0f0;
+            stroke-width: 8;
+        }
+
+        .progress-ring-fill {
+            fill: none;
+            stroke: #3E9B5F;
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 265;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .progress-percentage {
             font-size: 2rem;
             font-weight: 700;
+            color: #3E9B5F;
+            line-height: 1;
+        }
+
+        .calories-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .calorie-stat {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-weight: 600;
             color: var(--text-primary);
+        }
+
+        .add-meal-btn {
+            width: 100%;
+            padding: 0.875rem;
+            background: #3E9B5F;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            margin-top: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .add-meal-btn:hover {
+            background: #2d7a47;
+            transform: translateY(-1px);
+        }
+
+        .macros-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .macros-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .macros-icon {
+            color: #3E9B5F;
+            font-size: 1.25rem;
+        }
+
+        .macros-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .macro-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .macro-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .macro-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .macro-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .macro-values {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .macro-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .macro-progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .macro-progress-fill.protein { background: #10B981; width: 20%; }
+        .macro-progress-fill.carbs { background: #F59E0B; width: 70%; }
+        .macro-progress-fill.fat { background: #EF4444; width: 65%; }
+        .macro-progress-fill.fiber { background: #3B82F6; width: 28%; }
+
+        .activity-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .activity-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .activity-icon {
+            color: #3E9B5F;
+            font-size: 1.25rem;
+        }
+
+        .activity-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem;
+            background: #f9f9f9;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .activity-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .activity-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .activity-item-icon {
+            width: 42px;
+            height: 42px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .activity-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .activity-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
             margin-bottom: 0.25rem;
         }
 
-        .metric-label {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .chart-container {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px solid var(--border-light);
-        }
-
-        .chart-header {
+        .activity-value {
+            font-size: 0.9rem;
             font-weight: 600;
-            margin-bottom: 1rem;
             color: var(--text-primary);
         }
 
-        .chart-bars {
+        .activity-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .activity-count {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .streak-badge {
+            background: #FEF3C7;
+            color: #92400E;
+            padding: 1.25rem;
+            border-radius: 12px;
             display: flex;
-            align-items: flex-end;
-            height: 150px;
-            gap: 0.75rem;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .chart-bar {
-            flex: 1;
-            background: var(--gradient-primary);
-            border-radius: 4px 4px 0 0;
-            position: relative;
-            transition: all 0.3s ease;
-            opacity: 0.9;
+        .streak-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
-        .chart-bar:hover {
-            opacity: 1;
-            transform: scaleY(1.05);
+        .streak-icon {
+            width: 42px;
+            height: 42px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
         }
 
-        .chart-bar:nth-child(1) { height: 60%; }
-        .chart-bar:nth-child(2) { height: 80%; }
-        .chart-bar:nth-child(3) { height: 45%; }
-        .chart-bar:nth-child(4) { height: 90%; }
-        .chart-bar:nth-child(5) { height: 70%; }
-        .chart-bar:nth-child(6) { height: 85%; }
-        .chart-bar:nth-child(7) { height: 75%; }
+        .streak-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .streak-title {
+            font-weight: 600;
+            margin-bottom: 0.125rem;
+        }
+
+        .streak-subtitle {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .streak-days {
+            text-align: center;
+        }
+
+        .streak-count {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .streak-label {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
 
         .features {
             padding: 120px 0;
@@ -703,86 +949,6 @@ export default function LandingPage() {
             color: var(--text-secondary);
             line-height: 1.7;
             font-size: 1.05rem;
-        }
-
-        .tech-stack {
-            padding: 100px 0;
-            background: var(--gradient-dark);
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .tech-stack::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-
-        .tech-container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .tech-header {
-            text-align: center;
-            margin-bottom: 4rem;
-        }
-
-        .tech-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
-        .tech-subtitle {
-            font-size: 1.125rem;
-            opacity: 0.9;
-        }
-
-        .tech-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-        }
-
-        .tech-item {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 2rem;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .tech-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-4px);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .tech-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .tech-name {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .tech-desc {
-            font-size: 0.875rem;
-            opacity: 0.8;
         }
 
         .process {
@@ -1127,12 +1293,11 @@ export default function LandingPage() {
       <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
         <div className="nav-container">
           <Link to="/" className="nav-logo">
-            <div className="logo-mark">🍎</div>
-            HealthLab
+            <img src={flavorLabIcon} alt="HealthLab" style={{ width: '42px', height: '42px', borderRadius: '12px' }} />
+            <span>HealthLab</span>
           </Link>
           <ul className="nav-menu">
             <li><a href="#features" className="nav-link">Product</a></li>
-            <li><a href="#technology" className="nav-link">Technology</a></li>
             <li><a href="#process" className="nav-link">How It Works</a></li>
             <li><a href="#contact" className="nav-link">Contact</a></li>
           </ul>
@@ -1186,42 +1351,150 @@ export default function LandingPage() {
                   <div className="browser-url">app.healthlab.io/dashboard</div>
                 </div>
                 <div className="dashboard-content">
-                  <div className="dashboard-header">
-                    <h3 className="dashboard-title">Nutrition Dashboard</h3>
-                    <span className="dashboard-date">Today, Oct 25</span>
+                  {/* Dashboard Navigation Tabs */}
+                  <div className="dashboard-nav">
+                    <a href="#" className="dashboard-nav-item">
+                      <span>🏠</span>
+                      Dashboard
+                    </a>
+                    <a href="#" className="dashboard-nav-item">
+                      <span>🧑‍🍳</span>
+                      Recipe Generator
+                    </a>
+                    <a href="#" className="dashboard-nav-item">
+                      <span>📋</span>
+                      Meal Plans
+                    </a>
+                    <a href="#" className="dashboard-nav-item">
+                      <span>🍽️</span>
+                      Meal History
+                    </a>
+                    <a href="#" className="dashboard-nav-item">
+                      <span>📖</span>
+                      Journal
+                    </a>
                   </div>
-                  <div className="metrics-grid">
-                    <div className="metric-card">
-                      <div className="metric-icon">🔥</div>
-                      <div className="metric-value">1,850</div>
-                      <div className="metric-label">Calories</div>
+
+                  {/* Main Dashboard Content */}
+                  <div className="dashboard-main">
+                    {/* Daily Calories Card */}
+                    <div className="calories-card">
+                      <div className="calories-header">
+                        <span className="calories-icon">⚡</span>
+                        <h3 className="calories-title">Daily Calories</h3>
+                      </div>
+                      <div className="calories-progress">
+                        <svg className="progress-ring" width="120" height="120">
+                          <circle className="progress-ring-bg" cx="60" cy="60" r="45" />
+                          <circle className="progress-ring-fill" cx="60" cy="60" r="45" />
+                        </svg>
+                        <div className="progress-text">
+                          <div className="progress-percentage">6%</div>
+                        </div>
+                      </div>
+                      <div className="calories-stats">
+                        <div className="calorie-stat">
+                          <span className="stat-label">Goal: 4000 kcal —</span>
+                        </div>
+                        <div className="calorie-stat">
+                          <span className="stat-label">Consumed:</span>
+                          <span className="stat-value">245 kcal</span>
+                        </div>
+                        <div className="calorie-stat">
+                          <span className="stat-label">Remaining:</span>
+                          <span className="stat-value">3755 kcal</span>
+                        </div>
+                      </div>
+                      <button className="add-meal-btn">
+                        <span>+</span>
+                        Add Meal
+                      </button>
                     </div>
-                    <div className="metric-card">
-                      <div className="metric-icon">💪</div>
-                      <div className="metric-value">68g</div>
-                      <div className="metric-label">Protein</div>
+
+                    {/* Macronutrients Card */}
+                    <div className="macros-card">
+                      <div className="macros-header">
+                        <span className="macros-icon">🎯</span>
+                        <h3 className="macros-title">Macronutrients</h3>
+                      </div>
+                      <div className="macro-item">
+                        <div className="macro-header">
+                          <span className="macro-name">Protein</span>
+                          <span className="macro-values">6.0g / 300.0g</span>
+                        </div>
+                        <div className="macro-progress-bar">
+                          <div className="macro-progress-fill protein"></div>
+                        </div>
+                      </div>
+                      <div className="macro-item">
+                        <div className="macro-header">
+                          <span className="macro-name">Carbs</span>
+                          <span className="macro-values">28.0g / 400.0g</span>
+                        </div>
+                        <div className="macro-progress-bar">
+                          <div className="macro-progress-fill carbs"></div>
+                        </div>
+                      </div>
+                      <div className="macro-item">
+                        <div className="macro-header">
+                          <span className="macro-name">Fat</span>
+                          <span className="macro-values">13.0g / 133.3g</span>
+                        </div>
+                        <div className="macro-progress-bar">
+                          <div className="macro-progress-fill fat"></div>
+                        </div>
+                      </div>
+                      <div className="macro-item">
+                        <div className="macro-header">
+                          <span className="macro-name">Fiber</span>
+                          <span className="macro-values">7.0g / 25.0g</span>
+                        </div>
+                        <div className="macro-progress-bar">
+                          <div className="macro-progress-fill fiber"></div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="metric-card">
-                      <div className="metric-icon">🥗</div>
-                      <div className="metric-value">245g</div>
-                      <div className="metric-label">Carbs</div>
-                    </div>
-                    <div className="metric-card">
-                      <div className="metric-icon">💧</div>
-                      <div className="metric-value">2.3L</div>
-                      <div className="metric-label">Water</div>
-                    </div>
-                  </div>
-                  <div className="chart-container">
-                    <div className="chart-header">Weekly Progress</div>
-                    <div className="chart-bars">
-                      <div className="chart-bar"></div>
-                      <div className="chart-bar"></div>
-                      <div className="chart-bar"></div>
-                      <div className="chart-bar"></div>
-                      <div className="chart-bar"></div>
-                      <div className="chart-bar"></div>
-                      <div className="chart-bar"></div>
+
+                    {/* Today's Activity Card */}
+                    <div className="activity-card">
+                      <div className="activity-header">
+                        <span className="activity-icon">📈</span>
+                        <h3 className="activity-title">Today's Activity</h3>
+                      </div>
+                      <div className="activity-item">
+                        <div className="activity-left">
+                          <div className="activity-item-icon">🍽️</div>
+                          <div className="activity-info">
+                            <div className="activity-label">Meals Logged</div>
+                            <div className="activity-value">1 of 5 meals</div>
+                            <div className="activity-sub">Avocado Toast • 1m ago</div>
+                          </div>
+                        </div>
+                        <div className="activity-count">1</div>
+                      </div>
+                      <div className="activity-item">
+                        <div className="activity-left">
+                          <div className="activity-item-icon">💧</div>
+                          <div className="activity-info">
+                            <div className="activity-label">Water Intake</div>
+                            <div className="activity-value">Goal: 2000ml</div>
+                          </div>
+                        </div>
+                        <div className="activity-count">0<span style={{fontSize: '0.875rem', fontWeight: '500'}}>ml</span></div>
+                      </div>
+                      <div className="streak-badge">
+                        <div className="streak-left">
+                          <div className="streak-icon">💡</div>
+                          <div className="streak-info">
+                            <div className="streak-title">Streak</div>
+                            <div className="streak-subtitle">Keep it going!</div>
+                          </div>
+                        </div>
+                        <div className="streak-days">
+                          <div className="streak-count">2</div>
+                          <div className="streak-label">days</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1264,10 +1537,10 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="feature-card reveal">
-              <div className="feature-icon">📸</div>
-              <h3 className="feature-title">Smart Food Recognition</h3>
+              <div className="feature-icon">📅</div>
+              <h3 className="feature-title">Calendar Tracker</h3>
               <p className="feature-description">
-                Simply photograph your meals and our AI instantly identifies ingredients and calculates nutritional values with remarkable accuracy.
+                Visualize your nutrition journey with our intuitive calendar view. Track meals, view patterns, and plan ahead with an interactive timeline of your health progress.
               </p>
             </div>
             <div className="feature-card reveal">
@@ -1278,43 +1551,11 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="feature-card reveal">
-              <div className="feature-icon">⚡</div>
-              <h3 className="feature-title">Real-Time Optimization</h3>
+              <div className="feature-icon">🌿</div>
+              <h3 className="feature-title">Apothecary (Coming Soon)</h3>
               <p className="feature-description">
-                Get instant feedback on your food choices and receive suggestions to optimize your next meal based on what you've already consumed.
+                Discover natural remedies and supplements tailored to your nutritional needs. Get personalized recommendations for herbs, vitamins, and holistic wellness products.
               </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Technology Stack */}
-      <section className="tech-stack" id="technology">
-        <div className="tech-container">
-          <div className="tech-header reveal">
-            <h2 className="tech-title">Built with Cutting-Edge Technology</h2>
-            <p className="tech-subtitle">Leveraging the latest in AI and nutrition science</p>
-          </div>
-          <div className="tech-grid">
-            <div className="tech-item reveal">
-              <div className="tech-icon">🤖</div>
-              <h3 className="tech-name">Machine Learning</h3>
-              <p className="tech-desc">Advanced algorithms that learn and adapt to your preferences</p>
-            </div>
-            <div className="tech-item reveal">
-              <div className="tech-icon">📱</div>
-              <h3 className="tech-name">Cross-Platform</h3>
-              <p className="tech-desc">Seamless experience across web, iOS, and Android</p>
-            </div>
-            <div className="tech-item reveal">
-              <div className="tech-icon">🔒</div>
-              <h3 className="tech-name">Secure & Private</h3>
-              <p className="tech-desc">End-to-end encryption and HIPAA-compliant infrastructure</p>
-            </div>
-            <div className="tech-item reveal">
-              <div className="tech-icon">⚡</div>
-              <h3 className="tech-name">Real-Time Processing</h3>
-              <p className="tech-desc">Instant analysis and recommendations powered by edge computing</p>
             </div>
           </div>
         </div>
@@ -1376,8 +1617,8 @@ export default function LandingPage() {
           <div className="footer-content">
             <div className="footer-brand">
               <div className="footer-logo">
-                <div className="logo-mark" style={{ background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', width: 42, height: 42 }}>🍎</div>
-                HealthLab
+                <img src={flavorLabIcon} alt="HealthLab" style={{ width: '42px', height: '42px', borderRadius: '12px' }} />
+                <span>HealthLab</span>
               </div>
               <p className="footer-description">
                 Pioneering the future of personalized nutrition through artificial intelligence and data-driven insights.
@@ -1387,7 +1628,6 @@ export default function LandingPage() {
               <h4>Product</h4>
               <div className="footer-links">
                 <a href="#features" className="footer-link">Features</a>
-                <a href="#technology" className="footer-link">Technology</a>
                 <a href="#" className="footer-link">Security</a>
                 <a href="#" className="footer-link">Roadmap</a>
               </div>
