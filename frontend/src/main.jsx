@@ -27,13 +27,13 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-function DebugHome() {
-  return (
-    <div style={{minHeight:'100vh',display:'flex',flexDirection:'column'}}>
-      <div style={{padding:16,background:'#e5e7eb'}}>Debug Home: shell rendered</div>
-      <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center'}}>Content area</div>
-    </div>
-  );
+function PublicLandingPage() {
+  const { token, loading } = useAuth();
+  if (loading) return <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center'}}>Loading...</div>;
+  // If user is logged in, redirect to app dashboard
+  if (token) return <Navigate to="/app" replace />;
+  // Otherwise show landing page
+  return <LandingPage />;
 }
 
 createRoot(document.getElementById('root')).render(
@@ -43,7 +43,7 @@ createRoot(document.getElementById('root')).render(
         <BrowserRouter>
           <Routes>
             {/* Public Routes */}
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<PublicLandingPage />} />
             <Route path="/login" element={<Login onLogin={() => {}} />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

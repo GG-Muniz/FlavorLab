@@ -730,7 +730,7 @@ const MealPlanShowcase = () => {
 
             {/* Edit Preferences Button */}
             <motion.button
-              onClick={() => navigate('/nutritest')}
+              onClick={() => navigate('/app/nutritest')}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               style={{

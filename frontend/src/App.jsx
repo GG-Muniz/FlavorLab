@@ -577,7 +577,7 @@ const HealthTipOfTheDay = () => {
           {Object.entries(iconConfig.navigation).map(([key, navItem]) => (
             <button
               key={key}
-              onClick={() => { setActiveTab(key); navigate(`/?tab=${key}`, { replace: true }); }}
+              onClick={() => { setActiveTab(key); navigate(`/app?tab=${key}`, { replace: true }); }}
               onMouseEnter={() => setHoveredNavButton(key)}
               onMouseLeave={() => setHoveredNavButton(null)}
               style={{

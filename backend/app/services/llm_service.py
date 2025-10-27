@@ -55,6 +55,10 @@ def generate_meal_plan_prompt(survey_data: dict, num_days: int, include_recipes:
     allergies = survey_data.get("allergies", [])
     primary_goal = survey_data.get("primaryGoal", "")
 
+    # Debug logging
+    logger.info(f"🎯 Health Pillars for LLM prompt: {health_pillars}")
+    logger.info(f"📊 Survey data keys: {list(survey_data.keys())}")
+
     # Format critical constraints (allergies, dietary restrictions, disliked ingredients)
     critical_constraints = ""
     constraint_sections = []
@@ -173,11 +177,11 @@ For each meal you generate, you MUST populate the 'tags' array with labels that 
 
 2. **Allergies (MANDATORY):** For EVERY allergy the user has (e.g., 'dairy', 'peanuts', 'shellfish'), you MUST add a corresponding "X-Free" tag (e.g., "Dairy-Free", "Peanut-Free", "Shellfish-Free"). This confirms safety. Include ALL allergy tags even if they seem obvious (e.g., "Shellfish-Free" for vegetarian meals).
 
-3. **Health Goal Tagging (CRITICAL):** For each meal, you MUST analyze its ingredients and nutritional benefits. If the meal directly supports one or more of the user's selected Health Goals (e.g., {', '.join(health_pillars)}), you MUST add a tag for EACH supported goal. The tag MUST be the EXACT name of the Health Goal from the user profile. This is the primary way the user will see the value of their personalized plan. Every meal should support at least one health goal.
+3. **Health Goal Tagging (CRITICAL):** For each meal, you MUST analyze its ingredients and nutritional benefits. If the meal directly supports one or more of the user's selected Health Goals (ONLY: {', '.join(health_pillars)}), you MUST add a tag for EACH supported goal. The tag MUST be the EXACT name of the Health Goal from the user profile (character-for-character match). This is the primary way the user will see the value of their personalized plan. Every meal should support at least one health goal. FORBIDDEN: Do NOT use "General Wellness" or any generic health terms - ONLY use the exact pillar names listed above.
 
 4. **Disliked Ingredients (OPTIONAL):** If the user dislikes an ingredient (e.g., 'cilantro'), and the meal avoids it, you MAY add a "No [Ingredient]" tag, but this is less critical.
 
-5. **STRICTLY FORBIDDEN - No Generic Tags:** Do NOT add ANY generic nutritional tags like "High-Protein", "High-Fiber", "Low-Carb", "Quick-Meal", "Heart-Healthy", etc. These do not confirm user constraints and undermine trust. The ONLY acceptable tags are those that directly mirror the user's stated dietary restrictions, allergies, and health pillar names.
+5. **STRICTLY FORBIDDEN - No Generic Tags:** Do NOT add ANY generic nutritional tags like "High-Protein", "High-Fiber", "Low-Carb", "Quick-Meal", "Heart-Healthy", "General Wellness", "Balanced", etc. These do not confirm user constraints and undermine trust. The ONLY acceptable tags are those that directly mirror the user's stated dietary restrictions, allergies, and health pillar names from the lists above.
 
 **Example:** If the user is 'gluten-free', 'vegetarian', has a 'dairy' allergy, and selected 'Improved Digestion' as a health pillar, a valid meal's tags would be ["Gluten-Free", "Vegetarian", "Dairy-Free", "Improved Digestion"].
 
@@ -185,7 +189,9 @@ For each meal you generate, you MUST populate the 'tags' array with labels that 
 Each day MUST have exactly this structure: {meal_structure}
 
 ## USER PROFILE
-- Health Goals: {', '.join(health_pillars)}
+🎯 **EXACT Health Goal Names to Use in Tags (copy these exactly):**
+{chr(10).join(f'   - "{pillar}"' for pillar in health_pillars) if health_pillars else '   - None'}
+
 - Primary Goal: {primary_goal}
 - Dietary Restrictions: {', '.join(dietary_restrictions) if dietary_restrictions else 'None'}
 - Meal Complexity: {meal_complexity}
