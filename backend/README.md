@@ -103,6 +103,9 @@ The application uses environment variables for configuration:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `DATABASE_NAME` | `flavorlab.db` | SQLite database filename |
+| `CLOUDINARY_CLOUD_NAME` | — | Your Cloudinary cloud name |
+| `CLOUDINARY_BASE_URL` | — | Optional; overrides base (e.g., https://res.cloudinary.com/<cloud>/image/upload) |
+| `CLOUDINARY_FOLDER` | `flavorlab/ingredients` | Folder path where ingredient images live |
 | `DEBUG` | `false` | Enable debug mode |
 | `SECRET_KEY` | `your-secret-key...` | JWT secret key |
 | `BATCH_SIZE` | `100` | Batch size for data migration |

@@ -2,14 +2,13 @@
  * API service for health pillars
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
-const API_PREFIX = '/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 /**
  * Get authentication token from localStorage
  */
 const getAuthToken = () => {
-  return localStorage.getItem('auth_token');
+  return localStorage.getItem('token');
 };
 
 /**
@@ -29,7 +28,7 @@ const getAuthHeaders = () => {
  */
 export const getHealthPillars = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}${API_PREFIX}/health/pillars`, {
+    const response = await fetch(`${API_BASE_URL}/health/pillars`, {
       method: 'GET',
       headers: getAuthHeaders()
     });
@@ -54,12 +53,11 @@ export const getHealthPillars = async () => {
  */
 export const saveUserHealthPillars = async (pillarIds) => {
   try {
-    const response = await fetch(`${API_BASE_URL}${API_PREFIX}/users/preferences`, {
+    // Backend expects HealthGoalsUpdate { selectedGoals: number[] } at /users/me/health-goals
+    const response = await fetch(`${API_BASE_URL}/users/me/health-goals`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({
-        health_pillar_ids: pillarIds
-      })
+      body: JSON.stringify({ selectedGoals: pillarIds })
     });
 
     if (!response.ok) {
@@ -80,7 +78,8 @@ export const saveUserHealthPillars = async (pillarIds) => {
  */
 export const getUserHealthPillars = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}${API_PREFIX}/users/preferences`, {
+    // Fetch profile and derive goals from preferences or top-level
+    const response = await fetch(`${API_BASE_URL}/users/me`, {
       method: 'GET',
       headers: getAuthHeaders()
     });
@@ -90,7 +89,13 @@ export const getUserHealthPillars = async () => {
       throw new Error(error.detail || 'Failed to fetch user health pillar preferences');
     }
 
-    return await response.json();
+    const profile = await response.json();
+    const prefs = profile?.preferences || {};
+    const top = profile?.health_goals;
+    const selected = Array.isArray(prefs.health_goals)
+      ? prefs.health_goals
+      : (Array.isArray(top?.selectedGoals) ? top.selectedGoals : (Array.isArray(top) ? top : []));
+    return { selectedGoals: selected };
   } catch (error) {
     console.error('Error fetching user health pillar preferences:', error);
     throw error;

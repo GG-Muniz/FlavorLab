@@ -6,11 +6,14 @@ for ingredients, nutrients, and compounds.
 """
 
 from sqlalchemy import Column, Integer, String, Text, JSON, DateTime, Boolean, ForeignKey, func
+from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import relationship, Session, Query
 from sqlalchemy.orm.attributes import flag_modified
 from datetime import datetime, UTC
 from typing import Dict, Any, Optional, List
 from ..database import Base
+from sqlalchemy import Table
+from sqlalchemy import UniqueConstraint
 from .health_pillars import get_pillar_ids_for_outcome
 
 
@@ -27,13 +30,24 @@ class Entity(Base):
     # Primary key - can be string or integer
     id = Column(String(255), primary_key=True)
     name = Column(String(255), nullable=False, index=True)
+    # URL-friendly identifier; not enforced unique in SQLite migration, but indexed
+    slug = Column(String(255), nullable=True, index=True)
+    # Optional display name separate from canonical name
+    display_name = Column(String(255), nullable=True)
     primary_classification = Column(String(100), nullable=False, index=True)
     
     # Flexible classifications as JSON array
-    classifications = Column(JSON, default=list)
+    classifications = Column(MutableList.as_mutable(JSON), default=list)
+    # Search helpers and metadata
+    aliases = Column(MutableList.as_mutable(JSON), default=list)
     
     # Flexible attributes system - stores type-specific data
-    attributes = Column(JSON, default=dict)
+    attributes = Column(MutableDict.as_mutable(JSON), default=dict)
+    # Media
+    image_url = Column(String(512), nullable=True)
+    image_attribution = Column(String(512), nullable=True)
+    # Lifecycle
+    is_active = Column(Boolean, default=True, nullable=False)
     
     # Metadata
     created_at = Column(DateTime, default=lambda: datetime.now(UTC))
@@ -115,8 +129,8 @@ class IngredientEntity(Entity):
     
     # Additional ingredient-specific fields
     foodb_priority = Column(String(50), nullable=True)
-    health_outcomes = Column(JSON, default=list)
-    compounds = Column(JSON, default=list)
+    health_outcomes = Column(MutableList.as_mutable(JSON), default=list)
+    compounds = Column(MutableList.as_mutable(JSON), default=list)
     
     def add_health_outcome(self, outcome: str, confidence: int = 3) -> None:
         """

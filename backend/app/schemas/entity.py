@@ -19,9 +19,16 @@ class AttributeValue(BaseModel):
 class EntityBase(BaseModel):
     """Base schema for entity operations."""
     name: str = Field(..., min_length=1, max_length=255)
+    slug: Optional[str] = Field(None, min_length=1, max_length=255)
+    display_name: Optional[str] = Field(None, min_length=1, max_length=255)
     primary_classification: str = Field(..., min_length=1, max_length=100)
     classifications: List[str] = Field(default_factory=list)
-    attributes: Dict[str, AttributeValue] = Field(default_factory=dict)
+    aliases: List[str] = Field(default_factory=list)
+    # Allow flexible attribute shapes (flattened numbers, arrays, etc.)
+    attributes: Dict[str, Any] = Field(default_factory=dict)
+    image_url: Optional[str] = Field(None, max_length=512)
+    image_attribution: Optional[str] = Field(None, max_length=512)
+    is_active: bool = True
 
 
 class EntityCreate(EntityBase):
@@ -32,9 +39,15 @@ class EntityCreate(EntityBase):
 class EntityUpdate(BaseModel):
     """Schema for updating an existing entity."""
     name: Optional[str] = Field(None, min_length=1, max_length=255)
+    slug: Optional[str] = Field(None, min_length=1, max_length=255)
+    display_name: Optional[str] = Field(None, min_length=1, max_length=255)
     primary_classification: Optional[str] = Field(None, min_length=1, max_length=100)
     classifications: Optional[List[str]] = None
-    attributes: Optional[Dict[str, AttributeValue]] = None
+    aliases: Optional[List[str]] = None
+    attributes: Optional[Dict[str, Any]] = None
+    image_url: Optional[str] = Field(None, max_length=512)
+    image_attribution: Optional[str] = Field(None, max_length=512)
+    is_active: Optional[bool] = None
 
 
 class EntityResponse(EntityBase):
@@ -122,6 +135,22 @@ class EntitySearchResponse(BaseModel):
     query: Optional[str] = None
     filters_applied: Dict[str, Any] = Field(default_factory=dict)
     execution_time_ms: float
+
+
+class IngredientGroup(BaseModel):
+    """Schema for a group of ingredients within a category."""
+    category_id: int
+    category_name: str
+    category_slug: str
+    total: int
+    page: int
+    size: int
+    items: List[IngredientEntityResponse]
+
+
+class IngredientGroupsResponse(BaseModel):
+    """Response schema for grouped ingredients endpoint."""
+    groups: List[IngredientGroup]
 
 
 class EntityStatsResponse(BaseModel):

@@ -9,6 +9,62 @@ export function absoluteUrl(path) {
   return `${BACKEND_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
+async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    return res;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+// Use Vite proxy first; if it fails or times out, fall back to absolute backend URL(s)
+async function fetchWithProxyFallback(relativePath, options = {}, timeoutMs = 15000) {
+  const rel = relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
+  const primaryUrl = `${API_BASE_URL}${rel.startsWith('/') ? rel : `/${rel}`}`;
+  // Ensure fallback includes API prefix; reuse absoluteUrl to prepend backend host
+  const fallbackUrl = absoluteUrl(`${API_BASE_URL}${rel}`);
+  const extraFallbacks = [
+    // Common local dev URLs (ordered by likelihood)
+    `http://127.0.0.1:8000${API_BASE_URL}${rel}`,
+    `http://localhost:8000${API_BASE_URL}${rel}`,
+    `http://127.0.0.1:8001${API_BASE_URL}${rel}`,
+    `http://localhost:8001${API_BASE_URL}${rel}`,
+  ];
+
+  try {
+    const res = await fetchWithTimeout(primaryUrl, options, timeoutMs);
+    // Fallback on 404/5xx that may indicate proxy not applied to this path
+    if (res && res.ok) return res;
+    if (res && [0, 404, 502, 503, 504].includes(res.status)) {
+      try {
+        const alt = await fetchWithTimeout(fallbackUrl, options, timeoutMs);
+        if (alt && alt.ok) return alt;
+      } catch (_) {}
+      for (const url of extraFallbacks) {
+        try {
+          const r = await fetchWithTimeout(url, options, timeoutMs);
+          if (r && r.ok) return r;
+        } catch (_) {}
+      }
+      throw new Error('Backend unreachable at ' + fallbackUrl);
+    }
+    return res;
+  } catch (_) {
+    // Network error or timeout → try absolute backend
+    const urls = [fallbackUrl, ...extraFallbacks];
+    for (const url of urls) {
+      try {
+        const r = await fetchWithTimeout(url, options, timeoutMs);
+        if (r && r.ok) return r;
+      } catch (_) {}
+    }
+    throw new Error('Backend unreachable at ' + fallbackUrl);
+  }
+}
+
 async function parseJson(response) {
   const text = await response.text();
   try {
@@ -20,7 +76,7 @@ async function parseJson(response) {
 
 export async function loginUser(email, password) {
   const normalizedEmail = (email || '').trim().toLowerCase();
-  const response = await fetch(`${API_BASE_URL}/users/login`, {
+  const response = await fetchWithProxyFallback('/users/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
@@ -45,7 +101,7 @@ export async function loginUser(email, password) {
 
 export async function registerUser(email, password) {
   const normalizedEmail = (email || '').trim().toLowerCase();
-  const response = await fetch(`${API_BASE_URL}/users/register`, {
+  const response = await fetchWithProxyFallback('/users/register', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -62,7 +118,7 @@ export async function registerUser(email, password) {
 }
 
 export async function getCurrentUser(token) {
-  const response = await fetch(`${API_BASE_URL}/users/me`, {
+  const response = await fetchWithProxyFallback('/users/me', {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`

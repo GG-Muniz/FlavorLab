@@ -1,0 +1,12 @@
+{
+  "items": [
+    { "slug": "chickpeas", "public_id": "healthlab/ingredients/chickpeas" },
+    { "slug": "black-beans", "public_id": "healthlab/ingredients/black-beans" },
+    { "slug": "oats", "public_id": "healthlab/ingredients/oats-1" },
+    { "slug": "beet-juice", "public_id": "healthlab/ingredients/beet-juice-1" },
+    { "slug": "chia-seeds", "public_id": "healthlab/ingredients/chia-seeds-1" },
+    { "slug": "lentils", "public_id": "healthlab/ingredients/lentils-1" },
+    { "slug": "flax-seeds", "public_id": "healthlab/ingredients/flax-seeds-1" },
+    { "slug": "dark-chocolate", "public_id": "healthlab/ingredients/dark-chocolate-1" }
+  ]
+}

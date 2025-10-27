@@ -1,0 +1,71 @@
+{
+  "metadata": {
+    "unit": "per_100g",
+    "source": "fdc_api"
+  },
+  "items": [
+    {
+      "slug": "lentils",
+      "calories": 286.0,
+      "protein_g": 22.9,
+      "carbs_g": 65.7,
+      "fat_g": 1.43,
+      "fiber_g": 20.0,
+      "sugars_g": 0.0
+    },
+    {
+      "slug": "black-beans",
+      "calories": 184.0,
+      "protein_g": 23.7,
+      "carbs_g": 60.5,
+      "fat_g": 0.0,
+      "fiber_g": 39.5,
+      "sugars_g": 2.63
+    },
+    {
+      "slug": "kidney-beans",
+      "calories": 100.0,
+      "protein_g": 7.69,
+      "carbs_g": 12.3,
+      "fat_g": 0.38,
+      "fiber_g": 6.2,
+      "sugars_g": 0.77
+    },
+    {
+      "slug": "chickpeas",
+      "calories": 128.0,
+      "protein_g": 8.0,
+      "carbs_g": 20.8,
+      "fat_g": 1.6,
+      "fiber_g": 4.0,
+      "sugars_g": 0.8
+    },
+    {
+      "slug": "strawberries",
+      "calories": 36.0,
+      "protein_g": 0.71,
+      "carbs_g": 9.29,
+      "fat_g": 0.0,
+      "fiber_g": 2.1,
+      "sugars_g": 4.29
+    },
+    {
+      "slug": "raspberries",
+      "calories": 50.0,
+      "protein_g": 1.43,
+      "carbs_g": 12.1,
+      "fat_g": 0.71,
+      "fiber_g": 6.4,
+      "sugars_g": 4.29
+    },
+    {
+      "slug": "blackberries",
+      "calories": 43.0,
+      "protein_g": 1.43,
+      "carbs_g": 9.29,
+      "fat_g": 0.36,
+      "fiber_g": 5.0,
+      "sugars_g": 4.29
+    }
+  ]
+}

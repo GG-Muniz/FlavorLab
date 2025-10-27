@@ -5,7 +5,7 @@ import { uploadAvatar, absoluteUrl } from '../../api/auth';
 import GoalsPreferencesForm from './GoalsPreferencesForm.jsx';
 
 export default function ProfilePage() {
-  const { user, updateProfile, refreshUser } = useAuth();
+  const { user, token, updateProfile, refreshUser } = useAuth();
   const location = useLocation();
   const inputRef = useRef(null);
   const [error, setError] = useState('');

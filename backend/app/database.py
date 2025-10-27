@@ -10,6 +10,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from typing import Generator
 from .config import get_settings
+from sqlalchemy.exc import OperationalError
 
 # Get settings
 settings = get_settings()
@@ -95,6 +96,33 @@ def ensure_user_columns() -> None:
     except Exception as e:
         # Non-fatal; log to console for dev visibility
         print(f"ensure_user_columns error: {e}")
+
+
+def ensure_entity_columns() -> None:
+    """
+    Lightweight migration helper for SQLite: ensure newly added Entity columns exist.
+    Safe to run repeatedly.
+    """
+    try:
+        with engine.begin() as conn:
+            result = conn.execute(text("PRAGMA table_info(entities)"))
+            existing = {row[1] for row in result.fetchall()}
+
+            if "slug" not in existing:
+                conn.execute(text("ALTER TABLE entities ADD COLUMN slug VARCHAR(255)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_entities_slug ON entities(slug)"))
+            if "display_name" not in existing:
+                conn.execute(text("ALTER TABLE entities ADD COLUMN display_name VARCHAR(255)"))
+            if "aliases" not in existing:
+                conn.execute(text("ALTER TABLE entities ADD COLUMN aliases JSON"))
+            if "image_url" not in existing:
+                conn.execute(text("ALTER TABLE entities ADD COLUMN image_url VARCHAR(512)"))
+            if "image_attribution" not in existing:
+                conn.execute(text("ALTER TABLE entities ADD COLUMN image_attribution VARCHAR(512)"))
+            if "is_active" not in existing:
+                conn.execute(text("ALTER TABLE entities ADD COLUMN is_active BOOLEAN DEFAULT 1 NOT NULL"))
+    except Exception as e:
+        print(f"ensure_entity_columns error: {e}")
 
 
 def drop_tables() -> None:

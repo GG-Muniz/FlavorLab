@@ -39,6 +39,23 @@ class Settings(BaseSettings):
     secret_key: str = Field(default="your-secret-key-change-in-production", json_schema_extra={"env": "SECRET_KEY"})
     access_token_expire_minutes: int = Field(default=30, json_schema_extra={"env": "ACCESS_TOKEN_EXPIRE_MINUTES"})
 
+    # Cloudinary (images)
+    cloudinary_cloud_name: Optional[str] = Field(default=None, json_schema_extra={"env": "CLOUDINARY_CLOUD_NAME"})
+    cloudinary_base_url: Optional[str] = Field(default=None, json_schema_extra={"env": "CLOUDINARY_BASE_URL"})
+    cloudinary_folder: str = Field(default="flavorlab/ingredients", json_schema_extra={"env": "CLOUDINARY_FOLDER"})
+    # If true, ingestion will generate Cloudinary fetch URLs from Unsplash Source for dev
+    cloudinary_use_unsplash_fallback: bool = Field(default=True, json_schema_extra={"env": "CLOUDINARY_USE_UNSPLASH_FALLBACK"})
+    # If true, use Cloudinary image/fetch as proxy for Unsplash; if false, use direct Unsplash URLs
+    cloudinary_proxy_fetch: bool = Field(default=False, json_schema_extra={"env": "CLOUDINARY_PROXY_FETCH"})
+    # Optional Upload API config (prefer unsigned preset for dev)
+    cloudinary_upload_preset: Optional[str] = Field(default=None, json_schema_extra={"env": "CLOUDINARY_UPLOAD_PRESET"})
+    cloudinary_api_key: Optional[str] = Field(default=None, json_schema_extra={"env": "CLOUDINARY_API_KEY"})
+    cloudinary_api_secret: Optional[str] = Field(default=None, json_schema_extra={"env": "CLOUDINARY_API_SECRET"})
+    # Unsplash API (official) for reliable image search
+    unsplash_access_key: Optional[str] = Field(default=None, json_schema_extra={"env": "UNSPLASH_ACCESS_KEY"})
+    # USDA FoodData Central API key (for nutrition enrichment)
+    fdc_api_key: Optional[str] = Field(default=None, json_schema_extra={"env": "FDC_API_KEY"})
+
     # Email/SMTP settings
     email_host: str = Field(default="localhost", json_schema_extra={"env": "EMAIL_HOST"})
     email_port: int = Field(default=25, json_schema_extra={"env": "EMAIL_PORT"})

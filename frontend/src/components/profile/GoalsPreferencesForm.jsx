@@ -20,14 +20,14 @@ export default function GoalsPreferencesForm({ onSaved }) {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const initialGoals = user?.health_goals || {};
-  const initialPrefs = user?.dietary_preferences || {};
+  const initialPrefs = user?.preferences || user?.dietary_preferences || {};
+  const initialGoalsRaw = user?.health_goals || initialPrefs?.health_goals || {};
 
   // Health pillars list and selection (mirrors NutriTest)
   const [pillars, setPillars] = useState([]);
   const [selectedPillars, setSelectedPillars] = useState(() => {
-    if (Array.isArray(initialGoals)) return initialGoals;
-    if (Array.isArray(initialGoals?.selectedGoals)) return initialGoals.selectedGoals;
+    if (Array.isArray(initialGoalsRaw)) return initialGoalsRaw;
+    if (Array.isArray(initialGoalsRaw?.selectedGoals)) return initialGoalsRaw.selectedGoals;
     return [];
   });
 
@@ -73,8 +73,8 @@ export default function GoalsPreferencesForm({ onSaved }) {
 
   // Sync local state with user changes from AuthContext
   useEffect(() => {
-    const nextInitialGoals = user?.health_goals || {};
-    const nextInitialPrefs = user?.dietary_preferences || {};
+    const nextInitialPrefs = user?.preferences || user?.dietary_preferences || {};
+    const nextInitialGoals = user?.health_goals || nextInitialPrefs?.health_goals || {};
     const nextSelected = Array.isArray(nextInitialGoals?.selectedGoals)
       ? nextInitialGoals.selectedGoals
       : (Array.isArray(nextInitialGoals) ? nextInitialGoals : []);
@@ -136,7 +136,16 @@ export default function GoalsPreferencesForm({ onSaved }) {
     setError('');
     try {
       const payload = {
+        // Write into both places for compatibility
         health_goals: { selectedGoals: selectedPillars },
+        preferences: {
+          ...(user?.preferences || {}),
+          health_goals: selectedPillars,
+          diet,
+          allergies: Array.from(allergies),
+          disliked: disliked.map(t => (typeof t === 'string' ? { name: t } : t)),
+          meals_per_day: mealsPerDay || undefined
+        },
         dietary_preferences: {
           diet,
           allergies: Array.from(allergies),

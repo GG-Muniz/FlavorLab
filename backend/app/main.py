@@ -12,8 +12,8 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from .api import health, users, entities, relationships, flavor, calorie_tracker, nutrition, tips, meals
-from .database import engine, Base, SessionLocal, ensure_user_columns
+from .api import health, users, entities, relationships, flavor, calorie_tracker, nutrition, tips, meals, water_tracker
+from .database import engine, Base, SessionLocal, ensure_user_columns, ensure_entity_columns
 from .config import get_settings
 
 
@@ -32,6 +32,7 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     # Ensure new columns exist (SQLite lightweight migration)
     ensure_user_columns()
+    ensure_entity_columns()
     # Ensure static directories exist for avatar uploads
     os.makedirs("static/avatars", exist_ok=True)
     logger.info("Database tables created.")
@@ -93,6 +94,7 @@ app.include_router(tips.router, prefix=settings.api_prefix, tags=["Tips"])
 app.include_router(relationships.router, prefix=settings.api_prefix, tags=["Relationships"])
 app.include_router(flavor.router, prefix=settings.api_prefix, tags=["Flavor"])
 app.include_router(calorie_tracker.router, prefix=settings.api_prefix, tags=["Calorie Tracking"])
+app.include_router(water_tracker.router, prefix=settings.api_prefix, tags=["Water Tracking"])
 app.include_router(meals.router, prefix=settings.api_prefix, tags=["Meals"])
 
 @app.exception_handler(Exception)

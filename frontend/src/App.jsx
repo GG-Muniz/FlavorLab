@@ -5,6 +5,7 @@ import { NotificationsPanel, NotificationBellButton } from './components/notific
 import Login from './components/auth/Login';
 import CalorieDetailModal from './components/modals/CalorieDetailModal';
 import CalorieCounter from './components/modals/CalorieCounter';
+import WaterCounter from './components/modals/WaterCounter';
 import LogMealModal from './components/modals/LogMealModal';
 import Calendar from './components/calendar/Calendar';
 import { useAuth } from './context/AuthContext';
@@ -13,6 +14,7 @@ import { getDailyCalorieSummary } from './services/calorieApi';
 import MealPlanShowcase from './components/mealplan/MealPlanShowcase';
 import SmartActionStack from './components/dashboard/SmartActionStack';
 import { fetchNutritionGoals, fetchDailySummary } from './services/nutritionApi';
+import ApothecaryPage from './pages/ApothecaryPage.jsx';
 
 import {
   LayoutDashboard,
@@ -43,7 +45,8 @@ const iconConfig = {
     recipes: { icon: ChefHat, label: 'Recipe Generator' },
     mealplans: { icon: ChefHat, label: 'Meal Plans' },
     history: { icon: History, label: 'Meal History' },
-    calendar: { icon: CalendarIcon, label: 'Calendar' }
+    calendar: { icon: CalendarIcon, label: 'Calendar' },
+    apothecary: { icon: FlaskConical, label: 'Apothecary' }
   },
   quickActions: {
     mealData: { icon: Apple, label: 'Meal Data', color: 'orange' },
@@ -215,7 +218,8 @@ function App() {
   const [isAnimating, setIsAnimating] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const user = authUser || { id: '123', name: 'User' };
-  // NutriTest is now accessible via /nutritest route from Profile page only
+  // App branding
+  document.title = 'HealthLab';
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]); //Despues va a venir del API
@@ -225,6 +229,7 @@ function App() {
   // Calculate unread count from notifications array
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
   const [showCalorieCounter, setShowCalorieCounter] = useState(false);
+  const [showWaterCounter, setShowWaterCounter] = useState(false);
   const [showLogMealModal, setShowLogMealModal] = useState(false);
   const { data: nutritionData, loading } = useNutritionData(user.id);
   const [hoveredNavButton, setHoveredNavButton] = useState(null);
@@ -512,6 +517,9 @@ const HealthTipOfTheDay = () => {
     // Handle specific actions
     if (actionKey === 'calorieCounter') {
       setShowCalorieCounter(true);
+    }
+    if (actionKey === 'water') {
+      setShowWaterCounter(true);
     }
 
     // TODO: Add handlers for other quick actions
@@ -1053,6 +1061,9 @@ const HealthTipOfTheDay = () => {
                   if (actionId === 'breakfast' || actionId === 'lunch' || actionId === 'dinner') {
                     setShowLogMealModal(true);
                   }
+                  if (actionId === 'water') {
+                    setShowWaterCounter(true);
+                  }
                 }}
               />
               <HealthTipOfTheDay />
@@ -1068,7 +1079,11 @@ const HealthTipOfTheDay = () => {
           <MealPlanShowcase />
         )}
 
-        {activeTab !== 'dashboard' && activeTab !== 'nutritest' && activeTab !== 'calendar' && activeTab !== 'mealplans' && (
+        {activeTab === 'apothecary' && (
+          <ApothecaryPage />
+        )}
+
+        {activeTab !== 'dashboard' && activeTab !== 'nutritest' && activeTab !== 'calendar' && activeTab !== 'mealplans' && activeTab !== 'apothecary' && (
           <Card>
             <div style={{ textAlign: 'center' }}>
               <div style={{
@@ -1111,6 +1126,13 @@ const HealthTipOfTheDay = () => {
       <CalorieCounter
         isOpen={showCalorieCounter}
         onClose={() => setShowCalorieCounter(false)}
+        onDataUpdate={fetchNutritionData}
+      />
+      
+      {/* Water Counter Modal */}
+      <WaterCounter
+        isOpen={showWaterCounter}
+        onClose={() => setShowWaterCounter(false)}
         onDataUpdate={fetchNutritionData}
       />
       <LogMealModal

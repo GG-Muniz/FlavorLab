@@ -8,7 +8,8 @@ from .entity import (
     EntityBase, EntityCreate, EntityUpdate, EntityResponse,
     EntityListResponse, EntitySearchRequest, EntitySearchResponse,
     EntityStatsResponse, IngredientEntityResponse, NutrientEntityResponse,
-    CompoundEntityResponse, HealthOutcomeInfo, CompoundInfo
+    CompoundEntityResponse, HealthOutcomeInfo, CompoundInfo,
+    IngredientGroup, IngredientGroupsResponse,
 )
 
 from .relationship import (
@@ -38,6 +39,7 @@ __all__ = [
     "EntityListResponse", "EntitySearchRequest", "EntitySearchResponse",
     "EntityStatsResponse", "IngredientEntityResponse", "NutrientEntityResponse",
     "CompoundEntityResponse", "HealthOutcomeInfo", "CompoundInfo",
+    "IngredientGroup", "IngredientGroupsResponse",
     
     # Relationship schemas
     "RelationshipBase", "RelationshipCreate", "RelationshipUpdate", "RelationshipResponse",

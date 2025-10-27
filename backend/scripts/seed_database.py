@@ -33,6 +33,7 @@ sys.path.insert(0, backend_dir)
 # Import application components
 from app.database import SessionLocal, engine, Base
 from app.models.entity import Entity, IngredientEntity
+from app.config import get_settings
 from app.models import User  # Import to ensure all tables are registered
 
 # File paths
@@ -151,16 +152,39 @@ def create_ingredient_from_json(entity_data: Dict[str, Any]) -> IngredientEntity
     Returns:
         IngredientEntity instance
     """
+    def _slugify(value: str) -> str:
+        import re
+        s = (value or "").lower().strip()
+        s = re.sub(r"[^a-z0-9\s-]", "", s)
+        s = re.sub(r"[\s-]+", "-", s).strip("-")
+        return s
+
+    def _build_cloudinary_url(name: str) -> str | None:
+        settings = get_settings()
+        base = settings.cloudinary_base_url
+        if not base and settings.cloudinary_cloud_name:
+            base = f"https://res.cloudinary.com/{settings.cloudinary_cloud_name}/image/upload"
+        folder = (settings.cloudinary_folder or "flavorlab/ingredients").strip("/")
+        if not base:
+            return None
+        slug = _slugify(name)
+        transform = "f_auto,q_auto,c_fill,w_640,h_360"
+        return f"{base}/{transform}/{folder}/{slug}.jpg"
+
     # Create the ingredient entity with inherited fields
+    name = entity_data.get('name', 'Unknown')
     ingredient = IngredientEntity(
         id=str(entity_data.get('id')),
-        name=entity_data.get('name', 'Unknown'),
+        name=name,
         primary_classification=entity_data.get('primary_classification', 'ingredient'),
         classifications=entity_data.get('classifications', []),
         attributes=entity_data.get('attributes', {}),
         health_outcomes=entity_data.get('health_outcomes', []),
         compounds=entity_data.get('compounds', []),
         foodb_priority=entity_data.get('foodb_priority'),
+        slug=_slugify(name),
+        display_name=name,
+        image_url=_build_cloudinary_url(name),
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc)
     )

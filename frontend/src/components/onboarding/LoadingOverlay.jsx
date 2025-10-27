@@ -47,15 +47,15 @@ const LoadingOverlay = () => {
           style={{
             width: '80px',
             height: '80px',
-            background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
             borderRadius: '20px',
+            overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             boxShadow: '0 10px 25px -5px rgba(34, 197, 94, 0.3)'
           }}
         >
-          <Sparkles width={40} height={40} color="#ffffff" strokeWidth={2.5} />
+          <img src="/Healthlab.png" alt="HealthLab" onError={(e)=>{ e.currentTarget.src='/favicon.png'; }} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </motion.div>
 
         {/* Loading text with fade animation */}

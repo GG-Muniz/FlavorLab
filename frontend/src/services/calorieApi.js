@@ -2,8 +2,7 @@
  * API service for calorie tracking
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
-const API_PREFIX = '/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 /**
  * Get authentication token from localStorage
@@ -30,7 +29,7 @@ const getAuthHeaders = () => {
  */
 export const updateDailyCalorieGoal = async (goalCalories) => {
   try {
-    const response = await fetch(`${API_BASE_URL}${API_PREFIX}/calorie/goal`, {
+    const response = await fetch(`${API_BASE_URL}/calorie/goal`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({ goal_calories: goalCalories })
@@ -56,7 +55,7 @@ export const updateDailyCalorieGoal = async (goalCalories) => {
  */
 export const logCalorieIntake = async (mealType, caloriesConsumed) => {
   try {
-    const response = await fetch(`${API_BASE_URL}${API_PREFIX}/calorie/intake`, {
+    const response = await fetch(`${API_BASE_URL}/calorie/intake`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -85,8 +84,8 @@ export const logCalorieIntake = async (mealType, caloriesConsumed) => {
 export const getDailyCalorieSummary = async (targetDate = null) => {
   try {
     const url = targetDate
-      ? `${API_BASE_URL}${API_PREFIX}/calorie/summary?target_date=${targetDate}`
-      : `${API_BASE_URL}${API_PREFIX}/calorie/summary`;
+      ? `${API_BASE_URL}/calorie/summary?target_date=${targetDate}`
+      : `${API_BASE_URL}/calorie/summary`;
 
     const response = await fetch(url, {
       method: 'GET',

@@ -93,7 +93,7 @@ export const submitSurvey = async (surveyData) => {
     if (surveyData.healthPillars && surveyData.healthPillars.length > 0) {
       try {
         // Fetch all health pillars
-        const pillarsResponse = await fetch(`${API_BASE_URL}/health-goals`, {
+        const pillarsResponse = await fetch(`${API_BASE_URL}/health/pillars`, {
           headers: getAuthHeaders()
         });
 

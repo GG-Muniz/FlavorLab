@@ -1,0 +1,601 @@
+{
+  "metadata": {
+    "unit": "per_100g",
+    "source": "fdc_api"
+  },
+  "items": [
+    {
+      "slug": "garlic",
+      "calories": 683.0,
+      "protein_g": 1.43,
+      "carbs_g": 2.87,
+      "fat_g": 74.02,
+      "fiber_g": 0.3,
+      "sugars_g": 0.62
+    },
+    {
+      "slug": "blueberries",
+      "calories": 50.0,
+      "protein_g": 0.0,
+      "carbs_g": 12.1,
+      "fat_g": 0.71,
+      "fiber_g": 2.9,
+      "sugars_g": 8.57
+    },
+    {
+      "slug": "elderberries",
+      "calories": 73.0,
+      "protein_g": 0.66,
+      "carbs_g": 18.4,
+      "fat_g": 0.5,
+      "fiber_g": 7.0
+    },
+    {
+      "slug": "green-tea",
+      "calories": 0.0,
+      "protein_g": 0.0,
+      "carbs_g": 0.0,
+      "fat_g": 0.0,
+      "sugars_g": 0.0
+    },
+    {
+      "slug": "tart-cherry-juice",
+      "calories": 59.0,
+      "protein_g": 0.31,
+      "carbs_g": 13.7,
+      "fat_g": 0.54,
+      "sugars_g": 12.2
+    },
+    {
+      "slug": "beet-juice",
+      "calories": 25.0,
+      "protein_g": 0.72,
+      "carbs_g": 5.91,
+      "fat_g": 0.06,
+      "fiber_g": 1.1,
+      "sugars_g": 4.84
+    },
+    {
+      "slug": "coffee",
+      "calories": 310.0,
+      "protein_g": 2.38,
+      "carbs_g": 21.4,
+      "fat_g": 23.8,
+      "fiber_g": 0.0,
+      "sugars_g": 19.0
+    },
+    {
+      "slug": "bone-broth",
+      "calories": 33.0,
+      "protein_g": 4.17,
+      "carbs_g": 2.08,
+      "fat_g": 0.21
+    },
+    {
+      "slug": "broccoli",
+      "calories": 24.0,
+      "protein_g": 2.35,
+      "carbs_g": 4.71,
+      "fat_g": 0.0,
+      "fiber_g": 3.5,
+      "sugars_g": 1.18
+    },
+    {
+      "slug": "greek-yogurt",
+      "calories": 467.0,
+      "protein_g": 3.33,
+      "carbs_g": 70.0,
+      "fat_g": 20.0,
+      "fiber_g": 3.3,
+      "sugars_g": 70.0
+    },
+    {
+      "slug": "milk",
+      "calories": 55.0,
+      "protein_g": 3.39,
+      "carbs_g": 5.08,
+      "fat_g": 2.12,
+      "fiber_g": 0.0,
+      "sugars_g": 5.08
+    },
+    {
+      "slug": "cottage-cheese",
+      "calories": 106.0,
+      "protein_g": 11.5,
+      "carbs_g": 3.54,
+      "fat_g": 4.42,
+      "fiber_g": 0.0,
+      "sugars_g": 3.54
+    },
+    {
+      "slug": "yogurt",
+      "calories": 94.0,
+      "protein_g": 3.5,
+      "carbs_g": 16.0,
+      "fat_g": 1.8,
+      "fiber_g": 0.2,
+      "sugars_g": 1.24
+    },
+    {
+      "slug": "kefir",
+      "calories": 52.0,
+      "protein_g": 3.59,
+      "carbs_g": 7.48,
+      "fat_g": 0.96,
+      "fiber_g": 0.0,
+      "sugars_g": 6.91
+    },
+    {
+      "slug": "sauerkraut",
+      "calories": 40.0,
+      "protein_g": 0.9,
+      "carbs_g": 4.16,
+      "fat_g": 2.53,
+      "fiber_g": 2.8,
+      "sugars_g": 1.73
+    },
+    {
+      "slug": "salmon",
+      "calories": 60.0,
+      "protein_g": 7.55,
+      "carbs_g": 3.31,
+      "fat_g": 1.86,
+      "fiber_g": 1.0,
+      "sugars_g": 1.82
+    },
+    {
+      "slug": "wild-salmon",
+      "calories": 142.0,
+      "protein_g": 19.8,
+      "carbs_g": 0.0,
+      "fat_g": 6.34,
+      "fiber_g": 0.0
+    },
+    {
+      "slug": "fatty-fish",
+      "calories": 646.0,
+      "protein_g": 22.9,
+      "carbs_g": 22.9,
+      "fat_g": 52.1,
+      "fiber_g": 0.0,
+      "sugars_g": 6.25
+    },
+    {
+      "slug": "tuna",
+      "calories": 187.0,
+      "protein_g": 16.0,
+      "carbs_g": 9.41,
+      "fat_g": 9.26,
+      "fiber_g": 0.0
+    },
+    {
+      "slug": "bananas",
+      "calories": 346.0,
+      "protein_g": 3.89,
+      "carbs_g": 88.3,
+      "fat_g": 1.81,
+      "fiber_g": 9.9,
+      "sugars_g": 47.3
+    },
+    {
+      "slug": "citrus-fruits",
+      "calories": 251.0,
+      "protein_g": 1.78,
+      "carbs_g": 17.54,
+      "fat_g": 19.48,
+      "fiber_g": 1.4,
+      "sugars_g": 12.72
+    },
+    {
+      "slug": "tart-cherries",
+      "calories": 59.0,
+      "protein_g": 0.31,
+      "carbs_g": 13.7,
+      "fat_g": 0.54,
+      "sugars_g": 12.2
+    },
+    {
+      "slug": "kiwi",
+      "calories": 64.0,
+      "protein_g": 1.06,
+      "carbs_g": 14.0,
+      "fat_g": 0.44,
+      "fiber_g": 3.0,
+      "sugars_g": 8.99
+    },
+    {
+      "slug": "avocado",
+      "calories": 427.0,
+      "protein_g": 1.9,
+      "carbs_g": 7.36,
+      "fat_g": 43.33,
+      "fiber_g": 0.1,
+      "sugars_g": 6.67
+    },
+    {
+      "slug": "papaya",
+      "calories": 43.0,
+      "protein_g": 0.47,
+      "carbs_g": 10.8,
+      "fat_g": 0.26,
+      "fiber_g": 1.7,
+      "sugars_g": 7.82
+    },
+    {
+      "slug": "cherries",
+      "calories": 71.0,
+      "protein_g": 1.04,
+      "carbs_g": 16.16,
+      "fat_g": 0.19,
+      "fiber_g": 2.1,
+      "sugars_g": 13.87
+    },
+    {
+      "slug": "pineapple",
+      "protein_g": 0.0,
+      "carbs_g": 78.6,
+      "fat_g": 0.0,
+      "fiber_g": 4.3,
+      "sugars_g": 64.3
+    },
+    {
+      "slug": "oranges",
+      "calories": 50.0,
+      "protein_g": 0.92,
+      "carbs_g": 11.78,
+      "fat_g": 0.14,
+      "fiber_g": 2.2,
+      "sugars_g": 8.96
+    },
+    {
+      "slug": "pomegranate",
+      "calories": 83.0,
+      "protein_g": 1.67,
+      "carbs_g": 18.7,
+      "fat_g": 1.17,
+      "fiber_g": 4.0,
+      "sugars_g": 13.67
+    },
+    {
+      "slug": "watermelon",
+      "calories": 31.0,
+      "protein_g": 0.78,
+      "carbs_g": 7.45,
+      "fat_g": 0.25,
+      "fiber_g": 0.4,
+      "sugars_g": 6.27
+    },
+    {
+      "slug": "apples",
+      "calories": 54.0,
+      "protein_g": 0.41,
+      "carbs_g": 14.0,
+      "fat_g": 0.0,
+      "fiber_g": 2.1,
+      "sugars_g": 10.3
+    },
+    {
+      "slug": "shiitake-mushrooms",
+      "calories": 296.0,
+      "protein_g": 9.58,
+      "carbs_g": 75.4,
+      "fat_g": 0.99,
+      "fiber_g": 11.5,
+      "sugars_g": 2.21
+    },
+    {
+      "slug": "oats",
+      "calories": 45.0,
+      "protein_g": 0.66,
+      "carbs_g": 5.37,
+      "fat_g": 2.33,
+      "fiber_g": 0.5,
+      "sugars_g": 2.04
+    },
+    {
+      "slug": "quinoa",
+      "calories": 357.0,
+      "protein_g": 14.3,
+      "carbs_g": 64.3,
+      "fat_g": 7.14,
+      "fiber_g": 7.1,
+      "sugars_g": 0.0
+    },
+    {
+      "slug": "brown-rice",
+      "calories": 378.0,
+      "protein_g": 8.89,
+      "carbs_g": 75.6,
+      "fat_g": 3.33,
+      "fiber_g": 6.7,
+      "sugars_g": 0.0
+    },
+    {
+      "slug": "whole-grains",
+      "calories": 364.0,
+      "protein_g": 9.23,
+      "carbs_g": 38.61,
+      "fat_g": 19.21,
+      "fiber_g": 3.8,
+      "sugars_g": 8.09
+    },
+    {
+      "slug": "chamomile-tea",
+      "calories": 1.0,
+      "protein_g": 0.0,
+      "carbs_g": 0.2,
+      "fat_g": 0.0,
+      "fiber_g": 0.0,
+      "sugars_g": 0.0
+    },
+    {
+      "slug": "passionflower",
+      "calories": 17.0,
+      "protein_g": 0.28,
+      "carbs_g": 3.66,
+      "fat_g": 0.0,
+      "fiber_g": 0.0,
+      "sugars_g": 3.66
+    },
+    {
+      "slug": "peppermint",
+      "calories": 70.0,
+      "protein_g": 3.75,
+      "carbs_g": 14.9,
+      "fat_g": 0.94,
+      "fiber_g": 8.0
+    },
+    {
+      "slug": "spinach",
+      "calories": 24.0,
+      "protein_g": 3.53,
+      "carbs_g": 3.53,
+      "fat_g": 0.0,
+      "fiber_g": 2.4,
+      "sugars_g": 0.0
+    },
+    {
+      "slug": "lentils",
+      "calories": 286.0,
+      "protein_g": 22.9,
+      "carbs_g": 65.7,
+      "fat_g": 1.43,
+      "fiber_g": 20.0,
+      "sugars_g": 0.0
+    },
+    {
+      "slug": "honey",
+      "calories": 304.0,
+      "protein_g": 0.3,
+      "carbs_g": 82.4,
+      "fat_g": 0.0,
+      "fiber_g": 0.2,
+      "sugars_g": 82.1
+    },
+    {
+      "slug": "almonds",
+      "calories": 633.0,
+      "protein_g": 23.3,
+      "carbs_g": 13.3,
+      "fat_g": 56.7,
+      "fiber_g": 10.0,
+      "sugars_g": 3.33
+    },
+    {
+      "slug": "walnuts",
+      "calories": 643.0,
+      "protein_g": 14.3,
+      "carbs_g": 17.9,
+      "fat_g": 60.7,
+      "fiber_g": 3.6,
+      "sugars_g": 3.57
+    },
+    {
+      "slug": "mixed-nuts",
+      "calories": 600.0,
+      "protein_g": 23.3,
+      "carbs_g": 20.0,
+      "fat_g": 53.3,
+      "fiber_g": 10.0,
+      "sugars_g": 3.33
+    },
+    {
+      "slug": "olive-oil-evoo",
+      "calories": 105.0,
+      "protein_g": 2.2,
+      "carbs_g": 11.0,
+      "fat_g": 6.61,
+      "fiber_g": 1.3,
+      "sugars_g": 1.76
+    },
+    {
+      "slug": "beef-liver",
+      "calories": 174.0,
+      "protein_g": 26.31,
+      "carbs_g": 5.12,
+      "fat_g": 4.64,
+      "fiber_g": 0.0,
+      "sugars_g": 0.0
+    },
+    {
+      "slug": "turkey",
+      "calories": 209.0,
+      "protein_g": 11.4,
+      "carbs_g": 4.68,
+      "fat_g": 16.0,
+      "fiber_g": 0.5,
+      "sugars_g": 2.9
+    },
+    {
+      "slug": "chicken-breast",
+      "calories": 165.0,
+      "protein_g": 20.4,
+      "carbs_g": 1.06,
+      "fat_g": 8.1,
+      "fiber_g": 0.0,
+      "sugars_g": 0.7
+    },
+    {
+      "slug": "eggs",
+      "calories": 525.0,
+      "protein_g": 7.5,
+      "carbs_g": 60.0,
+      "fat_g": 27.5,
+      "fiber_g": 2.5,
+      "sugars_g": 55.0
+    },
+    {
+      "slug": "poultry",
+      "calories": 48.0,
+      "protein_g": 0.71,
+      "carbs_g": 5.29,
+      "fat_g": 2.62,
+      "fiber_g": 0.1,
+      "sugars_g": 0.3
+    },
+    {
+      "slug": "sweet-potato",
+      "calories": 191.0,
+      "protein_g": 2.26,
+      "carbs_g": 37.3,
+      "fat_g": 9.35,
+      "fiber_g": 6.0,
+      "sugars_g": 13.52
+    },
+    {
+      "slug": "beets",
+      "calories": 65.0,
+      "protein_g": 0.8,
+      "carbs_g": 16.28,
+      "fat_g": 0.08,
+      "fiber_g": 0.8,
+      "sugars_g": 11.05
+    },
+    {
+      "slug": "shellfish",
+      "calories": 146.0,
+      "protein_g": 15.46,
+      "carbs_g": 4.9,
+      "fat_g": 6.67,
+      "fiber_g": 0.2,
+      "sugars_g": 0.07
+    },
+    {
+      "slug": "flax-seeds",
+      "calories": 545.0,
+      "protein_g": 18.04,
+      "carbs_g": 34.36,
+      "fat_g": 37.28,
+      "fiber_g": 23.1,
+      "sugars_g": 1.55
+    },
+    {
+      "slug": "sunflower-seeds",
+      "calories": 283.0,
+      "protein_g": 11.7,
+      "carbs_g": 10.0,
+      "fat_g": 25.0,
+      "fiber_g": 5.0,
+      "sugars_g": 1.67
+    },
+    {
+      "slug": "pumpkin-seeds",
+      "calories": 600.0,
+      "protein_g": 23.3,
+      "carbs_g": 13.3,
+      "fat_g": 46.7,
+      "fiber_g": 3.3,
+      "sugars_g": 0.0
+    },
+    {
+      "slug": "chia-seeds",
+      "calories": 486.0,
+      "protein_g": 16.54,
+      "carbs_g": 42.12,
+      "fat_g": 30.74,
+      "fiber_g": 34.4,
+      "sugars_g": 1.55
+    },
+    {
+      "slug": "oysters",
+      "calories": 189.0,
+      "protein_g": 4.95,
+      "carbs_g": 18.4,
+      "fat_g": 10.75,
+      "fiber_g": 1.2,
+      "sugars_g": 2.62
+    },
+    {
+      "slug": "ginger",
+      "calories": 1.0,
+      "protein_g": 0.02,
+      "carbs_g": 0.18,
+      "fat_g": 0.01,
+      "fiber_g": 0.0,
+      "sugars_g": 0.02
+    },
+    {
+      "slug": "turmeric",
+      "calories": 0.0,
+      "protein_g": 0.0,
+      "carbs_g": 125.0,
+      "fat_g": 0.0,
+      "fiber_g": 31.2,
+      "sugars_g": 0.0
+    },
+    {
+      "slug": "dark-chocolate",
+      "calories": 526.0,
+      "protein_g": 13.2,
+      "carbs_g": 39.5,
+      "fat_g": 42.1,
+      "fiber_g": 10.5,
+      "sugars_g": 21.0
+    },
+    {
+      "slug": "red-bell-peppers",
+      "calories": 321.0,
+      "protein_g": 10.7,
+      "carbs_g": 39.3,
+      "fat_g": 14.3,
+      "fiber_g": 14.3,
+      "sugars_g": 3.57
+    },
+    {
+      "slug": "tomatoes",
+      "calories": 20.0,
+      "protein_g": 0.82,
+      "carbs_g": 4.04,
+      "fat_g": 0.31,
+      "fiber_g": 1.2,
+      "sugars_g": 2.63
+    },
+    {
+      "slug": "dark-leafy-greens",
+      "calories": 122.0,
+      "protein_g": 8.11,
+      "carbs_g": 6.47,
+      "fat_g": 7.34,
+      "fiber_g": 0.9,
+      "sugars_g": 0.91
+    },
+    {
+      "slug": "artichoke",
+      "calories": 53.0,
+      "protein_g": 2.89,
+      "carbs_g": 11.95,
+      "fat_g": 0.34,
+      "fiber_g": 5.7,
+      "sugars_g": 0.99
+    },
+    {
+      "slug": "fennel",
+      "calories": 62.0,
+      "protein_g": 1.42,
+      "carbs_g": 8.32,
+      "fat_g": 3.22,
+      "fiber_g": 3.5,
+      "sugars_g": 4.48
+    }
+  ]
+}

@@ -5,23 +5,127 @@ This module provides REST API endpoints for entity operations including
 listing, searching, and retrieving entity information.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Any
+import os
+import json
+import re
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
+from sqlalchemy import func, cast, Float, or_
 
 from ..database import get_db
 from ..models import Entity
 from ..models.entity import IngredientEntity
 from ..schemas import (
     EntityResponse, EntityListResponse, EntitySearchRequest, EntitySearchResponse,
-    EntityStatsResponse, EntityCreate, EntityUpdate, IngredientEntityResponse
+    EntityStatsResponse, EntityCreate, EntityUpdate, IngredientEntityResponse,
+    IngredientGroup, IngredientGroupsResponse,
 )
 from ..services.search import SearchService
 from ..services.auth import get_current_user, get_current_active_user
 from ..models import User
+from ..models.category import Category
+from ..models.entity import Entity as BaseEntityModel
 
 # Create router
 router = APIRouter(prefix="/entities", tags=["entities"])
+
+
+def _normalize_entity_for_response(entity: Entity) -> Entity:
+    """Coerce nullable arrays to lists and flatten common numeric attributes."""
+    try:
+        # Ensure list fields never None
+        if getattr(entity, "aliases", None) is None:
+            entity.aliases = []  # type: ignore[attr-defined]
+        # If entity is IngredientEntity subtype, coerce lists
+        if hasattr(entity, "health_outcomes") and getattr(entity, "health_outcomes", None) is None:
+            entity.health_outcomes = []  # type: ignore[attr-defined]
+        if hasattr(entity, "compounds") and getattr(entity, "compounds", None) is None:
+            entity.compounds = []  # type: ignore[attr-defined]
+
+        # Normalize attributes
+        attrs: Optional[dict[str, Any]] = getattr(entity, "attributes", None)  # type: ignore[assignment]
+        if attrs is None:
+            entity.attributes = {}  # type: ignore[attr-defined]
+            attrs = entity.attributes  # type: ignore[assignment]
+
+        # Flatten numeric nutrition keys if nested
+        for key in ("calories", "protein_g", "carbs_g", "fat_g", "fiber_g", "sugars_g", "serving_size_g"):
+            val = attrs.get(key) if isinstance(attrs, dict) else None
+            if isinstance(val, dict) and "value" in val:
+                attrs[key] = val.get("value")
+
+        # Fill missing nutrition from seed as a safety net (no separate scripts)
+        missing_any = any(
+            (attrs.get(k) is None or (isinstance(attrs.get(k), dict) and attrs.get(k).get("value") is None))
+            for k in ("calories", "protein_g", "carbs_g", "fat_g", "fiber_g", "sugars_g")
+        )
+        if missing_any:
+            seed = _get_seed_map()
+            slug = (getattr(entity, "slug", None) or "").strip()
+            if not slug:
+                slug = _slugify(getattr(entity, "id", ""))
+            rec = seed.get(slug)
+            if not rec:
+                # try by id/name fallbacks
+                rec = seed.get(_slugify(getattr(entity, "id", ""))) or seed.get(_slugify(getattr(entity, "name", "")))
+            if isinstance(rec, dict):
+                for k in ("calories", "protein_g", "carbs_g", "fat_g", "fiber_g", "sugars_g"):
+                    if attrs.get(k) in (None, {}):
+                        v = rec.get(k)
+                        if v is not None:
+                            attrs[k] = v
+        return entity
+    except Exception:
+        # Be permissive - return as is if anything unexpected
+        return entity
+
+
+_SEED_CACHE: Optional[dict] = None
+
+
+def _slugify(value: str) -> str:
+    s = (value or "").lower().strip()
+    s = re.sub(r"[^a-z0-9\s-]", "", s)
+    s = re.sub(r"[\s-]+", "-", s).strip("-")
+    return s
+
+
+def _get_seed_map() -> dict:
+    global _SEED_CACHE
+    if _SEED_CACHE is not None:
+        return _SEED_CACHE
+    try:
+        app_dir = os.path.dirname(os.path.dirname(__file__))
+        seed_path = os.path.join(app_dir, "scripts", "nutrition_seed.json")
+        if not os.path.exists(seed_path):
+            # Fallback to backend/scripts when running from app module
+            seed_path = os.path.join(os.path.dirname(app_dir), "scripts", "nutrition_seed.json")
+        with open(seed_path, "r", encoding="utf-8") as f:
+            data = json.load(f) or {}
+        items = data.get("items", []) or []
+        _SEED_CACHE = { (item.get("slug") or "").strip(): item for item in items if item.get("slug") }
+        return _SEED_CACHE
+    except Exception:
+        _SEED_CACHE = {}
+        return _SEED_CACHE
+
+
+# Slugs considered too generic to show in the ingredient browser
+GENERIC_EXCLUDE_SLUGS = {"beans", "beanslegumes", "mixed-berries"}
+GENERIC_EXCLUDE_IDS = {"beans", "beanslegumes", "mixed-berries"}
+
+# Category slug aliases to improve matching
+CATEGORY_SLUG_ALIASES = {
+    "meats": ["meats", "meat", "poultry"],
+    "nuts": ["nuts", "nut", "mixed-nuts"],
+    "seeds": ["seeds", "seed"],
+    "grains": ["grains", "grain", "whole-grains"],
+    "seafood": ["seafood", "fish", "shellfish"],
+    "berries": ["berries", "fruit-berries", "fruits-berries"],
+    "vegetables": ["vegetables", "vegetable"],
+    "legumes": ["legumes", "beans", "beanslegumes"],
+}
 
 
 @router.get("/", response_model=EntityListResponse)
@@ -94,6 +198,12 @@ async def list_ingredients(
         None,
         description="Comma-separated list of health pillar IDs to filter by (e.g., '1,3,8')"
     ),
+    sort: Optional[str] = Query("name_asc", description="Sort order: name_asc|name_desc"),
+    categories: Optional[str] = Query(None, description="Comma-separated category slugs to include"),
+    min_calories: Optional[float] = Query(None, description="Minimum calories per 100g"),
+    max_calories: Optional[float] = Query(None, description="Maximum calories per 100g"),
+    min_protein_g: Optional[float] = Query(None, description="Minimum protein per 100g"),
+    max_protein_g: Optional[float] = Query(None, description="Maximum protein per 100g"),
     db: Session = Depends(get_db)
 ):
     """
@@ -114,12 +224,18 @@ async def list_ingredients(
         Returns ingredients supporting Energy, Immunity, and Inflammation Reduction
     """
     try:
-        # Start with base query for ingredients
-        query = db.query(IngredientEntity)
+        # Start with base query; explicitly alias base Entity to avoid duplicate joins
+        BaseEnt = aliased(Entity)
+        query = db.query(IngredientEntity).select_from(IngredientEntity).join(BaseEnt, BaseEnt.id == IngredientEntity.id)
+
+        # Exclusions and lifecycle
+        query = query.filter(BaseEnt.is_active.is_(True))
+        if GENERIC_EXCLUDE_SLUGS:
+            query = query.filter(~BaseEnt.slug.in_(list(GENERIC_EXCLUDE_SLUGS)))
 
         # Apply search filter
         if search:
-            query = query.filter(IngredientEntity.name.ilike(f"%{search}%"))
+            query = query.filter(BaseEnt.name.ilike(f"%{search}%"))
 
         # Parse and apply health pillar filter
         pillar_ids: Optional[List[int]] = None
@@ -145,12 +261,89 @@ async def list_ingredients(
                     detail=f"Invalid health_pillars format. Expected comma-separated integers (e.g., '1,3,8'): {str(e)}"
                 )
 
-        # Get total count before pagination
-        total = query.count()
+        # Category filter (by slug)
+        if categories:
+            raw_slugs = [s.strip() for s in categories.split(',') if s.strip()]
+            if raw_slugs:
+                expanded: List[str] = []
+                for rs in raw_slugs:
+                    # expand with aliases to be resilient to taxonomy differences
+                    expanded.extend(CATEGORY_SLUG_ALIASES.get(rs, [rs]))
+                # unique and lowercase
+                slugs = sorted({s.lower() for s in expanded})
+                # join through association table defined in models.category (outer join to allow fallback)
+                from ..models.category import IngredientCategory
+                query = (
+                    query.outerjoin(IngredientCategory, IngredientCategory.c.ingredient_id == IngredientEntity.id)
+                         .outerjoin(Category, Category.id == IngredientCategory.c.category_id)
+                )
+                # Heuristic fallback patterns by category aliases (OR with category match)
+                patterns: List[str] = []
+                if any(x in slugs for x in CATEGORY_SLUG_ALIASES.get('meats', [])):
+                    patterns += ["%meat%","%beef%","%chicken%","%turkey%","%poultry%"]
+                if any(x in slugs for x in CATEGORY_SLUG_ALIASES.get('nuts', [])):
+                    patterns += ["%almond%","%walnut%","%pecan%","%hazelnut%","%pistach%","%cashew%","%nut%"]
+                if any(x in slugs for x in CATEGORY_SLUG_ALIASES.get('seeds', [])):
+                    patterns += ["%seed%","%chia%","%flax%","%pumpkin%","%sunflower%","%sesame%"]
+                if any(x in slugs for x in CATEGORY_SLUG_ALIASES.get('grains', [])):
+                    patterns += ["%grain%","%quinoa%","%oat%","%rice%","%wheat%","%barley%","%rye%"]
+                if any(x in slugs for x in CATEGORY_SLUG_ALIASES.get('seafood', [])):
+                    patterns += ["%seafood%","%fish%","%salmon%","%tuna%","%oyster%","%shellfish%"]
 
-        # Apply pagination
+                name_filters = [BaseEnt.slug.ilike(p) for p in patterns] + [BaseEnt.name.ilike(p) for p in patterns]
+                if slugs and patterns:
+                    query = query.filter(or_(Category.slug.in_(slugs), or_(*name_filters)))
+                elif slugs:
+                    query = query.filter(Category.slug.in_(slugs))
+                elif patterns:
+                    query = query.filter(or_(*name_filters))
+
+        # Note: We apply numeric attribute filters after retrieval using normalized values
+        # so that entities populated via seed fallback are included.
+
+        # Sorting (stable)
+        if sort == "name_desc":
+            query = query.order_by(BaseEnt.name.desc(), IngredientEntity.id.asc())
+        else:
+            query = query.order_by(BaseEnt.name.asc(), IngredientEntity.id.asc())
+
+        # Fetch first (coarse) page then apply in-Python numeric filters using normalized attributes
+        # Pull extra to compensate for post-filtering shrinkage
+        fetch_limit = size * 3
         offset = (page - 1) * size
-        ingredients = query.offset(offset).limit(size).all()
+        raw_items = query.offset(offset).limit(fetch_limit).all()
+
+        def passes_numeric_filters(ent: IngredientEntity) -> bool:
+            e = _normalize_entity_for_response(ent)
+            attrs = getattr(e, "attributes", {}) or {}
+            def num(v):
+                try:
+                    return float(v)
+                except Exception:
+                    return None
+            cal = num(attrs.get("calories"))
+            pro = num(attrs.get("protein_g"))
+            if min_calories is not None and (cal is None or cal < float(min_calories)):
+                return False
+            if max_calories is not None and (cal is None or cal > float(max_calories)):
+                return False
+            if min_protein_g is not None and (pro is None or pro < float(min_protein_g)):
+                return False
+            if max_protein_g is not None and (pro is None or pro > float(max_protein_g)):
+                return False
+            return True
+
+        filtered_items = [it for it in raw_items if passes_numeric_filters(it)]
+
+        # Approximate total by counting across full query when no numeric filters, otherwise compute via Python
+        if any(v is not None for v in [min_calories, max_calories, min_protein_g, max_protein_g]):
+            # To keep it simple, just set total as len(filtered_items) + potential unseen remainder
+            total = len(filtered_items) + max(0, len(raw_items) - len(filtered_items))
+        else:
+            total = query.count()
+
+        # Final page slice
+        ingredients = filtered_items[:size]
 
         # Additional filtering in Python for SQLite (checking pillar membership)
         # This is needed because SQLite JSON querying is limited
@@ -166,10 +359,13 @@ async def list_ingredients(
                                 break
             ingredients = filtered_ingredients
 
+        # Coerce nullable JSON arrays to empty lists to satisfy schema
+        safe_items = [_normalize_entity_for_response(ing) for ing in ingredients]
+
         # Convert to response format
         ingredient_responses = [
-            IngredientEntityResponse.model_validate(ingredient)
-            for ingredient in ingredients
+            IngredientEntityResponse.model_validate(item)
+            for item in safe_items
         ]
 
         return ingredient_responses
@@ -180,6 +376,62 @@ async def list_ingredients(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error listing ingredients: {str(e)}"
+        )
+
+
+@router.get("/ingredients/groups", response_model=IngredientGroupsResponse)
+async def list_ingredient_groups(
+    size_per_group: int = Query(24, ge=1, le=1000, description="Number of items per category group"),
+    categories: Optional[str] = Query(None, description="Comma-separated category slugs to include; default = all"),
+    sort: Optional[str] = Query("name_asc", description="Sort within groups: name_asc|name_desc"),
+    db: Session = Depends(get_db),
+):
+    """
+    Return grouped ingredients per category, optimized for carousel/inline display.
+
+    - If `categories` provided, restrict groups to those slugs
+    - Each group includes total count and first page of items
+    - Sorting within groups supports `name_asc|name_desc`
+    """
+    try:
+        # Determine categories to include
+        if categories:
+            slugs = [s.strip() for s in categories.split(",") if s.strip()]
+            cats = db.query(Category).filter(Category.slug.in_(slugs)).all()
+        else:
+            cats = db.query(Category).all()
+
+        groups: List[IngredientGroup] = []
+        for cat in cats:
+            base_q = (
+                db.query(IngredientEntity)
+                .join(IngredientEntity.categories)
+                .filter(Category.id == cat.id)
+            )
+            if sort == "name_desc":
+                base_q = base_q.order_by(IngredientEntity.name.desc())
+            else:
+                base_q = base_q.order_by(IngredientEntity.name.asc())
+
+            total = base_q.count()
+            items = base_q.limit(size_per_group).all()
+            groups.append(
+                IngredientGroup(
+                    category_id=cat.id,
+                    category_name=cat.name,
+                    category_slug=cat.slug,
+                    total=total,
+                    page=1,
+                    size=size_per_group,
+                    items=[IngredientEntityResponse.model_validate(i) for i in items],
+                )
+            )
+
+        return IngredientGroupsResponse(groups=groups)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error building ingredient groups: {str(e)}",
         )
 
 
@@ -365,6 +617,7 @@ async def get_entity(
                 detail=f"Entity with ID '{entity_id}' not found"
             )
         
+        entity = _normalize_entity_for_response(entity)
         return EntityResponse.model_validate(entity)
         
     except HTTPException:
@@ -689,3 +942,50 @@ async def delete_entity(
             detail=f"Error deleting entity: {str(e)}"
         )
 
+
+@router.get("/ingredients/missing-micros")
+async def list_missing_vitamins_minerals(db: Session = Depends(get_db)):
+    """
+    Report ingredients missing vitamins/minerals or containing invalid micronutrient entries.
+    - missing_micros: no vitamins/minerals present
+    - has_macros_in_micros: micronutrient list includes protein/fat/carbs entries
+    - duplicates: repeated micronutrient names after normalization
+    """
+    BaseEnt = aliased(Entity)
+    items = (
+        db.query(IngredientEntity)
+        .select_from(IngredientEntity)
+        .join(BaseEnt, BaseEnt.id == IngredientEntity.id)
+        .all()
+    )
+    report = []
+
+    def normalize_name(n: Any) -> str:
+        if isinstance(n, dict):
+            name = n.get("nutrient_name") or n.get("name") or ""
+        else:
+            name = str(n or "")
+        return name.strip()
+
+    macro_like = {"protein", "proteins", "fat", "fats", "carb", "carbs", "carbohydrate", "carbohydrates"}
+
+    for ing in items:
+        attrs = getattr(ing, "attributes", {}) or {}
+        micros = attrs.get("nutrient_references")
+        if isinstance(micros, dict) and "value" in micros:
+            micros = micros.get("value")
+        names = [normalize_name(x) for x in (micros or [])]
+        names_lower = [s.lower() for s in names]
+        has_micros = any(n for n in names_lower if n and n not in macro_like)
+        has_macros = any(n in macro_like for n in names_lower)
+        duplicates = sorted({n for n in names if names_lower.count(n.lower()) > 1})
+
+        report.append({
+            "id": ing.id,
+            "name": getattr(ing, "name", ing.id),
+            "missing_micros": not has_micros,
+            "has_macros_in_micros": has_macros,
+            "duplicates": duplicates,
+        })
+
+    return {"items": report}

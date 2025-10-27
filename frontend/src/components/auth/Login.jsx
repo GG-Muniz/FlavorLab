@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Apple, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -82,15 +82,15 @@ const Login = ({ onLogin }) => {
           <div style={{
             width: '80px',
             height: '80px',
-            background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
             borderRadius: '20px',
+            overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 24px',
             boxShadow: '0 10px 15px -3px rgb(34 197 94 / 0.4)'
           }}>
-            <Apple width={40} height={40} color="#ffffff" strokeWidth={2.5} />
+            <img src="/Healthlab.png" alt="HealthLab" onError={(e)=>{ e.currentTarget.src='/favicon.png'; }} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
 
           <h1 style={{

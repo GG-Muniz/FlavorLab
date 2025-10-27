@@ -1,0 +1,138 @@
+{
+  "apothecary_responses": [
+    {
+      "health_goal": "Increased Energy",
+      "remedy": "Matcha Green Energy Shot",
+      "serving_size": "1 shot (2 oz)",
+      "ingredients": {
+        "Matcha Green Tea Powder": "1 tsp (2g)",
+        "Raw Honey": "1 tsp (7g)",
+        "Lemon Juice": "1 tbsp (15ml)"
+      },
+      "preparation": "Whisk matcha with 2 oz warm water, stir in honey and lemon",
+      "benefit": "Natural caffeine + L-theanine for sustained energy without jitters",
+      "timing": "Morning or pre-workout",
+      "image_url": "https://res.cloudinary.com/dl83ecvcm/image/upload/v1761324914/healthlabapothecary5d525b8d18f1.jpg",
+      "cloudinary_public_id": "healthlabapothecary5d525b8d18f1"
+    },
+    {
+      "health_goal": "Improved Digestion",
+      "remedy": "Ginger Mint Digestive Tea",
+      "serving_size": "1 cup (8 oz)",
+      "ingredients": {
+        "Fresh Ginger Root": "1 tbsp sliced (11g)",
+        "Fresh Peppermint": "5 leaves",
+        "Fennel Seeds": "1 tsp (2g)"
+      },
+      "preparation": "Steep ginger, peppermint, and fennel in hot water for 10 minutes",
+      "benefit": "Soothes digestive system, reduces bloating, aids gut motility",
+      "timing": "30 minutes before meals or after eating",
+      "image_url": "https://res.cloudinary.com/dl83ecvcm/image/upload/v1761324916/healthlabapothecary5e39cb6e6ab3.jpg",
+      "cloudinary_public_id": "healthlabapothecary5e39cb6e6ab3"
+    },
+    {
+      "health_goal": "Enhanced Immunity",
+      "remedy": "Golden Immunity Shot",
+      "serving_size": "1 shot (2 oz)",
+      "ingredients": {
+        "Fresh Turmeric Root": "1 tbsp grated (15g)",
+        "Fresh Ginger Root": "1 tsp grated (5g)",
+        "Lemon Juice": "1 tbsp (15ml)",
+        "Raw Honey": "1 tsp (7g)",
+        "Black Pepper": "pinch"
+      },
+      "preparation": "Blend turmeric, ginger, lemon, honey, and black pepper with 2 oz water",
+      "benefit": "Anti-inflammatory, antiviral, immune-boosting compounds",
+      "timing": "Daily in morning or at first sign of illness",
+      "image_url": "https://res.cloudinary.com/dl83ecvcm/image/upload/v1761324920/healthlabapothecaryf3da3cd39bba.jpg",
+      "cloudinary_public_id": "healthlabapothecaryf3da3cd39bba"
+    },
+    {
+      "health_goal": "Better Sleep",
+      "remedy": "Chamomile Sleep Elixir",
+      "serving_size": "1 cup (8 oz)",
+      "ingredients": {
+        "Chamomile Flowers": "2 tbsp dried (4g)",
+        "Raw Honey": "1 tsp (7g)",
+        "Lavender": "1/4 tsp dried (0.5g)"
+      },
+      "preparation": "Steep chamomile and lavender in hot water for 10 minutes, strain, add honey",
+      "benefit": "Promotes relaxation, reduces anxiety, improves sleep quality",
+      "timing": "1 hour before bedtime",
+      "image_url": "https://res.cloudinary.com/dl83ecvcm/image/upload/v1761324922/healthlabapothecary6755a2ec3177.jpg",
+      "cloudinary_public_id": "healthlabapothecary6755a2ec3177"
+    },
+    {
+      "health_goal": "Mental Clarity",
+      "remedy": "Brain Boost Smoothie",
+      "serving_size": "1 cup (8 oz)",
+      "ingredients": {
+        "Wild Blueberries": "1/2 cup (74g)",
+        "Walnuts": "1/4 cup (28g)",
+        "Green Tea": "1/2 cup brewed (120ml)",
+        "Dark Chocolate": "1 tbsp cacao nibs (10g)"
+      },
+      "preparation": "Blend blueberries, walnuts, and cacao nibs with cooled green tea",
+      "benefit": "Antioxidants for brain health, improved focus and memory",
+      "timing": "Morning or mid-afternoon",
+      "image_url": "https://res.cloudinary.com/dl83ecvcm/image/upload/v1761324925/healthlabapothecary232f4282936a.jpg",
+      "cloudinary_public_id": "healthlabapothecary232f4282936a"
+    },
+    {
+      "health_goal": "Heart Health",
+      "remedy": "Cardio Support Salad",
+      "serving_size": "1 bowl",
+      "ingredients": {
+        "Salmon (cooked)": "4 oz (113g)",
+        "Leafy Greens": "2 cups (67g)",
+        "Walnuts": "2 tbsp (14g)",
+        "Olive Oil": "1 tbsp (14ml)",
+        "Garlic": "1 clove minced (3g)"
+      },
+      "preparation": "Top greens with salmon, walnuts, garlic; drizzle with olive oil",
+      "benefit": "Omega-3s, healthy fats, antioxidants for cardiovascular health",
+      "timing": "Lunch or dinner",
+      "image_url": "https://res.cloudinary.com/dl83ecvcm/image/upload/v1761324928/healthlabapothecarya9e53b701a70.jpg",
+      "cloudinary_public_id": "healthlabapothecarya9e53b701a70"
+    },
+    {
+      "health_goal": "Muscle Recovery",
+      "remedy": "Recovery Power Shake",
+      "serving_size": "1 shake (12 oz)",
+      "ingredients": {
+        "Tart Cherry Juice": "1 cup (240ml)",
+        "Banana": "1 medium (118g)",
+        "Greek Yogurt": "1/2 cup (113g)",
+        "Honey": "1 tsp (7g)"
+      },
+      "preparation": "Blend cherry juice, banana, yogurt, and honey until smooth",
+      "benefit": "Reduces muscle soreness, replenishes glycogen, aids protein synthesis",
+      "timing": "Within 30 minutes post-workout",
+      "image_url": "https://res.cloudinary.com/dl83ecvcm/image/upload/v1761324931/healthlabapothecary792d1b1cd849.jpg",
+      "cloudinary_public_id": "healthlabapothecary792d1b1cd849"
+    },
+    {
+      "health_goal": "Inflammation Reduction",
+      "remedy": "Anti-Inflammatory Golden Milk",
+      "serving_size": "1 cup (8 oz)",
+      "ingredients": {
+        "Fresh Turmeric": "1 tbsp grated (15g)",
+        "Fresh Ginger": "1 tsp grated (5g)",
+        "Almond Milk": "1 cup (240ml)",
+        "Black Pepper": "pinch",
+        "Honey": "1 tsp (7g)"
+      },
+      "preparation": "Heat almond milk, whisk in turmeric, ginger, black pepper; sweeten with honey",
+      "benefit": "Reduces inflammation markers, antioxidant-rich, supports joint health",
+      "timing": "Daily, with meals",
+      "image_url": "https://res.cloudinary.com/dl83ecvcm/image/upload/v1761324934/healthlabapothecary8109ac607a8d.jpg",
+      "cloudinary_public_id": "healthlabapothecary8109ac607a8d"
+    }
+  ],
+  "metadata": {
+    "version": "1.0-mvp",
+    "created_date": "2025-10-24",
+    "project": "FlavorLab MVP",
+    "note": "Simplified apothecary responses for first-round presentation"
+  }
+}

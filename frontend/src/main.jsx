@@ -16,6 +16,7 @@ import HelpPage from './pages/HelpPage.jsx'
 import DisplayPage from './pages/DisplayPage.jsx'
 import IngredientBrowserPage from './pages/IngredientBrowserPage.jsx'
 import IngredientDetailPage from './pages/IngredientDetailPage.jsx'
+import ApothecaryPage from './pages/ApothecaryPage.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
 import NutriTest from './components/onboarding/NutriTest.jsx'
 
@@ -56,6 +57,7 @@ createRoot(document.getElementById('root')).render(
               <Route path="display" element={<DisplayPage />} />
               <Route path="ingredients" element={<IngredientBrowserPage />} />
               <Route path="ingredients/:ingredientId" element={<IngredientDetailPage />} />
+              <Route path="apothecary" element={<ApothecaryPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />
