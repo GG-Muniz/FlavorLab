@@ -132,3 +132,6 @@ notes.txt
 backend/DATABASE_DATE_FIX.md
 backend/*.backup*
 backend/flavorlab.db.backup*
+
+# Cherry-pick reference files
+CHERRY_PICK_FILES.txt
