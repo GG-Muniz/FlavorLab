@@ -64,10 +64,10 @@ const MealHistory = () => {
     meals.forEach(meal => {
       // Ensure we have a valid date
       if (!meal.date_logged) return;
-      
+
       // Normalize the date to YYYY-MM-DD format
       const date = meal.date_logged.split('T')[0]; // Remove time part if present
-      
+
       if (!grouped[date]) {
         grouped[date] = [];
       }

@@ -307,16 +307,16 @@ const Calendar = () => {
                 gap: '4px',
                 fontSize: '14px',
                 fontWeight: '600',
-                border: hasLog 
-                  ? '2px solid #22c55e' 
-                  : isTodayDate 
-                    ? '2px solid #22c55e' 
+                border: hasLog
+                  ? '2px solid #22c55e'
+                  : isTodayDate
+                    ? '2px solid #22c55e'
                     : '1px solid #e5e7eb',
                 borderRadius: '10px',
                 background: isSelected
                   ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
-                  : isTodayDate 
-                    ? '#f0fdf4' 
+                  : isTodayDate
+                    ? '#f0fdf4'
                     : '#ffffff',
                 color: isSelected ? '#ffffff' : isTodayDate ? '#22c55e' : '#374151',
                 cursor: 'pointer',

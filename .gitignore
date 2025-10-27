@@ -127,3 +127,8 @@ BUGFIX_SUMMARY.md
 
 # Development notes
 notes.txt
+
+# Database maintenance files
+backend/DATABASE_DATE_FIX.md
+backend/*.backup*
+backend/flavorlab.db.backup*

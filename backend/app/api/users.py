@@ -1207,7 +1207,7 @@ async def get_daily_summary(
 
     # Get authoritative dashboard state
     summary = create_daily_summary(user_id, db)
-    
+
     # Add streak calculation
     current_streak = calculate_current_streak(db, user_id)
     summary["current_streak"] = current_streak
