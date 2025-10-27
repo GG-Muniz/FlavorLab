@@ -141,7 +141,7 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
       border: `1px solid ${color}40`
     }}>
       <span style={{ fontSize: '14px' }}>{icon}</span>
-      <span style={{ color: color, fontWeight: '700' }}>{label}: {value}{unit}</span>
+      <span style={{ color: '#374151', fontWeight: '700' }}>{label}: {value}{unit}</span>
     </div>
   );
 
