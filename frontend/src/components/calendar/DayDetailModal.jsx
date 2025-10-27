@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar as CalendarIcon, TrendingUp, FileText, Edit3, Save, Trash2 } from 'lucide-react';
 import moment from 'moment';
 import { useData } from '../../context/DataContext';
 
 const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave, onDelete, isLoading }) => {
+  const navigate = useNavigate();
   const { getJournalNote, saveJournalNote, deleteJournalNote } = useData();
 
   // Existing note state (for backward compatibility)
@@ -220,8 +222,10 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
 
   // Handle view full log (for existing days)
   const handleViewFullLog = () => {
+    const dateKey = moment(selectedDate).format('YYYY-MM-DD');
     console.log(`ACTION: Navigate to Meal History for ${dateKey}`);
     onClose();
+    navigate('/?tab=meal-history');
   };
 
   return (
