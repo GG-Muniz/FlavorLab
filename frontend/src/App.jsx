@@ -210,7 +210,7 @@ const QuickActionButton = ({ actionKey, action, onClick }) => {
 
 function App() {
   const { user: authUser, loading: authLoading } = useAuth();
-  const { summary, isLoading, getLastLoggedMeal, loggedMeals } = useData(); // Migrated from DashboardContext to DataContext
+  const { summary, isLoading, getLastLoggedMeal, loggedMeals, currentStreak } = useData(); // Migrated from DashboardContext to DataContext
   const location = useLocation();
   const navigate = useNavigate();
   const [isAnimating, setIsAnimating] = useState(true);
@@ -978,7 +978,7 @@ const HealthTipOfTheDay = () => {
                         </div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '28px', fontWeight: '700', color: '#111827' }}>7</div>
+                        <div style={{ fontSize: '28px', fontWeight: '700', color: '#111827' }}>{currentStreak}</div>
                         <div style={{ fontSize: '12px', color: '#78716c', fontWeight: '500' }}>days</div>
                       </div>
                     </div>

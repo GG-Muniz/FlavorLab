@@ -12,6 +12,7 @@ export const DataProvider = ({ children }) => {
   const [loggedMeals, setLoggedMeals] = useState([]);
   const [mealPlans, setMealPlans] = useState([]);
   const [summary, setSummary] = useState(null);
+  const [currentStreak, setCurrentStreak] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -34,6 +35,7 @@ export const DataProvider = ({ children }) => {
       setLoggedMeals(summaryResponse.logged_meals_today || []);
       setMealPlans(plansResponse || []);
       setSummary(summaryResponse); // Store full summary
+      setCurrentStreak(summaryResponse.current_streak || 0);
     } catch (error) {
       console.error("Failed to fetch data", error);
       // Set fallback data to prevent infinite loading
@@ -188,6 +190,7 @@ export const DataProvider = ({ children }) => {
     loggedMeals,
     mealPlans,
     summary,
+    currentStreak,
     isLoading,
     addLog,
     updateLog,

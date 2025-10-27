@@ -122,6 +122,7 @@ class DailyCaloriesSummaryResponse(BaseModel):
     remaining: int = Field(..., description="Remaining calories for the day")
     logged_meals_today: List[LoggedMealSummary] = Field(..., description="All meals logged for today")
     macros: MacroTotals = Field(..., description="Daily macronutrient totals")
+    current_streak: int = Field(default=0, description="Current meal logging streak in days")
 
 
 class SetCalorieGoalRequest(BaseModel):

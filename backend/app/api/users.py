@@ -1196,9 +1196,10 @@ async def get_daily_summary(
 
     Returns:
         Complete dashboard state with daily_goal, total_consumed,
-        remaining, and logged_meals_today
+        remaining, logged_meals_today, and current_streak
     """
     from ..services.daily_summary_service import create_daily_summary
+    from ..services.streak_service import calculate_current_streak
 
     # TEMPORARY: Hardcoded user_id for development
     # TODO: Replace with current_user.id when auth is enabled
@@ -1206,6 +1207,10 @@ async def get_daily_summary(
 
     # Get authoritative dashboard state
     summary = create_daily_summary(user_id, db)
+    
+    # Add streak calculation
+    current_streak = calculate_current_streak(db, user_id)
+    summary["current_streak"] = current_streak
 
     return DailyCaloriesSummaryResponse(**summary)
 
