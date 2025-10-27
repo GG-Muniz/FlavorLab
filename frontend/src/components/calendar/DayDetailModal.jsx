@@ -225,7 +225,7 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
     const dateKey = moment(selectedDate).format('YYYY-MM-DD');
     console.log(`ACTION: Navigate to Meal History for ${dateKey}`);
     onClose();
-    navigate('/?tab=meal-history');
+    navigate('/?tab=history');
   };
 
   return (
