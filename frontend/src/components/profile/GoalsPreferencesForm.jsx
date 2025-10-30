@@ -136,17 +136,17 @@ export default function GoalsPreferencesForm({ onSaved }) {
     setError('');
     try {
       const healthPillarNames = pillars.filter(p => selectedPillars.includes(p.id)).map(p => p.name);
+      const sharedPreferences = {
+        ...(user?.preferences || {}),
+        health_goals: selectedPillars,
+        diet,
+        allergies: Array.from(allergies),
+        disliked: disliked.map(t => (typeof t === 'string' ? { name: t } : t)),
+        meals_per_day: mealsPerDay || undefined
+      };
       const payload = {
         // Write into both places for compatibility
         health_goals: { selectedGoals: selectedPillars },
-        preferences: {
-          ...(user?.preferences || {}),
-          health_goals: selectedPillars,
-          diet,
-          allergies: Array.from(allergies),
-          disliked: disliked.map(t => (typeof t === 'string' ? { name: t } : t)),
-          meals_per_day: mealsPerDay || undefined
-        },
         dietary_preferences: {
           diet,
           allergies: Array.from(allergies),
@@ -154,7 +154,7 @@ export default function GoalsPreferencesForm({ onSaved }) {
           meals_per_day: mealsPerDay || undefined
         },
         preferences: {
-          health_goals: selectedPillars,
+          ...sharedPreferences,
           survey_data: {
             healthPillars: healthPillarNames,
             dietaryRestrictions: diet ? [diet] : [],
