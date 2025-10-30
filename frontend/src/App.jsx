@@ -11,8 +11,8 @@ import Calendar from './components/calendar/Calendar';
 import { useAuth } from './context/AuthContext';
 // import { useDashboard } from './contexts/DashboardContext'; // DEPRECATED: Using DataContext
 import { useData } from './context/DataContext.jsx';
-import { getTimeAgo } from './utils/timeHelpers';
-import { parseMealsPerDay } from './utils/mealsHelpers';
+import { getTimeAgo } from './utils/timeHelpers.js';
+import { parseMealsPerDay } from './utils/mealsHelpers.js';
 import UpNext from './components/dashboard/UpNext';
 import { getDailyCalorieSummary } from './services/calorieApi';
 import MealPlanShowcase from './components/mealplan/MealPlanShowcase';
