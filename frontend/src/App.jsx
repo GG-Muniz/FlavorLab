@@ -1,20 +1,27 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NotificationsPanel, NotificationBellButton } from './components/notifications/NotificationsPanel';
 import Login from './components/auth/Login';
 import CalorieDetailModal from './components/modals/CalorieDetailModal';
-import CalorieCounter from './components/modals/CalorieCounter';
-import WaterCounter from './components/modals/WaterCounter';
+import DailyTrackerModal from './components/modals/DailyTrackerModal';
 import LogMealModal from './components/modals/LogMealModal';
+import WaterCounter from './components/modals/WaterCounter.jsx';
 import Calendar from './components/calendar/Calendar';
 import { useAuth } from './context/AuthContext';
+// import { useDashboard } from './contexts/DashboardContext'; // DEPRECATED: Using DataContext
+import { useData } from './context/DataContext.jsx';
+import { getTimeAgo } from './utils/timeHelpers';
+import { parseMealsPerDay } from './utils/mealsHelpers';
 import UpNext from './components/dashboard/UpNext';
 import { getDailyCalorieSummary } from './services/calorieApi';
 import MealPlanShowcase from './components/mealplan/MealPlanShowcase';
+import MealHistory from './components/mealhistory/MealHistory';
 import SmartActionStack from './components/dashboard/SmartActionStack';
+import MacronutrientsCard from './components/dashboard/MacronutrientsCard';
 import { fetchNutritionGoals, fetchDailySummary } from './services/nutritionApi';
-import ApothecaryPage from './pages/ApothecaryPage.jsx';
+import { getDailySummary } from './services/mealsApi';
+import { fetchWaterSummary } from './services/waterApi';
 
 import {
   LayoutDashboard,
@@ -42,18 +49,12 @@ import {
 const iconConfig = {
   navigation: {
     dashboard: { icon: LayoutDashboard, label: 'Dashboard' },
+    recipes: { icon: ChefHat, label: 'Recipe Generator' },
     mealplans: { icon: ChefHat, label: 'Meal Plans' },
     history: { icon: History, label: 'Meal History' },
-    calendar: { icon: CalendarIcon, label: 'Calendar' },
+    calendar: { icon: CalendarIcon, label: 'Journal' },
     apothecary: { icon: FlaskConical, label: 'Apothecary' }
   },
-  quickActions: {
-    mealData: { icon: Apple, label: 'Meal Data', color: 'orange' },
-    dietGoals: { icon: Target, label: 'Diet Goals', color: 'yellow' },
-    // barcodeScanner: { icon: Scan, label: 'Barcode Scanner', color: 'cyan' },
-    ingredientDatabase: { icon: BookOpen, label: 'Ingredient Database', color: 'green' },
-    foodLog: { icon: BarChart3, label: 'Food Log', color: 'purple' }
-  }
 };
 
 // Service classes
@@ -212,24 +213,37 @@ const QuickActionButton = ({ actionKey, action, onClick }) => {
 
 function App() {
   const { user: authUser, loading: authLoading } = useAuth();
+  const { summary, isLoading, getLastLoggedMeal, loggedMeals, currentStreak } = useData(); // Migrated from DashboardContext to DataContext
   const location = useLocation();
   const navigate = useNavigate();
   const [isAnimating, setIsAnimating] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const user = authUser || { id: '123', name: 'User' };
-  // App branding
-  document.title = 'HealthLab';
+
+  // Get last logged meal for display
+  const lastMeal = getLastLoggedMeal();
+
+  // Count today's logged meals (backend already filters to today in logged_meals_today)
+  const mealsLoggedCount = loggedMeals?.length || 0;
+  const mealsLoggedToday = {
+    breakfast: loggedMeals?.some((meal) => (meal?.meal_type || '').toLowerCase() === 'breakfast') || false,
+    lunch: loggedMeals?.some((meal) => (meal?.meal_type || '').toLowerCase() === 'lunch') || false,
+    dinner: loggedMeals?.some((meal) => (meal?.meal_type || '').toLowerCase() === 'dinner') || false,
+  };
+
+  // Get user's meal goal from profile (defaults to 5 if not set)
+  const userMealGoal = parseMealsPerDay(authUser?.dietary_preferences?.meals_per_day);
+  // NutriTest is now accessible via /nutritest route from Profile page only
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]); //Despues va a venir del API
   const [showCalorieModal, setShowCalorieModal] = useState(false);
-  const [showQuickActionsMenu, setShowQuickActionsMenu] = useState(false);
 
   // Calculate unread count from notifications array
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
   const [showCalorieCounter, setShowCalorieCounter] = useState(false);
-  const [showWaterCounter, setShowWaterCounter] = useState(false);
   const [showLogMealModal, setShowLogMealModal] = useState(false);
+  const [showWaterCounter, setShowWaterCounter] = useState(false);
   const { data: nutritionData, loading } = useNutritionData(user.id);
   const [hoveredNavButton, setHoveredNavButton] = useState(null);
 
@@ -262,36 +276,52 @@ function App() {
   const [isLoadingNutrition, setIsLoadingNutrition] = useState(true);
 
   // Fetch nutrition data from API
-  const fetchNutritionData = async () => {
+  const fetchNutritionData = useCallback(async () => {
     try {
       setIsLoadingNutrition(true);
       const today = new Date();
-      const dateStr = today.toISOString().slice(0,10);
-      const [goals, totals] = await Promise.all([
+      const dateStr = today.toISOString().slice(0, 10);
+      const [goals, totals, waterSummary] = await Promise.all([
         fetchNutritionGoals().catch(() => ({ calories: 2000, proteinTarget: 150, carbsTarget: 250, fatTarget: 67 })),
-        fetchDailySummary(dateStr).catch(() => ({ calories: 0, protein: 0, carbs: 0, fat: 0 }))
+        fetchDailySummary(dateStr).catch(() => ({ calories: 0, protein: 0, carbs: 0, fat: 0 })),
+        fetchWaterSummary(dateStr).catch(() => ({ goal_ml: null, total_intake_ml: 0 }))
       ]);
 
       const percentage = goals.calories > 0 ? Math.min(100, Math.round((totals.calories / goals.calories) * 100)) : 0;
+      const waterGoal = typeof waterSummary.goal_ml === 'number' ? waterSummary.goal_ml : 2000;
+      const waterCurrent = typeof waterSummary.total_intake_ml === 'number' ? waterSummary.total_intake_ml : 0;
+      const waterPercentage = waterGoal > 0 ? Math.min(100, Math.round((waterCurrent / waterGoal) * 100)) : 0;
 
-      setNutritionDataState({
+      const nutritionState = {
         calories: { current: totals.calories, target: goals.calories, percentage },
         protein: { current: totals.protein, target: goals.proteinTarget, unit: 'g' },
         carbs: { current: totals.carbs, target: goals.carbsTarget, unit: 'g' },
         fat: { current: totals.fat, target: goals.fatTarget, unit: 'g' },
-        water: { current: 0, target: 2000, unit: 'ml' }
-      });
+        water: {
+          current: waterCurrent,
+          target: waterGoal,
+          unit: 'ml',
+          percentage: waterPercentage,
+          remaining: waterGoal > 0 ? Math.max(0, waterGoal - waterCurrent) : null,
+        }
+      };
+
+      setNutritionDataState(nutritionState);
+
+      // Note: DataContext automatically updates via fetchData() - no manual update needed
     } catch (error) {
       console.error('Error fetching nutrition data:', error);
     } finally {
       setIsLoadingNutrition(false);
     }
-  };
-
-  // Fetch nutrition data when app mounts for MVP dashboard visibility
-  useEffect(() => {
-    fetchNutritionData().catch(() => {});
   }, []);
+
+  // Hydrate dashboard state when user is authenticated
+  useEffect(() => {
+    if (!authLoading && authUser) {
+      fetchNutritionData();
+    }
+  }, [authLoading, authUser, fetchNutritionData]);
 
   // NutriTest completion handled in dedicated route component
 
@@ -302,7 +332,11 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
   const [isHovered, setIsHovered] = useState(false);
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const offset = circumference - (percentage / 100) * circumference;
+
+  // Cap the visual progress at 100% for the ring, but display actual percentage
+  const displayPercentage = Math.round(percentage);
+  const ringPercentage = Math.min(percentage, 100);
+  const offset = circumference - (ringPercentage / 100) * circumference;
 
   return (
     <motion.button
@@ -404,7 +438,7 @@ const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c5
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text'
         }}>
-          {percentage}%
+          {displayPercentage}%
         </span>
         {isHovered && (
           <span style={{
@@ -507,27 +541,59 @@ const HealthTipOfTheDay = () => {
   );
 };
 
-  const handleActionClick = async (actionKey) => {
-    console.log('Action clicked:', actionKey);
-
-    // Close the menu
-    setShowQuickActionsMenu(false);
-
-    // Handle specific actions
-    if (actionKey === 'calorieCounter') {
-      setShowCalorieCounter(true);
-    }
-    if (actionKey === 'water') {
-      setShowWaterCounter(true);
-    }
-
-    // TODO: Add handlers for other quick actions
-    // Service integration would go here
-  };
 
   const currentNutritionData = nutritionData || nutritionDataState;
 
   // App is only rendered behind a ProtectedRoute; no local login gate needed
+
+  // Loading guard for DataContext - prevents null summary crashes
+  if (isLoading || !summary) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#f9fafb',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            background: '#f0fdf4',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px',
+            animation: 'pulse 2s infinite'
+          }}>
+            <div style={{
+              width: 24,
+              height: 24,
+              background: '#22c55e',
+              borderRadius: '50%'
+            }} />
+          </div>
+          <h3 style={{
+            fontSize: '18px',
+            fontWeight: '600',
+            color: '#1f2937',
+            margin: '0 0 8px 0'
+          }}>
+            Loading Dashboard...
+          </h3>
+          <p style={{
+            fontSize: '14px',
+            color: '#6b7280',
+            margin: 0
+          }}>
+            Fetching your nutrition data
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading && !authLoading) {
     return (
@@ -559,12 +625,12 @@ const HealthTipOfTheDay = () => {
 
   return (
     <div style={{
-      minHeight: '100vh',
-      background: 'var(--color-gray-50)',
-      opacity: isAnimating ? 1 : 0,
-      transform: isAnimating ? 'translateY(0)' : 'translateY(20px)',
-      transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
-    }}>
+        minHeight: '100vh',
+        background: 'var(--color-gray-50)',
+        opacity: isAnimating ? 1 : 0,
+        transform: isAnimating ? 'translateY(0)' : 'translateY(20px)',
+        transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
+      }}>
       {/* Header moved to AppLayout */}
       {/* Main Content */}
       <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '32px 16px' }}>
@@ -585,7 +651,7 @@ const HealthTipOfTheDay = () => {
           {Object.entries(iconConfig.navigation).map(([key, navItem]) => (
             <button
               key={key}
-              onClick={() => { setActiveTab(key); navigate(`/app?tab=${key}`, { replace: true }); }}
+              onClick={() => { setActiveTab(key); navigate(`/?tab=${key}`, { replace: true }); }}
               onMouseEnter={() => setHoveredNavButton(key)}
               onMouseLeave={() => setHoveredNavButton(null)}
               style={{
@@ -616,145 +682,6 @@ const HealthTipOfTheDay = () => {
               <span>{navItem.label}</span>
             </button>
           ))}
-
-          {/* Quick Actions Dropdown Button */}
-          <div style={{ position: 'relative', marginLeft: 'auto' }}>
-            <button
-              onClick={() => setShowQuickActionsMenu(!showQuickActionsMenu)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px 20px',
-                background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '12px',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 4px 6px -1px rgb(34 197 94 / 0.3)',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 10px 15px -3px rgb(34 197 94 / 0.4)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgb(34 197 94 / 0.3)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              <Zap width={16} height={16} color="#ffffff" />
-              <span>Quick Actions</span>
-            </button>
-
-            {/* Dropdown Menu */}
-            {showQuickActionsMenu && (
-              <>
-                {/* Backdrop to close menu when clicking outside */}
-                <div
-                  onClick={() => setShowQuickActionsMenu(false)}
-                  style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    zIndex: 10
-                  }}
-                />
-
-                {/* Dropdown Content */}
-                <div style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 8px)',
-                  right: 0,
-                  minWidth: '320px',
-                  background: 'var(--color-gray-100)',
-                  borderRadius: '16px',
-                  boxShadow: '0 24px 48px -12px rgba(0,0,0,0.6)',
-                  border: '2px solid var(--color-gray-200)',
-                  padding: '8px',
-                  zIndex: 20,
-                  animation: 'slideDown 0.2s ease-out'
-                }}>
-                  <style>
-                    {`
-                      @keyframes slideDown {
-                        from {
-                          opacity: 0;
-                          transform: translateY(-8px);
-                        }
-                        to {
-                          opacity: 1;
-                          transform: translateY(0);
-                        }
-                      }
-                    `}
-                  </style>
-
-                  {Object.entries(iconConfig.quickActions).map(([key, action]) => {
-                    const IconComponent = action.icon;
-                    const colorMap = {
-                      green: { bg: '#f0fdf4', hover: '#dcfce7', text: '#16a34a' },
-                      orange: { bg: '#fff7ed', hover: '#ffedd5', text: '#ea580c' },
-                      yellow: { bg: '#fefce8', hover: '#fef3c7', text: '#d97706' },
-                      cyan: { bg: '#ecfeff', hover: '#cffafe', text: '#0891b2' },
-                      purple: { bg: '#faf5ff', hover: '#f3e8ff', text: '#9333ea' }
-                    };
-                    const colors = colorMap[action.color] || colorMap.green;
-
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => handleActionClick(key)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          width: '100%',
-                          padding: '12px 16px',
-                          background: 'transparent',
-                          border: 'none',
-                          borderRadius: '12px',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                          textAlign: 'left'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'var(--menu-hover-bg)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'transparent';
-                        }}
-                      >
-                        <div style={{
-                          width: '40px',
-                          height: '40px',
-                          background: colors.bg,
-                          borderRadius: '10px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0
-                        }}>
-                          <IconComponent width={20} height={20} color={colors.text} />
-                        </div>
-                        <span style={{
-                          fontSize: '14px',
-                          fontWeight: '700',
-                          color: 'var(--text-primary)'
-                        }}>
-                          {action.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
         </div>
 
         {/* Dashboard Content */}
@@ -786,142 +713,134 @@ const HealthTipOfTheDay = () => {
               gap: '24px'
               }}
             >
-              {/* Calories Card */}
-              <Card>
-                <div style={{ position: 'relative' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              {/* Calories Card Column - Stacked vertically */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {/* Daily Calories Card */}
+                <Card>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                      <div style={{
+                        width: 32,
+                        height: 32,
+                        background: '#f0fdf4',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <Zap width={20} height={20} color="#22c55e" />
+                      </div>
+                      <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#374151', margin: 0 }}>
+                        Daily Calories
+                      </h3>
+                    </div>
+
+                    {/* Progress Ring */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                      <div>
+                        <ProgressRing
+                          percentage={summary.daily_goal > 0 ? (summary.total_consumed / summary.daily_goal) * 100 : 0}
+                          size={120}
+                          strokeWidth={10}
+                          color={summary.total_consumed > summary.daily_goal ? "#ef4444" : "#22c55e"}
+                          onClick={() => setShowCalorieCounter(true)}
+                        />
+                      </div>
+                      <div>
+                        <p style={{ color: '#6b7280', margin: 0 }}>
+                          Goal: {summary.daily_goal} kcal — Consumed: {summary.total_consumed} kcal
+                        </p>
+                        <p style={{
+                          color: summary.remaining < 0 ? '#ef4444' : '#22c55e',
+                          margin: '4px 0 0 0',
+                          fontWeight: '600'
+                        }}>
+                          Remaining: {summary.remaining} kcal
+                        </p>
+                        <div style={{ height: 8 }} />
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setShowLogMealModal(true)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '12px 20px',
+                            background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                            border: 'none',
+                            borderRadius: '12px',
+                            fontSize: '14px',
+                            fontWeight: '700',
+                            color: '#ffffff',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <Plus width={18} height={18} />
+                          <span>Log Meal</span>
+                        </motion.button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Calorie Deficit Card - Coming Soon */}
+                <Card>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                      <div style={{
+                        width: 32,
+                        height: 32,
+                        background: '#fef3c7',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <TrendingUp width={20} height={20} color="#f59e0b" />
+                      </div>
+                      <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#374151', margin: 0 }}>
+                        Calorie Deficit
+                      </h3>
+                    </div>
+
                     <div style={{
-                      width: 32,
-                      height: 32,
-                      background: '#f0fdf4',
-                      borderRadius: '8px',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center'
+                      justifyContent: 'center',
+                      padding: '20px 16px',
+                      background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                      borderRadius: '12px',
+                      border: '2px dashed #f59e0b'
                     }}>
-                      <Zap width={20} height={20} color="#22c55e" />
-                    </div>
-                    <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#374151', margin: 0 }}>
-                      Daily Calories
-                    </h3>
-                  </div>
-
-                  {/* Progress Ring */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-                    <div>
-                      <ProgressRing
-                        percentage={Math.max(0, Math.min(100, currentNutritionData.calories.percentage))}
-                        size={120}
-                        strokeWidth={10}
-                        color="#22c55e"
-                        onClick={() => setShowCalorieCounter(true)}
-                      />
-                    </div>
-                    <div>
-                      <p style={{ color: '#6b7280', margin: 0 }}>
-                        Goal: {currentNutritionData.calories.target} kcal — Consumed: {currentNutritionData.calories.current} kcal
-                      </p>
-                      <div style={{ height: 8 }} />
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setShowLogMealModal(true)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          padding: '12px 20px',
-                          background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                          border: 'none',
-                          borderRadius: '12px',
+                      <div style={{ textAlign: 'center' }}>
+                        <p style={{
                           fontSize: '14px',
-                          fontWeight: '700',
-                          color: '#ffffff',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        <Plus width={18} height={18} />
-                        <span>Log Meal</span>
-                      </motion.button>
+                          fontWeight: '600',
+                          color: '#92400e',
+                          margin: '0 0 4px 0'
+                        }}>
+                          Coming Soon...
+                        </p>
+                        <p style={{
+                          fontSize: '12px',
+                          color: '#a16207',
+                          margin: 0,
+                          opacity: 0.8
+                        }}>
+                          Track your calorie deficit goals
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              </div>
 
               {/* Macronutrients Card */}
-              <Card>
-                <div style={{ position: 'relative' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                    <div style={{
-                      width: 32,
-                      height: 32,
-                      background: '#f0fdf4',
-                      borderRadius: '8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <Target width={20} height={20} color="#22c55e" />
-                    </div>
-                    <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#374151', margin: 0 }}>
-                      Macronutrients
-                    </h3>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Protein</span>
-                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>
-                          {currentNutritionData.protein.current}g / {currentNutritionData.protein.target}g
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '4px', height: '8px' }}>
-                        {Array.from({ length: 10 }).map((_, i) => {
-                          const filled = i < Math.floor((currentNutritionData.protein.current / currentNutritionData.protein.target) * 10);
-                          return (
-                            <div key={i} style={{ flex: 1, background: filled ? '#ef4444' : '#f3f4f6', borderRadius: '4px' }} />
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Carbs</span>
-                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>
-                          {currentNutritionData.carbs.current}g / {currentNutritionData.carbs.target}g
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '4px', height: '8px' }}>
-                        {Array.from({ length: 10 }).map((_, i) => {
-                          const filled = i < Math.floor((currentNutritionData.carbs.current / currentNutritionData.carbs.target) * 10);
-                          return (
-                            <div key={i} style={{ flex: 1, background: filled ? '#fbbf24' : '#f3f4f6', borderRadius: '4px' }} />
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Fat</span>
-                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>
-                          {currentNutritionData.fat.current}g / {currentNutritionData.fat.target}g
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '4px', height: '8px' }}>
-                        {Array.from({ length: 10 }).map((_, i) => {
-                          const filled = i < Math.floor((currentNutritionData.fat.current / currentNutritionData.fat.target) * 10);
-                          return (
-                            <div key={i} style={{ flex: 1, background: filled ? '#8b5cf6' : '#f3f4f6', borderRadius: '4px' }} />
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
+              <MacronutrientsCard
+                macros={summary?.macros}
+                isLoading={isLoading}
+              />
 
               {/* Today's Activity Card */}
               <Card>
@@ -944,15 +863,30 @@ const HealthTipOfTheDay = () => {
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '16px',
-                      background: '#f9fafb',
-                      borderRadius: '12px'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    {/* Meals Logged - Interactive */}
+                    <div
+                      onClick={() => setShowCalorieCounter(true)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '16px',
+                        background: '#f9fafb',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        position: 'relative'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#f3f4f6';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = '#f9fafb';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
                         <div style={{
                           width: 40,
                           height: 40,
@@ -964,27 +898,69 @@ const HealthTipOfTheDay = () => {
                         }}>
                           <Apple width={20} height={20} color="#ea580c" />
                         </div>
-                        <div>
-                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#111827' }}>Meals Logged</div>
-                          <div style={{ fontSize: '12px', color: '#6b7280' }}>3 of 5 meals</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#111827' }}>
+                            Meals Logged
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                            {mealsLoggedCount} of {userMealGoal} meals
+                          </div>
+                          {lastMeal && (
+                            <div style={{
+                              fontSize: '11px',
+                              color: '#9ca3af',
+                              marginTop: '2px',
+                              fontStyle: 'italic'
+                            }}>
+                              {lastMeal.name} • {getTimeAgo(lastMeal.created_at || lastMeal.logged_at)}
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>3</div>
+                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
+                        {mealsLoggedCount}
+                      </div>
+
+                      {/* Hover tooltip indicator */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '8px',
+                        right: '8px',
+                        fontSize: '10px',
+                        color: '#9ca3af',
+                        opacity: 0.6
+                      }}>
+                        Click to log
+                      </div>
                     </div>
 
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '16px',
-                      background: '#f9fafb',
-                      borderRadius: '12px'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div
+                      onClick={() => setShowWaterCounter(true)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '16px',
+                        background: '#ecfeff',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        position: 'relative',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#d9f8ff';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = '#ecfeff';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
                         <div style={{
                           width: 40,
                           height: 40,
-                          background: '#ecfeff',
+                          background: '#ffffff',
                           borderRadius: '10px',
                           display: 'flex',
                           alignItems: 'center',
@@ -993,13 +969,35 @@ const HealthTipOfTheDay = () => {
                           <Droplets width={20} height={20} color="#0891b2" />
                         </div>
                         <div>
-                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#111827' }}>Water Intake</div>
-                          <div style={{ fontSize: '12px', color: '#6b7280' }}>Goal: 2000ml</div>
+                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>Water Intake</div>
+                          <div style={{ fontSize: '12px', color: '#0f172a', opacity: 0.65 }}>
+                            Goal: {currentNutritionData.water.target ?? 2000} ml
+                          </div>
+                          {typeof currentNutritionData.water.remaining === 'number' && (
+                            <div style={{ fontSize: '11px', color: '#0891b2', marginTop: 2 }}>
+                              Remaining: {currentNutritionData.water.remaining} ml
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div style={{ fontSize: '20px', fontWeight: '700', color: '#111827' }}>
-                        {currentNutritionData.water.current}
-                        <span style={{ fontSize: '14px', color: '#6b7280', fontWeight: '500' }}>ml</span>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a' }}>
+                          {currentNutritionData.water.current}
+                          <span style={{ fontSize: '14px', color: '#0f172a', opacity: 0.6, fontWeight: '500' }}> ml</span>
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#0891b2', fontWeight: 600 }}>
+                          {currentNutritionData.water.percentage ?? 0}% of goal
+                        </div>
+                      </div>
+                      <div style={{
+                        position: 'absolute',
+                        top: '8px',
+                        right: '8px',
+                        fontSize: '10px',
+                        color: '#0f172a',
+                        opacity: 0.6
+                      }}>
+                        Click to log
                       </div>
                     </div>
 
@@ -1029,7 +1027,7 @@ const HealthTipOfTheDay = () => {
                         </div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '28px', fontWeight: '700', color: '#111827' }}>7</div>
+                        <div style={{ fontSize: '28px', fontWeight: '700', color: '#111827' }}>{currentStreak}</div>
                         <div style={{ fontSize: '12px', color: '#78716c', fontWeight: '500' }}>days</div>
                       </div>
                     </div>
@@ -1051,11 +1049,7 @@ const HealthTipOfTheDay = () => {
               }}
             >
               <SmartActionStack
-                mealsLoggedToday={{
-                  breakfast: false,
-                  lunch: false,
-                  dinner: false
-                }}
+                mealsLoggedToday={mealsLoggedToday}
                 onAction={(actionId) => {
                   if (actionId === 'breakfast' || actionId === 'lunch' || actionId === 'dinner') {
                     setShowLogMealModal(true);
@@ -1070,6 +1064,17 @@ const HealthTipOfTheDay = () => {
           </motion.div>
         )}
 
+        {activeTab === 'apothecary' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+          >
+            <ApothecaryPage />
+          </motion.div>
+        )}
+
         {activeTab === 'calendar' && (
           <Calendar />
         )}
@@ -1078,11 +1083,11 @@ const HealthTipOfTheDay = () => {
           <MealPlanShowcase />
         )}
 
-        {activeTab === 'apothecary' && (
-          <ApothecaryPage />
+        {activeTab === 'history' && (
+          <MealHistory />
         )}
 
-        {activeTab !== 'dashboard' && activeTab !== 'nutritest' && activeTab !== 'calendar' && activeTab !== 'mealplans' && activeTab !== 'apothecary' && (
+        {activeTab !== 'dashboard' && activeTab !== 'nutritest' && activeTab !== 'calendar' && activeTab !== 'mealplans' && activeTab !== 'history' && (
           <Card>
             <div style={{ textAlign: 'center' }}>
               <div style={{
@@ -1122,24 +1127,21 @@ const HealthTipOfTheDay = () => {
         calorieData={currentNutritionData.calories}
       />
 
-      <CalorieCounter
+      <DailyTrackerModal
         isOpen={showCalorieCounter}
         onClose={() => setShowCalorieCounter(false)}
-        onDataUpdate={fetchNutritionData}
-      />
-      
-      {/* Water Counter Modal */}
-      <WaterCounter
-        isOpen={showWaterCounter}
-        onClose={() => setShowWaterCounter(false)}
-        onDataUpdate={fetchNutritionData}
       />
       <LogMealModal
         isOpen={showLogMealModal}
         onClose={() => setShowLogMealModal(false)}
         onSaved={fetchNutritionData}
       />
-    </div>
+      <WaterCounter
+        isOpen={showWaterCounter}
+        onClose={() => setShowWaterCounter(false)}
+        onDataUpdate={fetchNutritionData}
+      />
+      </div>
   );
 }
 

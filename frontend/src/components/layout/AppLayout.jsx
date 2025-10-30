@@ -1,4 +1,4 @@
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Apple, BookOpen } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import ProfileDropdown from '../profile/ProfileDropdown';
