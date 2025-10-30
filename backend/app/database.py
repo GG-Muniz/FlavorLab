@@ -125,6 +125,63 @@ def ensure_entity_columns() -> None:
         print(f"ensure_entity_columns error: {e}")
 
 
+def ensure_calorie_tracking_schema() -> None:
+    """
+    Lightweight migration helper for SQLite: ensure calorie tracking tables/columns
+    exist when new fields are introduced. Safe to run multiple times.
+    """
+    try:
+        with engine.begin() as conn:
+            # Ensure the daily_calorie_goals table exists (matches latest model)
+            conn.execute(text(
+                """
+                CREATE TABLE IF NOT EXISTS daily_calorie_goals (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL UNIQUE,
+                    goal_calories FLOAT NOT NULL,
+                    goal_protein_g FLOAT,
+                    goal_carbs_g FLOAT,
+                    goal_fat_g FLOAT,
+                    goal_fiber_g FLOAT DEFAULT 25.0,
+                    last_updated DATETIME,
+                    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+                """
+            ))
+
+            result = conn.execute(text("PRAGMA table_info(daily_calorie_goals)"))
+            existing = {row[1] for row in result.fetchall()}
+
+            if "goal_protein_g" not in existing:
+                conn.execute(text("ALTER TABLE daily_calorie_goals ADD COLUMN goal_protein_g FLOAT"))
+            if "goal_carbs_g" not in existing:
+                conn.execute(text("ALTER TABLE daily_calorie_goals ADD COLUMN goal_carbs_g FLOAT"))
+            if "goal_fat_g" not in existing:
+                conn.execute(text("ALTER TABLE daily_calorie_goals ADD COLUMN goal_fat_g FLOAT"))
+            if "goal_fiber_g" not in existing:
+                conn.execute(text("ALTER TABLE daily_calorie_goals ADD COLUMN goal_fiber_g FLOAT DEFAULT 25.0"))
+            if "last_updated" not in existing:
+                conn.execute(text("ALTER TABLE daily_calorie_goals ADD COLUMN last_updated DATETIME"))
+
+            # Ensure supporting intake table exists for new calorie logging features
+            conn.execute(text(
+                """
+                CREATE TABLE IF NOT EXISTS calorie_intake_entries (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    meal_type VARCHAR(50) NOT NULL,
+                    calories_consumed FLOAT NOT NULL,
+                    entry_date DATE NOT NULL DEFAULT (DATE('now')),
+                    created_at DATETIME NOT NULL DEFAULT (DATETIME('now')),
+                    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+                """
+            ))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_calorie_intake_entries_user_id ON calorie_intake_entries(user_id)"))
+    except Exception as e:
+        print(f"ensure_calorie_tracking_schema error: {e}")
+
+
 def drop_tables() -> None:
     """
     Drop all database tables.

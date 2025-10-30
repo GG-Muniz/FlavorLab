@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { X, Search, Plus } from 'lucide-react';
-import { searchIngredients, logMeal } from '../../services/mealsApi';
+import { searchIngredients } from '../../services/mealsApi';
+import { useData } from '../../context/DataContext';
 
 export default function LogMealModal({ isOpen, onClose, onSaved }) {
+  const { refetchAll } = useData();
   const [mealType, setMealType] = useState('Breakfast');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
-  const [selected, setSelected] = useState([]); // [{id, name, grams}]
+  const [selected, setSelected] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -48,15 +50,33 @@ export default function LogMealModal({ isOpen, onClose, onSaved }) {
     setSelected(sel => sel.filter(s => s.id !== id));
   };
 
+  const totalCalories = useMemo(() => selected.reduce((sum, item) => sum + (Number(item.estCalories) || 0), 0), [selected]);
+
   const save = async () => {
     try {
       setLoading(true); setError(null);
-      const today = new Date().toISOString().slice(0,10);
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const entries = selected
-        .map(s => ({ ingredient_id: s.id, quantity_grams: parseFloat(s.grams) }))
+        .map(s => ({ ingredient_id: s.id, quantity_grams: Math.round(parseFloat(s.grams)) }))
         .filter(e => !Number.isNaN(e.quantity_grams) && e.quantity_grams > 0);
       if (entries.length === 0) { setError('Add at least one ingredient with grams'); setLoading(false); return; }
-      await logMeal({ log_date: today, meal_type: mealType, entries });
+
+      const response = await fetch('/api/v1/meals/log', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ log_date: today, meal_type: mealType, entries })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData?.detail || 'Failed to log meal');
+      }
+
+      await refetchAll();
       if (onSaved) onSaved();
       onClose();
     } catch (e) {
@@ -109,7 +129,8 @@ export default function LogMealModal({ isOpen, onClose, onSaved }) {
             ))}
           </div>
 
-          <div style={{ display:'flex', justifyContent:'flex-end' }}>
+          <div style={{ display:'flex', justifyContent:'flex-end', alignItems:'center', gap:12 }}>
+            <div style={{ fontSize:13, color:'#6b7280' }}>Approx. {Math.round(totalCalories)} kcal</div>
             <button disabled={loading} onClick={save} style={{ padding:'10px 16px', border:'none', borderRadius:10, background:'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', color:'#fff', fontWeight:700, cursor:'pointer' }}>
               <Plus width={16} height={16} />
               <span style={{ marginLeft:8 }}>{loading ? 'Saving...' : 'Save Meal'}</span>

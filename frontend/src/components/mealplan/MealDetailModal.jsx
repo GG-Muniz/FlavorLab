@@ -22,66 +22,50 @@
  * />
  */
 
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Clock, Users, Flame, ChefHat } from 'lucide-react';
+import { X, Clock, Users, Flame, ChefHat, Calendar } from 'lucide-react';
 import PropTypes from 'prop-types';
 import './MealDetailModal.css';
+import { getCalendarLinks } from '../../services/mealsApi';
 
 const MealDetailModal = ({ meal, isOpen, onClose }) => {
-  // Don't render anything if modal is closed or no meal selected
+  const [calendarLinks, setCalendarLinks] = useState(null);
+  const [loadingLinks, setLoadingLinks] = useState(false);
+
   if (!isOpen || !meal) return null;
 
-  /**
-   * Get color scheme based on meal type
-   * Matches MealCard color system for visual consistency
-   */
   const getMealTypeColor = (type) => {
     const colorMap = {
-      breakfast: {
-        bg: '#fef3c7',
-        text: '#d97706',
-        border: '#fde68a'
-      },
-      morning_snack: {
-        bg: '#fce7f3',
-        text: '#db2777',
-        border: '#fbcfe8'
-      },
-      lunch: {
-        bg: '#dbeafe',
-        text: '#0284c7',
-        border: '#bfdbfe'
-      },
-      afternoon_snack: {
-        bg: '#e0e7ff',
-        text: '#6366f1',
-        border: '#c7d2fe'
-      },
-      dinner: {
-        bg: '#f3e8ff',
-        text: '#9333ea',
-        border: '#e9d5ff'
-      },
-      snack: {
-        bg: '#fce7f3',
-        text: '#db2777',
-        border: '#fbcfe8'
-      }
+      breakfast: { bg: '#fef3c7', text: '#d97706', border: '#fde68a' },
+      morning_snack: { bg: '#fce7f3', text: '#db2777', border: '#fbcfe8' },
+      lunch: { bg: '#dbeafe', text: '#0284c7', border: '#bfdbfe' },
+      afternoon_snack: { bg: '#e0e7ff', text: '#6366f1', border: '#c7d2fe' },
+      dinner: { bg: '#f3e8ff', text: '#9333ea', border: '#e9d5ff' },
+      snack: { bg: '#fce7f3', text: '#db2777', border: '#fbcfe8' }
     };
-
     return colorMap[type] || colorMap.breakfast;
   };
 
-  /**
-   * Format meal type for display
-   * Converts snake_case to Title Case
-   */
-  const formatMealType = (type) => {
-    return type
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  };
+  const formatMealType = (type) => (
+    type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+  );
+
+  useEffect(() => {
+    const fetchCalendarLinks = async () => {
+      if (!meal?.id) return;
+      setLoadingLinks(true);
+      try {
+        const links = await getCalendarLinks(meal.id);
+        setCalendarLinks(links);
+      } catch (error) {
+        console.error('Failed to fetch calendar links:', error);
+      } finally {
+        setLoadingLinks(false);
+      }
+    };
+    fetchCalendarLinks();
+  }, [meal?.id]);
 
   const colors = getMealTypeColor(meal.type);
 
@@ -89,7 +73,6 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Overlay Background */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -112,12 +95,11 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
               overflowY: 'auto'
             }}
           >
-            {/* Modal Content */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
+              onClick={(e) => e.stopPropagation()}
               style={{
                 background: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(20px)',
@@ -132,7 +114,6 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                 position: 'relative'
               }}
             >
-              {/* Close Button */}
               <button
                 onClick={onClose}
                 style={{
@@ -163,12 +144,7 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                 <X width={20} height={20} color="#374151" />
               </button>
 
-              {/* Modal Header */}
-              <div style={{
-                padding: '32px 32px 24px',
-                borderBottom: '2px solid #f3f4f6'
-              }}>
-                {/* Meal Type Badge */}
+              <div style={{ padding: '32px 32px 24px', borderBottom: '2px solid #f3f4f6' }}>
                 <div
                   style={{
                     display: 'inline-block',
@@ -189,8 +165,6 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                     {formatMealType(meal.type)}
                   </span>
                 </div>
-
-                {/* Meal Name */}
                 <h2 style={{
                   fontSize: '28px',
                   fontWeight: '700',
@@ -200,8 +174,6 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                 }}>
                   {meal.name}
                 </h2>
-
-                {/* Meal Description */}
                 <p style={{
                   fontSize: '16px',
                   color: '#6b7280',
@@ -210,14 +182,11 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                 }}>
                   {meal.description}
                 </p>
-
-                {/* Meta Information Row */}
                 <div style={{
                   display: 'flex',
                   gap: '16px',
                   flexWrap: 'wrap'
                 }}>
-                  {/* Calories */}
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -228,16 +197,10 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                     border: '1px solid #fde68a'
                   }}>
                     <Flame width={18} height={18} color="#d97706" />
-                    <span style={{
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: '#d97706'
-                    }}>
+                    <span style={{ fontSize: '14px', fontWeight: '600', color: '#d97706' }}>
                       {meal.calories} kcal
                     </span>
                   </div>
-
-                  {/* Servings */}
                   {meal.servings && (
                     <div style={{
                       display: 'flex',
@@ -249,17 +212,11 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                       border: '1px solid #bfdbfe'
                     }}>
                       <Users width={18} height={18} color="#0284c7" />
-                      <span style={{
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#0284c7'
-                      }}>
+                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#0284c7' }}>
                         {meal.servings} servings
                       </span>
                     </div>
                   )}
-
-                  {/* Prep + Cook Time */}
                   {meal.prep_time_minutes && (
                     <div style={{
                       display: 'flex',
@@ -271,21 +228,95 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                       border: '1px solid #e9d5ff'
                     }}>
                       <Clock width={18} height={18} color="#9333ea" />
-                      <span style={{
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#9333ea'
-                      }}>
+                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#9333ea' }}>
                         {meal.prep_time_minutes + (meal.cook_time_minutes || 0)} min
                       </span>
                     </div>
                   )}
                 </div>
+
+                <div style={{ marginTop: '24px' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '12px'
+                  }}>
+                    <Calendar size={16} color="#6b7280" />
+                    <span style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>
+                      Add to Calendar
+                    </span>
+                  </div>
+                  {loadingLinks ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#9ca3af', fontSize: '14px' }}>
+                      <span>Loading calendar links...</span>
+                    </div>
+                  ) : calendarLinks ? (
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <a
+                        href={calendarLinks.google}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '8px 14px',
+                          background: '#ffffff',
+                          color: '#4285F4',
+                          border: '2px solid #4285F4',
+                          borderRadius: '6px',
+                          textDecoration: 'none',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#4285F4';
+                          e.currentTarget.style.color = '#ffffff';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#ffffff';
+                          e.currentTarget.style.color = '#4285F4';
+                        }}
+                      >
+                        Google Calendar
+                      </a>
+                      <a
+                        href={calendarLinks.outlook}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '8px 14px',
+                          background: '#ffffff',
+                          color: '#0078D4',
+                          border: '2px solid #0078D4',
+                          borderRadius: '6px',
+                          textDecoration: 'none',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#0078D4';
+                          e.currentTarget.style.color = '#ffffff';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#ffffff';
+                          e.currentTarget.style.color = '#0078D4';
+                        }}
+                      >
+                        Outlook Calendar
+                      </a>
+                    </div>
+                  ) : null}
+                </div>
               </div>
 
-              {/* Modal Body */}
               <div style={{ padding: '32px' }}>
-                {/* Ingredients Section */}
                 {meal.ingredients && meal.ingredients.length > 0 && (
                   <div style={{ marginBottom: '32px' }}>
                     <div style={{
@@ -305,12 +336,7 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                       }}>
                         <ChefHat width={18} height={18} color="#16a34a" />
                       </div>
-                      <h3 style={{
-                        fontSize: '20px',
-                        fontWeight: '600',
-                        color: '#111827',
-                        margin: 0
-                      }}>
+                      <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#111827', margin: 0 }}>
                         Ingredients
                       </h3>
                     </div>
@@ -347,7 +373,6 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                   </div>
                 )}
 
-                {/* Instructions Section */}
                 {meal.instructions && meal.instructions.length > 0 && (
                   <div style={{ marginBottom: '32px' }}>
                     <h3 style={{
@@ -415,7 +440,6 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                   </div>
                 )}
 
-                {/* Nutrition Section */}
                 {meal.nutrition && (
                   <div>
                     <h3 style={{
@@ -474,7 +498,6 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                   </div>
                 )}
 
-                {/* No Details Available Message */}
                 {!meal.ingredients && !meal.instructions && !meal.nutrition && (
                   <div style={{
                     padding: '32px',
@@ -493,15 +516,9 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
   );
 };
 
-// ============================================================================
-// PropTypes Definition
-// ============================================================================
-
 MealDetailModal.propTypes = {
-  /**
-   * Meal data object with full recipe details
-   */
   meal: PropTypes.shape({
+    id: PropTypes.number.isRequired,
     type: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     calories: PropTypes.number.isRequired,
@@ -513,15 +530,7 @@ MealDetailModal.propTypes = {
     instructions: PropTypes.arrayOf(PropTypes.string),
     nutrition: PropTypes.object
   }),
-
-  /**
-   * Whether the modal is currently open
-   */
   isOpen: PropTypes.bool.isRequired,
-
-  /**
-   * Callback function to close the modal
-   */
   onClose: PropTypes.func.isRequired
 };
 

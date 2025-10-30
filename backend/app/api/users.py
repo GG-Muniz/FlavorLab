@@ -6,7 +6,7 @@ registration, authentication, and profile management.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status, Body, Request
-import datetime
+from datetime import datetime, UTC
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import UploadFile, File
 import os
@@ -36,6 +36,10 @@ from ..schemas.user import (
     PasswordReset,
     PasswordResetConfirm,
 )
+from ..schemas.meals import (
+    DailyCaloriesSummaryResponse,
+    SetCalorieGoalRequest,
+)
 from ..schemas.meal_plan import (
     MealPlanResponse,
     MealPlanRequest,
@@ -43,6 +47,7 @@ from ..schemas.meal_plan import (
     DailyMealPlan,
     LLMMealPlanResponse,
 )
+from ..services import llm_service
 from ..services.auth import AuthService, get_current_active_user, get_current_verified_user
 from ..database import get_db
 from ..config import get_settings
@@ -59,14 +64,14 @@ async def register_user(
 ) -> UserResponse:
     """
     Register a new user.
-    
+
     Args:
         user_data: User registration data
         db: Database session
-        
+
     Returns:
         UserResponse: Created user information
-        
+
     Raises:
         HTTPException: If registration fails
     """
@@ -107,7 +112,7 @@ async def register_user(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Email already registered"
                 )
-        
+
         # Check if username is taken (if provided)
         if user_data.username:
             existing_username = db.query(models.User).filter(models.User.username == user_data.username).first()
@@ -116,7 +121,7 @@ async def register_user(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Username already taken"
                 )
-        
+
         # Create user
         user = AuthService.create_user(
             db=db,
@@ -127,9 +132,9 @@ async def register_user(
             last_name=user_data.last_name,
             is_active=user_data.is_active
         )
-        
+
         return UserResponse.model_validate(user)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -176,16 +181,16 @@ async def get_current_user_profile(
 ):
     """
     Get current user's profile information.
-    
+
     Args:
         current_user: Current authenticated user
-        
+
     Returns:
         UserProfileResponse: User profile information
     """
     try:
         return UserProfileResponse.model_validate(current_user)
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -201,12 +206,12 @@ async def update_current_user_profile(
 ):
     """
     Update current user's profile information.
-    
+
     Args:
         user_data: User update data
         db: Database session
         current_user: Current authenticated user
-        
+
     Returns:
         UserResponse: Updated user information
     """
@@ -219,7 +224,7 @@ async def update_current_user_profile(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Username already taken"
                 )
-        
+
         # Update fields
         if user_data.username is not None:
             current_user.username = user_data.username
@@ -253,12 +258,12 @@ async def update_current_user_profile(
         # Update preferences when explicitly provided (including None to clear)
         if 'preferences' in user_data.model_fields_set:
             current_user.preferences = user_data.preferences
-        
+
         db.commit()
         db.refresh(current_user)
-        
+
         return UserProfileResponse.model_validate(current_user)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -407,7 +412,12 @@ async def submit_user_survey(
             pillar_ids.append(pillar_id)
 
         # Get current preferences or initialize empty dict
-        preferences = current_user.preferences or {}
+        # Parse JSON string if needed
+        if isinstance(current_user.preferences, str):
+            import json
+            preferences = json.loads(current_user.preferences) if current_user.preferences else {}
+        else:
+            preferences = current_user.preferences or {}
 
         # Store translated pillar IDs for backward compatibility
         preferences["health_goals"] = pillar_ids
@@ -415,8 +425,9 @@ async def submit_user_survey(
         # Store complete survey data for LLM meal plan generation
         preferences["survey_data"] = survey_data.model_dump()
 
-        # Save updated preferences (create new dict to trigger SQLAlchemy update detection)
-        current_user.preferences = dict(preferences)
+        # Save updated preferences as JSON string
+        import json
+        current_user.preferences = json.dumps(preferences)
 
         # Mark the field as modified to ensure SQLAlchemy detects the change
         from sqlalchemy.orm.attributes import flag_modified
@@ -463,8 +474,18 @@ async def generate_llm_meal_plan_endpoint(
         HTTPException 400: If user has no survey data
     """
     try:
-        # Import the LLM service
-        from ..services import llm_service
+        # Early check: Verify user has survey data before attempting generation
+        import json
+        if isinstance(current_user.preferences, str):
+            preferences = json.loads(current_user.preferences) if current_user.preferences else {}
+        else:
+            preferences = current_user.preferences or {}
+
+        if not preferences or "survey_data" not in preferences:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Please complete the NutriTest survey before generating a meal plan."
+            )
 
         # Generate meal plan using LLM (1 day)
         daily_plans = await llm_service.generate_llm_meal_plan(
@@ -474,10 +495,50 @@ async def generate_llm_meal_plan_endpoint(
             db=db
         )
 
+        # Save generated meals to database as templates
+        from ..models.meal import Meal, MealSource
+        saved_meal_ids = []
+
+        for daily_plan in daily_plans:
+            for meal_data in daily_plan.meals:
+                # Create Meal record
+                new_meal = Meal(
+                    user_id=current_user.id,
+                    name=meal_data.name,
+                    meal_type=meal_data.type,
+                    source=MealSource.GENERATED,
+                    calories=meal_data.calories,
+                    protein_g=meal_data.nutrition.get('protein_g') if hasattr(meal_data, 'nutrition') and meal_data.nutrition else None,
+                    carbs_g=meal_data.nutrition.get('carbs_g') if hasattr(meal_data, 'nutrition') and meal_data.nutrition else None,
+                    fat_g=meal_data.nutrition.get('fat_g') if hasattr(meal_data, 'nutrition') and meal_data.nutrition else None,
+                    fiber_g=meal_data.nutrition.get('fiber_g') if hasattr(meal_data, 'nutrition') and meal_data.nutrition else None,
+                    description=meal_data.description,
+                    servings=meal_data.servings if hasattr(meal_data, 'servings') else None,
+                    prep_time_minutes=meal_data.prep_time_minutes if hasattr(meal_data, 'prep_time_minutes') else None,
+                    cook_time_minutes=meal_data.cook_time_minutes if hasattr(meal_data, 'cook_time_minutes') else None,
+                    ingredients=meal_data.ingredients if hasattr(meal_data, 'ingredients') else None,
+                    instructions=meal_data.instructions if hasattr(meal_data, 'instructions') else None,
+                    nutrition_info=meal_data.nutrition if hasattr(meal_data, 'nutrition') else None,
+                    date_logged=None  # Not logged yet, just a template
+                )
+                db.add(new_meal)
+                db.flush()  # Get the ID
+                saved_meal_ids.append(new_meal.id)
+
+        db.commit()
+        logger.info(f"Saved {len(saved_meal_ids)} generated meals to database for user {current_user.id}")
+
         # Construct health goal summary
         health_goal_summary = None
-        if current_user.preferences and "health_goals" in current_user.preferences:
-            health_goal_ids = current_user.preferences["health_goals"]
+        # Parse preferences JSON string if needed
+        import json
+        if isinstance(current_user.preferences, str):
+            preferences = json.loads(current_user.preferences) if current_user.preferences else {}
+        else:
+            preferences = current_user.preferences or {}
+
+        if preferences and "health_goals" in preferences:
+            health_goal_ids = preferences["health_goals"]
             health_goal_names = [
                 get_pillar_name(goal_id) for goal_id in health_goal_ids
             ]
@@ -502,22 +563,26 @@ async def generate_llm_meal_plan_endpoint(
         logger.error(f"User survey data missing: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Please complete the user survey before generating a meal plan."
+            detail="Please complete the NutriTest survey before generating a meal plan."
         )
     except Exception as e:
-        logger.error(f"Unexpected error generating LLM meal plan: {e}")
+        import traceback
+        logger.error(f"Unexpected error generating LLM meal plan: {type(e).__name__}: {e}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Could not generate meal plan at this time."
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Could not generate meal plan: {str(e)}"
         )
 
 
 @router.post("/me/meal-plan", response_model=MealPlanResponse)
 async def generate_meal_plan(
+
     request: Optional[MealPlanRequest] = None,
     current_user: models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
+    print("--- CTI TEST: GENERATE_MEAL_PLAN ENDPOINT WAS HIT ---")
     """
     Generate a personalized meal plan for the current user.
 
@@ -677,21 +742,21 @@ async def deactivate_account(
 ):
     """
     Deactivate current user's account.
-    
+
     Args:
         db: Database session
         current_user: Current authenticated user
-        
+
     Returns:
         Dict with success message
     """
     try:
         AuthService.deactivate_user(db, current_user)
-        
+
         return {
             "message": "Account deactivated successfully"
         }
-        
+
     except Exception as e:
         db.rollback()
         raise HTTPException(
@@ -819,36 +884,36 @@ async def get_user_statistics(
 ):
     """
     Get user statistics (requires verified user).
-    
+
     Args:
         db: Database session
         current_user: Current verified user
-        
+
     Returns:
         UserStatsResponse: User statistics
     """
     try:
         from sqlalchemy import func
         from datetime import timedelta
-        
+
         # Total users
         total_users = db.query(models.User).count()
-        
+
         # Active users
         active_users = db.query(models.User).filter(models.User.is_active == True).count()
-        
+
         # Verified users
         verified_users = db.query(models.User).filter(models.User.is_verified == True).count()
-        
+
         # Recent registrations (last 30 days)
         thirty_days_ago = datetime.datetime.now(datetime.UTC) - timedelta(days=30)
         recent_registrations = db.query(models.User).filter(
             models.User.created_at >= thirty_days_ago
         ).count()
-        
+
         # Last updated
         last_updated = db.query(func.max(models.User.updated_at)).scalar()
-        
+
         return UserStatsResponse(
             total_users=total_users,
             active_users=active_users,
@@ -856,7 +921,7 @@ async def get_user_statistics(
             recent_registrations=recent_registrations,
             last_updated=last_updated
         )
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -873,26 +938,26 @@ async def get_user_by_id(
 ):
     """
     Get user by ID (requires verified user).
-    
+
     Args:
         user_id: User ID
         db: Database session
         current_user: Current verified user
-        
+
     Returns:
         UserResponse: User information
     """
     try:
         user = AuthService.get_user_by_id(db, user_id)
-        
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User with ID '{user_id}' not found"
             )
-        
+
         return UserResponse.model_validate(user)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -910,30 +975,30 @@ async def activate_user_account(
 ):
     """
     Activate a user account (requires verified user).
-    
+
     Args:
         user_id: User ID
         db: Database session
         current_user: Current verified user
-        
+
     Returns:
         Dict with success message
     """
     try:
         user = AuthService.get_user_by_id(db, user_id)
-        
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User with ID '{user_id}' not found"
             )
-        
+
         AuthService.activate_user(db, user)
-        
+
         return {
             "message": f"User account '{user_id}' activated successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -952,31 +1017,31 @@ async def verify_user_account(
 ):
     """
     Verify a user account (requires verified user).
-    
+
     Args:
         user_id: User ID
         db: Database session
         current_user: Current verified user
-        
+
     Returns:
         Dict with success message
     """
     try:
         user = AuthService.get_user_by_id(db, user_id)
-        
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User with ID '{user_id}' not found"
             )
-        
+
         user.is_verified = True
         db.commit()
-        
+
         return {
             "message": f"User account '{user_id}' verified successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -985,4 +1050,154 @@ async def verify_user_account(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error verifying user account: {str(e)}"
         )
+
+
+@router.put("/me/nutrition-goal", response_model=DailyCaloriesSummaryResponse)
+async def set_nutrition_goal(
+    request: SetCalorieGoalRequest,
+    db: Session = Depends(get_db),
+    # TEMPORARY: Auth disabled for development - Remove this comment when auth is ready
+    # current_user: models.User = Depends(get_current_active_user),
+) -> DailyCaloriesSummaryResponse:
+    """
+    Set or update the user's daily calorie goal and return updated dashboard summary.
+
+    This endpoint:
+    1. Creates or updates the user's daily calorie goal
+    2. Calculates total calories consumed today
+    3. Returns complete dashboard summary
+    """
+    from ..models.calorie_tracking import DailyCalorieGoal
+    from ..models.meal import Meal
+    from datetime import date
+
+    # Get today's date
+    today = date.today()
+
+    # TEMPORARY: Hardcoded user_id for development
+    user_id = 1
+
+    # Find or create calorie goal
+    calorie_goal = db.query(DailyCalorieGoal).filter(
+        DailyCalorieGoal.user_id == user_id
+    ).first()
+
+    # Calculate macro goals based on calorie goal
+    # Using the ratios from the mission brief:
+    # Protein: 30% of calories (grams = calories * 0.30 / 4)
+    # Carbs: 40% of calories (grams = calories * 0.40 / 4)
+    # Fat: 30% of calories (grams = calories * 0.30 / 9)
+    # Fiber: Fixed 25g
+    # CRITICAL FIX: Round all values to prevent database precision issues
+    protein_goal = round((request.goal_calories * 0.30) / 4, 1)
+    carbs_goal = round((request.goal_calories * 0.40) / 4, 1)
+    fat_goal = round((request.goal_calories * 0.30) / 9, 1)
+    fiber_goal = 25.0  # Fixed goal
+
+    if calorie_goal:
+        # Update existing goal
+        calorie_goal.goal_calories = request.goal_calories
+        calorie_goal.goal_protein_g = protein_goal
+        calorie_goal.goal_carbs_g = carbs_goal
+        calorie_goal.goal_fat_g = fat_goal
+        calorie_goal.goal_fiber_g = fiber_goal
+    else:
+        # Create new goal
+        calorie_goal = DailyCalorieGoal(
+            user_id=user_id,
+            goal_calories=request.goal_calories,
+            goal_protein_g=protein_goal,
+            goal_carbs_g=carbs_goal,
+            goal_fat_g=fat_goal,
+            goal_fiber_g=fiber_goal
+        )
+        db.add(calorie_goal)
+
+    db.commit()
+    db.refresh(calorie_goal)
+
+    # Calculate total consumed today from logged meals
+    todays_meals = db.query(Meal).filter(
+        Meal.user_id == user_id,
+        Meal.date_logged == today
+    ).all()
+
+    total_consumed = sum(m.calories or 0 for m in todays_meals)
+    remaining = request.goal_calories - total_consumed
+
+    # Build logged meals summary
+    from ..schemas.meals import LoggedMealSummary
+    from datetime import datetime
+
+    logged_meals = [
+        LoggedMealSummary(
+            log_id=m.id,
+            name=m.name,
+            calories=float(m.calories or 0),
+            meal_type=m.meal_type or "Unknown",
+            logged_at=m.updated_at.isoformat() if m.updated_at else datetime.now(UTC).isoformat()
+        )
+        for m in todays_meals
+    ]
+
+    # Calculate macro totals from logged meals
+    total_protein = sum(m.protein_g or 0 for m in todays_meals)
+    total_carbs = sum(m.carbs_g or 0 for m in todays_meals)
+    total_fat = sum(m.fat_g or 0 for m in todays_meals)
+    total_fiber = sum(m.fiber_g or 0 for m in todays_meals)
+
+    return DailyCaloriesSummaryResponse(
+        daily_goal=request.goal_calories,
+        total_consumed=int(total_consumed),
+        remaining=remaining,
+        logged_meals_today=logged_meals,
+        macros={
+            "protein": {
+                "consumed": round(total_protein, 1),
+                "goal": round(protein_goal, 1)
+            },
+            "carbs": {
+                "consumed": round(total_carbs, 1),
+                "goal": round(carbs_goal, 1)
+            },
+            "fat": {
+                "consumed": round(total_fat, 1),
+                "goal": round(fat_goal, 1)
+            },
+            "fiber": {
+                "consumed": round(total_fiber, 1),
+                "goal": round(fiber_goal, 1)
+            }
+        }
+    )
+
+
+@router.get("/me/daily-summary", response_model=DailyCaloriesSummaryResponse)
+async def get_daily_summary(
+    db: Session = Depends(get_db),
+    # TEMPORARY: Auth disabled for development - Remove this comment when auth is ready
+    # current_user: models.User = Depends(get_current_active_user),
+) -> DailyCaloriesSummaryResponse:
+    """
+    Get the current day's nutrition summary for dashboard hydration.
+
+    Returns:
+        Complete dashboard state with daily_goal, total_consumed,
+        remaining, logged_meals_today, and current_streak
+    """
+    from ..services.daily_summary_service import create_daily_summary
+    from ..services.streak_service import calculate_current_streak
+
+    # TEMPORARY: Hardcoded user_id for development
+    # TODO: Replace with current_user.id when auth is enabled
+    user_id = 1
+
+    # Get authoritative dashboard state
+    summary = create_daily_summary(user_id, db)
+
+    # Add streak calculation
+    current_streak = calculate_current_streak(db, user_id)
+    summary["current_streak"] = current_streak
+
+    return DailyCaloriesSummaryResponse(**summary)
 

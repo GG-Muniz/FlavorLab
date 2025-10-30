@@ -14,7 +14,7 @@ function useDebouncedValue(value, delay = 400) {
 }
 
 const DEFAULT_CATEGORY_SLUGS = [
-  'fruits','berries','vegetables','legumes','meats','seafood','nuts','seeds','grains'
+  'fruits', 'berries', 'vegetables', 'legumes', 'meats', 'seafood', 'nuts', 'seeds', 'grains'
 ];
 
 export default function IngredientBrowserPage() {
@@ -36,24 +36,25 @@ export default function IngredientBrowserPage() {
   const debouncedQuery = useDebouncedValue(searchQuery, 400);
   const initialized = useRef(false);
 
-  // Initialize state from URL once
   useEffect(() => {
     if (initialized.current) return;
-    const params = new URLSearchParams(location.search || '');
-    const q = params.get('search') || '';
-    const cats = (params.get('categories') || '').split(',').filter(Boolean);
-    const p = parseInt(params.get('page') || '1', 10);
-    const minCal = params.get('min_calories') || '';
-    const maxCal = params.get('max_calories') || '';
-    const minP = params.get('min_protein_g') || '';
-    const maxP = params.get('max_protein_g') || '';
-    if (q) setSearchQuery(q);
-    if (cats.length) setSelectedCategories(cats.slice(0, 3));
-    if (!Number.isNaN(p) && p > 0) setPage(p);
-    if (minCal !== '') setMinCalories(minCal);
-    if (maxCal !== '') setMaxCalories(maxCal);
-    if (minP !== '') setMinProtein(minP);
-    if (maxP !== '') setMaxProtein(maxP);
+    const params = new URLSearchParams(location.search);
+    const search = params.get('search');
+    const categories = params.get('categories');
+    const minCal = params.get('min_calories');
+    const maxCal = params.get('max_calories');
+    const minProt = params.get('min_protein_g');
+    const maxProt = params.get('max_protein_g');
+    const pageParam = params.get('page');
+
+    if (search) setSearchQuery(search);
+    if (categories) setSelectedCategories(categories.split(',').filter(Boolean));
+    if (minCal !== null) setMinCalories(minCal);
+    if (maxCal !== null) setMaxCalories(maxCal);
+    if (minProt !== null) setMinProtein(minProt);
+    if (maxProt !== null) setMaxProtein(maxProt);
+    if (pageParam) setPage(Number(pageParam));
+
     initialized.current = true;
   }, [location.search]);
 
@@ -61,7 +62,9 @@ export default function IngredientBrowserPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({ page: String(p), size: String(size), sort: 'name_asc' });
+      const params = new URLSearchParams();
+      params.set('page', String(p));
+      params.set('size', String(size));
       if (debouncedQuery && debouncedQuery.trim()) params.set('search', debouncedQuery.trim());
       if (selectedCategories.length) params.set('categories', selectedCategories.join(','));
       if (minCalories !== '') params.set('min_calories', String(minCalories));
@@ -69,12 +72,13 @@ export default function IngredientBrowserPage() {
       if (minProtein !== '') params.set('min_protein_g', String(minProtein));
       if (maxProtein !== '') params.set('max_protein_g', String(maxProtein));
 
-      const resp = await fetch(`${API_BASE_URL}/entities/ingredients?${params.toString()}`);
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data?.detail || 'Failed to load ingredients');
-      setIngredients(Array.isArray(data) ? data : (data?.entities || []));
-    } catch (e) {
-      setError(e?.message || 'Failed to load ingredients');
+      const response = await fetch(`${API_BASE_URL}/entities/ingredients?${params.toString()}`);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.detail || 'Failed to fetch ingredients');
+      setIngredients(Array.isArray(data?.entities) ? data.entities : data);
+    } catch (err) {
+      console.error('Ingredient fetch failed:', err);
+      setError(err?.message || 'Failed to load ingredients');
     } finally {
       setIsLoading(false);
     }
@@ -84,7 +88,6 @@ export default function IngredientBrowserPage() {
     fetchIngredients(page).catch(() => {});
   }, [page, debouncedQuery, selectedCategories.join(','), minCalories, maxCalories, minProtein, maxProtein]);
 
-  // Persist state to URL
   useEffect(() => {
     const params = new URLSearchParams();
     if (debouncedQuery && debouncedQuery.trim()) params.set('search', debouncedQuery.trim());
@@ -94,6 +97,7 @@ export default function IngredientBrowserPage() {
     if (minProtein !== '') params.set('min_protein_g', String(minProtein));
     if (maxProtein !== '') params.set('max_protein_g', String(maxProtein));
     if (page > 1) params.set('page', String(page));
+
     navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
   }, [page, debouncedQuery, selectedCategories.join(','), minCalories, maxCalories, minProtein, maxProtein]);
 
@@ -101,89 +105,135 @@ export default function IngredientBrowserPage() {
   const onNext = () => setPage(p => p + 1);
 
   const toggleCategory = (slug) => {
+    setSelectedCategories(prev => prev.includes(slug) ? prev.filter(s => s !== slug) : [...prev, slug]);
     setPage(1);
-    setSelectedCategories((prev) => {
-      const exists = prev.includes(slug);
-      if (exists) return prev.filter(s => s !== slug);
-      // cap at 3 chips
-      if (prev.length >= 3) return [...prev.slice(1), slug];
-      return [...prev, slug];
-    });
   };
 
   const clearFilters = () => {
     setSelectedCategories([]);
-    setMinCalories(''); setMaxCalories(''); setMinProtein(''); setMaxProtein('');
+    setMinCalories('');
+    setMaxCalories('');
+    setMinProtein('');
+    setMaxProtein('');
     setPage(1);
   };
 
+  const filteredIngredients = useMemo(() => ingredients, [ingredients]);
+
   return (
     <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '24px 16px 16px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 0 }}>
-        <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: 'var(--color-gray-900)' }}>Ingredient Library</h2>
-        <div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           <input
             value={searchQuery}
-            onChange={e => { setSearchQuery(e.target.value); setPage(1); }}
+            onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
             placeholder="Search ingredients..."
-            style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid var(--color-gray-300)', minWidth: 280 }}
+            style={{ flex: '1 1 260px', padding: '12px 14px', borderRadius: 12, border: '2px solid #e5e7eb' }}
           />
+          <button
+            onClick={clearFilters}
+            style={{ padding: '12px 16px', borderRadius: 12, border: '1px solid #e5e7eb', background: '#fff' }}
+          >
+            Clear
+          </button>
         </div>
-      </div>
-      <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 0, marginBottom: 12 }}>Note: Card calories are per 100g. Nutrition data sourced from USDA FoodData Central (fdc.nal.usda.gov).</div>
 
-      {/* Filters */}
-      <div style={{ display: 'grid', gap: 12, marginBottom: 16 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {DEFAULT_CATEGORY_SLUGS.map(slug => {
-            const active = selectedCategories.includes(slug);
-            const label = slug.charAt(0).toUpperCase() + slug.slice(1);
-            return (
-              <button
-                key={slug}
-                onClick={() => toggleCategory(slug)}
-                style={{
-                  padding: '6px 10px', borderRadius: 9999, border: '1px solid var(--color-gray-300)',
-                  background: active ? '#22c55e' : 'white', color: active ? '#fff' : 'var(--text-primary)', cursor: 'pointer'
-                }}
-              >{label}</button>
-            );
-          })}
-          <button onClick={clearFilters} style={{ padding: '6px 10px', borderRadius: 9999, border: '1px solid var(--color-gray-300)', background: 'white', cursor: 'pointer' }}>Clear</button>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+          {DEFAULT_CATEGORY_SLUGS.map(slug => (
+            <button
+              key={slug}
+              onClick={() => toggleCategory(slug)}
+              style={{
+                padding: '10px 14px',
+                borderRadius: 12,
+                border: selectedCategories.includes(slug) ? '2px solid #22c55e' : '2px solid #e5e7eb',
+                background: selectedCategories.includes(slug) ? '#f0fdf4' : '#ffffff',
+                color: selectedCategories.includes(slug) ? '#16a34a' : '#374151',
+                cursor: 'pointer'
+              }}
+            >
+              {slug.replace(/-/g, ' ')}
+            </button>
+          ))}
         </div>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <label>Min Calories <input type="number" value={minCalories} onChange={(e)=>{setMinCalories(e.target.value); setPage(1);}} style={{ width: 90, padding: '6px 8px', border: '1px solid var(--color-gray-300)', borderRadius: 8 }} /></label>
-          <label>Max Calories <input type="number" value={maxCalories} onChange={(e)=>{setMaxCalories(e.target.value); setPage(1);}} style={{ width: 90, padding: '6px 8px', border: '1px solid var(--color-gray-300)', borderRadius: 8 }} /></label>
-          <label>Min Protein (g) <input type="number" value={minProtein} onChange={(e)=>{setMinProtein(e.target.value); setPage(1);}} style={{ width: 90, padding: '6px 8px', border: '1px solid var(--color-gray-300)', borderRadius: 8 }} /></label>
-          <label>Max Protein (g) <input type="number" value={maxProtein} onChange={(e)=>{setMaxProtein(e.target.value); setPage(1);}} style={{ width: 90, padding: '6px 8px', border: '1px solid var(--color-gray-300)', borderRadius: 8 }} /></label>
+
+        <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+          <FilterInput label="Min Calories" value={minCalories} setValue={setMinCalories} />
+          <FilterInput label="Max Calories" value={maxCalories} setValue={setMaxCalories} />
+          <FilterInput label="Min Protein (g)" value={minProtein} setValue={setMinProtein} />
+          <FilterInput label="Max Protein (g)" value={maxProtein} setValue={setMaxProtein} />
         </div>
-        
       </div>
 
       {error && (
-        <div style={{ color: '#b91c1c', marginBottom: 12 }}>{error}</div>
-      )}
-
-      {isLoading ? (
-        <div style={{ padding: 24 }}>Loading...</div>
-      ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-          gap: 16
-        }}>
-          {ingredients.map(ing => (
-            <IngredientCard key={ing.id} ingredient={ing} />
-          ))}
+        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', padding: '12px 16px', borderRadius: 12, color: '#b91c1c', marginBottom: 16 }}>
+          {error}
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 20 }}>
-        <button onClick={onPrev} disabled={page === 1} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--color-gray-300)' }}>Previous</button>
-        <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Page {page}</span>
-        <button onClick={onNext} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--color-gray-300)' }}>Next</button>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+          gap: '16px'
+        }}
+      >
+        {isLoading ? (
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '32px 0' }}>Loading...</div>
+        ) : (
+          filteredIngredients.map(ingredient => (
+            <IngredientCard key={ingredient.id} ingredient={ingredient} />
+          ))
+        )}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24 }}>
+        <button
+          onClick={onPrev}
+          disabled={page === 1 || isLoading}
+          style={{
+            padding: '10px 16px',
+            borderRadius: 10,
+            border: '1px solid #e5e7eb',
+            background: page === 1 ? '#f3f4f6' : '#ffffff',
+            color: '#374151',
+            cursor: page === 1 ? 'not-allowed' : 'pointer'
+          }}
+        >
+          Previous
+        </button>
+        <div style={{ alignSelf: 'center', color: '#6b7280', fontWeight: 600 }}>Page {page}</div>
+        <button
+          onClick={onNext}
+          disabled={isLoading || filteredIngredients.length < size}
+          style={{
+            padding: '10px 16px',
+            borderRadius: 10,
+            border: '1px solid #22c55e',
+            background: '#22c55e',
+            color: '#ffffff',
+            cursor: isLoading || filteredIngredients.length < size ? 'not-allowed' : 'pointer',
+            opacity: isLoading || filteredIngredients.length < size ? 0.6 : 1
+          }}
+        >
+          Next
+        </button>
       </div>
     </div>
+  );
+}
+
+function FilterInput({ label, value, setValue }) {
+  return (
+    <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <span style={{ fontSize: 13, fontWeight: 600, color: '#475569' }}>{label}</span>
+      <input
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder=""
+        style={{ padding: '10px 12px', borderRadius: 10, border: '2px solid #e5e7eb' }}
+      />
+    </label>
   );
 }
 
@@ -192,7 +242,6 @@ function IngredientCard({ ingredient }) {
   const attrs = ingredient?.attributes || {};
   const name = ingredient?.display_name || ingredient?.name || 'Unknown';
   const cals = typeof attrs?.calories === 'object' ? attrs?.calories?.value : attrs?.calories;
-  // Prefer top-level image_url, fallback to attribute location for backward compat
   const rawAttrImage = typeof attrs?.image_url === 'object' ? attrs?.image_url?.value : attrs?.image_url;
   const rawImage = ingredient?.image_url || rawAttrImage;
   const imgSrc = rawImage ? absoluteUrl(rawImage) : null;
@@ -201,14 +250,26 @@ function IngredientCard({ ingredient }) {
 
   return (
     <Link to={{ pathname: `/ingredients/${ingredient.id}`, search: location.search }} style={{
-      display: 'block',
-      textDecoration: 'none',
-      border: '1px solid var(--color-gray-200)',
-      borderRadius: 12,
-      padding: 12,
-      background: '#fff'
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '10px',
+      padding: '16px',
+      borderRadius: '16px',
+      border: '1px solid #e5e7eb',
+      background: '#ffffff',
+      boxShadow: '0 1px 2px rgba(15, 23, 42, 0.08)',
+      transition: 'all 0.2s',
+      textDecoration: 'none'
     }}>
-      <div style={{ height: 120, borderRadius: 8, overflow: 'hidden', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+      <div style={{
+        height: 120,
+        borderRadius: 12,
+        overflow: 'hidden',
+        background: '#f3f4f6',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
         <img
           src={imgSrc || unsplash}
           alt={name}
@@ -220,9 +281,9 @@ function IngredientCard({ ingredient }) {
         />
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontWeight: 700, color: 'var(--color-gray-900)' }}>{name}</div>
+        <div style={{ fontWeight: 700, color: '#111827' }}>{name}</div>
         {cals != null && (
-          <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{cals} kcal</div>
+          <div style={{ fontSize: 12, color: '#6b7280' }}>{cals} kcal</div>
         )}
       </div>
     </Link>

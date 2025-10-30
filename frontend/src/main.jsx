@@ -8,6 +8,8 @@ import SignUp from './components/auth/SignUp.jsx'
 import ForgotPassword from './components/auth/ForgotPassword.jsx'
 import ResetPassword from './components/auth/ResetPassword.jsx'
 import { AuthProvider, useAuth } from './context/AuthContext.jsx'
+// import { DashboardProvider } from './contexts/DashboardContext.jsx' // DEPRECATED
+import { DataProvider } from './context/DataContext.jsx'
 import OnboardingWizard from './components/onboarding/OnboardingWizard.jsx'
 import ProfilePage from './components/profile/ProfilePage.jsx'
 import AppLayout from './components/layout/AppLayout.jsx'
@@ -40,29 +42,31 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ThemeProvider>
       <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login onLogin={() => {}} />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+        <DataProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login onLogin={() => {}} />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
-            <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-              <Route index element={<App />} />
-              <Route path="onboarding" element={<OnboardingWizard />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="nutritest" element={<NutriTest />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="help" element={<HelpPage />} />
-              <Route path="display" element={<DisplayPage />} />
-              <Route path="ingredients" element={<IngredientBrowserPage />} />
-              <Route path="ingredients/:ingredientId" element={<IngredientDetailPage />} />
-              <Route path="apothecary" element={<ApothecaryPage />} />
-            </Route>
+              <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                <Route index element={<App />} />
+                <Route path="onboarding" element={<OnboardingWizard />} />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="nutritest" element={<NutriTest />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="help" element={<HelpPage />} />
+                <Route path="display" element={<DisplayPage />} />
+                <Route path="ingredients" element={<IngredientBrowserPage />} />
+                <Route path="ingredients/:ingredientId" element={<IngredientDetailPage />} />
+                <Route path="apothecary" element={<ApothecaryPage />} />
+              </Route>
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </DataProvider>
       </AuthProvider>
     </ThemeProvider>
   </StrictMode>,

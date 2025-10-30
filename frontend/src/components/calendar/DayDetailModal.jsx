@@ -1,13 +1,121 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar as CalendarIcon, TrendingUp, FileText } from 'lucide-react';
+import { X, Calendar as CalendarIcon, TrendingUp, FileText, Edit3, Save, Trash2 } from 'lucide-react';
 import moment from 'moment';
+import { useData } from '../../context/DataContext';
 
-const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave, onDelete }) => {
+const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave, onDelete, isLoading }) => {
+  const navigate = useNavigate();
+  const { getJournalNote, saveJournalNote, deleteJournalNote } = useData();
+
+  // Existing note state (for backward compatibility)
   const [note, setNote] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editedNote, setEditedNote] = useState('');
 
+  // New journal state
+  const [journalNote, setJournalNote] = useState('');
+  const [isJournalEditing, setIsJournalEditing] = useState(false);
+  const [journalLoading, setJournalLoading] = useState(false);
+  const [journalError, setJournalError] = useState(null);
+
+  // Tab and journal window state
+  const [activeTab, setActiveTab] = useState('meals');
+  const [showJournalWindow, setShowJournalWindow] = useState(false);
+
+  // Load journal note when modal opens
+  // IMPORTANT: This useEffect MUST be before the early return to comply with Rules of Hooks
+  useEffect(() => {
+    if (isOpen && selectedDate) {
+      const dateKey = moment(selectedDate).format('YYYY-MM-DD');
+      loadJournalNote(dateKey);
+    }
+  }, [isOpen, selectedDate]);
+
+  // Load journal note for the selected date
+  const loadJournalNote = async (dateKey) => {
+    if (!selectedDate) return;
+
+    setJournalLoading(true);
+    setJournalError(null);
+
+    try {
+      const journalData = await getJournalNote(dateKey);
+      if (journalData) {
+        setJournalNote(journalData.note_text || '');
+      } else {
+        setJournalNote('');
+      }
+    } catch (error) {
+      console.error('Error loading journal note:', error);
+      setJournalError('Failed to load journal note');
+    } finally {
+      setJournalLoading(false);
+    }
+  };
+
+  // Handle journal note save
+  const handleJournalSave = async () => {
+    if (!selectedDate || !journalNote.trim()) return;
+
+    const dateKey = moment(selectedDate).format('YYYY-MM-DD');
+    setJournalLoading(true);
+    setJournalError(null);
+
+    try {
+      await saveJournalNote(dateKey, journalNote.trim());
+      setIsJournalEditing(false);
+    } catch (error) {
+      console.error('Error saving journal note:', error);
+      setJournalError('Failed to save journal note');
+    } finally {
+      setJournalLoading(false);
+    }
+  };
+
+  // Handle journal note delete
+  const handleJournalDelete = async () => {
+    if (!selectedDate) return;
+
+    const dateKey = moment(selectedDate).format('YYYY-MM-DD');
+    setJournalLoading(true);
+    setJournalError(null);
+
+    try {
+      await deleteJournalNote(dateKey);
+      setJournalNote('');
+      setIsJournalEditing(false);
+    } catch (error) {
+      console.error('Error deleting journal note:', error);
+      setJournalError('Failed to delete journal note');
+    } finally {
+      setJournalLoading(false);
+    }
+  };
+
+  // Handle journal edit start - open writing window
+  const handleJournalEdit = () => {
+    setShowJournalWindow(true);
+    setIsJournalEditing(true);
+  };
+
+  // Handle journal edit cancel - close writing window
+  const handleJournalCancel = () => {
+    setShowJournalWindow(false);
+    setIsJournalEditing(false);
+    setJournalError(null);
+  };
+
+  // Handle journal save and close window
+  const handleJournalSaveAndClose = async () => {
+    await handleJournalSave();
+    if (!journalError) {
+      setShowJournalWindow(false);
+    }
+  };
+
+  // Early return AFTER all hooks have been called
   if (!selectedDate) return null;
 
   // Format the date nicely
@@ -17,6 +125,56 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
   // Determine which state to render based on data structure
   const hasMealLog = dayData && dayData.totals;
   const hasNoteOnly = dayData && dayData.note && !dayData.totals;
+
+  // NutritionTag component for displaying nutrition values as chips
+  const NutritionTag = ({ label, value, unit, icon, color }) => (
+    <div style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '6px',
+      background: `${color}15`, // 15 is alpha for subtle bg
+      color: '#374151',
+      padding: '6px 12px',
+      borderRadius: '8px',
+      fontSize: '13px',
+      fontWeight: '600',
+      border: `1px solid ${color}40`
+    }}>
+      <span style={{ fontSize: '14px' }}>{icon}</span>
+      <span style={{ color: '#374151', fontWeight: '700' }}>{label}: {value}{unit}</span>
+    </div>
+  );
+
+  // MealTag component for displaying meals as chips
+  const MealTag = ({ meal, mealType }) => (
+    <div style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '6px',
+      background: '#f9fafb',
+      color: '#374151',
+      padding: '12px',
+      borderRadius: '10px',
+      fontSize: '13px',
+      fontWeight: '500',
+      borderLeft: '3px solid #22c55e',
+      marginBottom: '8px',
+      transition: 'all 0.2s',
+      cursor: 'default'
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = '#f0fdf4';
+      e.currentTarget.style.transform = 'translateX(4px)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = '#f9fafb';
+      e.currentTarget.style.transform = 'translateX(0)';
+    }}
+    >
+      <span style={{ fontSize: '12px', textTransform: 'capitalize', color: '#22c55e', fontWeight: '600' }}>{mealType}:</span>
+      <span>{meal}</span>
+    </div>
+  );
 
   // Handle save note (for new days)
   const handleSaveNote = () => {
@@ -64,16 +222,17 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
 
   // Handle view full log (for existing days)
   const handleViewFullLog = () => {
+    const dateKey = moment(selectedDate).format('YYYY-MM-DD');
     console.log(`ACTION: Navigate to Meal History for ${dateKey}`);
     onClose();
+    navigate('/?tab=history');
   };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          {/* Backdrop */}
           <motion.div
+          key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -93,9 +252,10 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
               padding: '20px'
             }}
           />
-
-          {/* Modal */}
+      )}
+      {isOpen && (
           <motion.div
+          key="modal"
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -120,7 +280,7 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
           >
             {/* Header */}
             <div style={{
-              padding: '24px',
+              padding: '20px',
               borderBottom: '1px solid #f3f4f6',
               display: 'flex',
               justifyContent: 'space-between',
@@ -136,7 +296,7 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  marginBottom: '8px'
+                  marginBottom: '6px'
                 }}>
                   <CalendarIcon
                     width={20}
@@ -144,7 +304,7 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                     color={hasMealLog ? '#16a34a' : '#d97706'}
                   />
                   <h2 style={{
-                    fontSize: '24px',
+                    fontSize: '20px',
                     fontWeight: '700',
                     color: '#111827',
                     margin: 0
@@ -191,9 +351,44 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
             <div style={{
               flex: 1,
               overflowY: 'auto',
-              padding: '24px'
+              padding: '20px'
             }}>
-              {hasMealLog ? (
+              {isLoading ? (
+                /* LOADING STATE */
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '48px 20px',
+                  minHeight: '200px'
+                }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    border: '4px solid #f3f4f6',
+                    borderTop: '4px solid #22c55e',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                  <style>
+                    {`
+                      @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                      }
+                    `}
+                  </style>
+                  <p style={{
+                    marginTop: '16px',
+                    fontSize: '14px',
+                    color: '#6b7280',
+                    fontWeight: '500'
+                  }}>
+                    Loading meal data...
+                  </p>
+                </div>
+              ) : hasMealLog ? (
                 /* STATE 1: Meal Log Display - Show meal summary */
                 <>
                   {/* Daily Totals Summary */}
@@ -228,171 +423,243 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                       </h3>
                     </div>
                     <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(2, 1fr)',
-                      gap: '16px'
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '8px',
+                      alignItems: 'center'
                     }}>
-                      {/* Calories */}
-                      <div>
-                        <div style={{
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          color: '#6b7280',
-                          marginBottom: '4px'
-                        }}>
-                          Calories
+                      <NutritionTag
+                        label="Calories"
+                        value={dayData.totals.calories}
+                        unit=" kcal"
+                        icon="🔥"
+                        color="#ef4444"
+                      />
+                      <NutritionTag
+                        label="Protein"
+                        value={dayData.totals.protein}
+                        unit="g"
+                        icon="🥩"
+                        color="#22c55e"
+                      />
+                      <NutritionTag
+                        label="Carbs"
+                        value={dayData.totals.carbs}
+                        unit="g"
+                        icon="🌾"
+                        color="#3b82f6"
+                      />
+                      <NutritionTag
+                        label="Fat"
+                        value={dayData.totals.fat}
+                        unit="g"
+                        icon="🥑"
+                        color="#eab308"
+                      />
+                      <NutritionTag
+                        label="Fiber"
+                        value={dayData.totals.fiber}
+                        unit="g"
+                        icon="🌿"
+                        color="#a855f7"
+                      />
                         </div>
-                        <div style={{
-                          fontSize: '24px',
-                          fontWeight: '700',
-                          color: '#111827'
-                        }}>
-                          {dayData.totals.calories}
-                          <span style={{
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: '#6b7280',
-                            marginLeft: '4px'
-                          }}>
-                            kcal
-                          </span>
-                        </div>
-                      </div>
-                      {/* Protein */}
-                      <div>
-                        <div style={{
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          color: '#6b7280',
-                          marginBottom: '4px'
-                        }}>
-                          Protein
-                        </div>
-                        <div style={{
-                          fontSize: '24px',
-                          fontWeight: '700',
-                          color: '#111827'
-                        }}>
-                          {dayData.totals.protein}
-                          <span style={{
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: '#6b7280',
-                            marginLeft: '4px'
-                          }}>
-                            g
-                          </span>
-                        </div>
-                      </div>
-                      {/* Carbs */}
-                      <div>
-                        <div style={{
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          color: '#6b7280',
-                          marginBottom: '4px'
-                        }}>
-                          Carbs
-                        </div>
-                        <div style={{
-                          fontSize: '24px',
-                          fontWeight: '700',
-                          color: '#111827'
-                        }}>
-                          {dayData.totals.carbs}
-                          <span style={{
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: '#6b7280',
-                            marginLeft: '4px'
-                          }}>
-                            g
-                          </span>
-                        </div>
-                      </div>
-                      {/* Fat */}
-                      <div>
-                        <div style={{
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          color: '#6b7280',
-                          marginBottom: '4px'
-                        }}>
-                          Fat
-                        </div>
-                        <div style={{
-                          fontSize: '24px',
-                          fontWeight: '700',
-                          color: '#111827'
-                        }}>
-                          {dayData.totals.fat}
-                          <span style={{
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: '#6b7280',
-                            marginLeft: '4px'
-                          }}>
-                            g
-                          </span>
-                        </div>
-                      </div>
-                    </div>
                   </motion.div>
 
-                  {/* Logged Meals List */}
+                  {/* Section Divider */}
+                  <div style={{
+                    height: '1px',
+                    background: 'linear-gradient(to right, transparent, #e5e7eb, transparent)',
+                    margin: '20px 0'
+                  }} />
+
+                  {/* Tab Navigation */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
+                    transition={{ delay: 0.3 }}
                   >
-                    <h3 style={{
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: '#6b7280',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      marginBottom: '12px'
+                        <div style={{
+                      display: 'flex',
+                      gap: '4px',
+                      marginBottom: '16px',
+                      borderBottom: '1px solid #e5e7eb'
                     }}>
-                      Logged Meals
-                    </h3>
-                    <div style={{
-                      background: '#f9fafb',
-                      borderRadius: '12px',
-                      padding: '16px',
-                      border: '1px solid #f3f4f6'
-                    }}>
-                      <ul style={{
-                        listStyle: 'none',
-                        padding: 0,
-                        margin: 0,
+                      <button
+                        onClick={() => setActiveTab('meals')}
+                        style={{
+                          padding: '8px 16px',
+                          background: activeTab === 'meals' ? '#22c55e' : 'transparent',
+                          border: 'none',
+                          borderBottom: activeTab === 'meals' ? '2px solid #22c55e' : '2px solid transparent',
+                          borderRadius: '8px 8px 0 0',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                          color: activeTab === 'meals' ? '#ffffff' : '#6b7280',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (activeTab !== 'meals') {
+                            e.currentTarget.style.background = '#f0fdf4';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (activeTab !== 'meals') {
+                            e.currentTarget.style.background = 'transparent';
+                          }
+                        }}
+                      >
+                        Meals
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('journal')}
+                        style={{
+                          padding: '8px 16px',
+                          background: activeTab === 'journal' ? '#22c55e' : 'transparent',
+                          border: 'none',
+                          borderBottom: activeTab === 'journal' ? '2px solid #22c55e' : '2px solid transparent',
+                          borderRadius: '8px 8px 0 0',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: activeTab === 'journal' ? '#ffffff' : '#6b7280',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (activeTab !== 'journal') {
+                            e.currentTarget.style.background = '#f0fdf4';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (activeTab !== 'journal') {
+                            e.currentTarget.style.background = 'transparent';
+                          }
+                        }}
+                      >
+                        Journal
+                      </button>
+                        </div>
+
+                    {/* Tab Content */}
+                    {activeTab === 'meals' ? (
+                        <div style={{
                         display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px'
+                        flexWrap: 'wrap',
+                        gap: '8px',
+                        alignItems: 'center'
                       }}>
-                        {dayData.meals.map((meal, index) => (
-                          <li
-                            key={index}
+                        {dayData.meals.map((meal, index) => {
+                          // Extract meal type from meal string (e.g., "breakfast: Oatmeal" -> "breakfast")
+                          const mealType = meal.split(':')[0]?.trim() || 'meal';
+                          const mealName = meal.split(':').slice(1).join(':').trim() || meal;
+
+                          return (
+                            <MealTag
+                              key={index}
+                              meal={mealName}
+                              mealType={mealType}
+                            />
+                          );
+                        })}
+                        </div>
+                    ) : (
+                      /* Journal Tab Content */
+                      <div>
+                        {journalError && (
+                        <div style={{
+                            background: '#fef2f2',
+                            border: '1px solid #fecaca',
+                            color: '#dc2626',
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            marginBottom: '12px'
+                          }}>
+                            {journalError}
+                        </div>
+                        )}
+
+                        {journalNote ? (
+                        <div style={{
+                            background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                            borderLeft: '4px solid #0ea5e9',
+                            color: '#0c4a6e',
+                            padding: '16px',
+                            borderRadius: '12px',
+                            fontSize: '14px',
+                            lineHeight: '1.6',
+                            whiteSpace: 'pre-wrap',
+                            marginBottom: '12px'
+                          }}>
+                            {journalNote}
+                        </div>
+                        ) : (
+                        <div style={{
+                            background: '#f9fafb',
+                            border: '2px dashed #d1d5db',
+                            borderRadius: '12px',
+                            padding: '24px',
+                            textAlign: 'center',
+                          color: '#6b7280',
+                            fontSize: '14px',
+                            marginBottom: '12px'
+                          }}>
+                            <FileText width={24} height={24} style={{ marginBottom: '8px', opacity: 0.5 }} />
+                            <div>No journal entry for this day</div>
+                        </div>
+                        )}
+
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                          <button
+                            onClick={handleJournalEdit}
+                            disabled={journalLoading}
                             style={{
-                              fontSize: '15px',
+                              padding: '8px 16px',
+                              background: '#3b82f6',
+                              border: 'none',
+                              borderRadius: '8px',
+                              fontSize: '13px',
                               fontWeight: '500',
-                              color: '#374151',
-                              display: 'flex',
+                              color: '#ffffff',
+                              cursor: journalLoading ? 'not-allowed' : 'pointer',
+                              opacity: journalLoading ? 0.5 : 1,
+                              transition: 'all 0.2s',
+                        display: 'flex',
                               alignItems: 'center',
-                              gap: '8px'
+                              gap: '4px'
                             }}
                           >
-                            <div style={{
-                              width: '6px',
-                              height: '6px',
-                              borderRadius: '50%',
-                              background: '#22c55e',
-                              flexShrink: 0
-                            }} />
-                            {meal}
-                          </li>
-                        ))}
-                      </ul>
+                            <Edit3 width={12} height={12} />
+                            {journalNote ? 'Edit' : 'Add'} Journal Entry
+                          </button>
+                          {journalNote && (
+                            <button
+                              onClick={handleJournalDelete}
+                              disabled={journalLoading}
+                            style={{
+                                padding: '8px 16px',
+                                background: '#ef4444',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontSize: '13px',
+                              fontWeight: '500',
+                                color: '#ffffff',
+                                cursor: journalLoading ? 'not-allowed' : 'pointer',
+                                opacity: journalLoading ? 0.5 : 1,
+                                transition: 'all 0.2s',
+                              display: 'flex',
+                              alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <Trash2 width={12} height={12} />
+                              Delete
+                            </button>
+                          )}
                     </div>
+                      </div>
+                    )}
                   </motion.div>
                 </>
               ) : hasNoteOnly ? (
@@ -788,8 +1055,211 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
               )}
             </div>
           </motion.div>
-        </>
       )}
+
+      {/* Journal Writing Window Modal */}
+      <AnimatePresence>
+        {showJournalWindow && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1001,
+              padding: '20px'
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                handleJournalCancel();
+              }
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              style={{
+                background: '#ffffff',
+                borderRadius: '16px',
+                padding: '24px',
+                width: '100%',
+                maxWidth: '600px',
+                maxHeight: '80vh',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
+              {/* Header */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '20px',
+                paddingBottom: '16px',
+                borderBottom: '1px solid #e5e7eb'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <FileText width={20} height={20} style={{ color: '#3b82f6' }} />
+                  <h2 style={{
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    color: '#111827',
+                    margin: 0
+                  }}>
+                    Journal Entry
+                  </h2>
+                </div>
+                <button
+                  onClick={handleJournalCancel}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '20px',
+                    color: '#6b7280',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    borderRadius: '4px',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#f3f4f6';
+                    e.currentTarget.style.color = '#374151';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'none';
+                    e.currentTarget.style.color = '#6b7280';
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Date Display */}
+              <div style={{
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                padding: '12px',
+                marginBottom: '20px',
+                fontSize: '14px',
+                color: '#475569',
+                fontWeight: '500'
+              }}>
+                📅 {formattedDate}
+              </div>
+
+              {/* Error Display */}
+              {journalError && (
+                <div style={{
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  color: '#dc2626',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  marginBottom: '16px'
+                }}>
+                  {journalError}
+                </div>
+              )}
+
+              {/* Textarea */}
+              <textarea
+                value={journalNote}
+                onChange={(e) => setJournalNote(e.target.value)}
+                placeholder="Write your thoughts about this day... What did you eat? How did you feel? Any insights or reflections?"
+                style={{
+                  width: '100%',
+                  minHeight: '200px',
+                  padding: '16px',
+                  fontSize: '14px',
+                  lineHeight: '1.6',
+                  color: '#374151',
+                  background: '#ffffff',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '12px',
+                  resize: 'vertical',
+                  fontFamily: 'inherit',
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                  flex: 1
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#3b82f6';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#e5e7eb';
+                }}
+              />
+
+              {/* Action Buttons */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '12px',
+                marginTop: '20px',
+                paddingTop: '16px',
+                borderTop: '1px solid #e5e7eb'
+              }}>
+                <button
+                  onClick={handleJournalCancel}
+                  disabled={journalLoading}
+                  style={{
+                    padding: '10px 20px',
+                    background: '#f3f4f6',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#6b7280',
+                    cursor: journalLoading ? 'not-allowed' : 'pointer',
+                    opacity: journalLoading ? 0.5 : 1,
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleJournalSaveAndClose}
+                  disabled={journalLoading || !journalNote.trim()}
+                  style={{
+                    padding: '10px 20px',
+                    background: journalNote.trim() ? '#22c55e' : '#d1d5db',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: journalNote.trim() ? '#ffffff' : '#9ca3af',
+                    cursor: (journalLoading || !journalNote.trim()) ? 'not-allowed' : 'pointer',
+                    opacity: journalLoading ? 0.5 : 1,
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Save width={14} height={14} />
+                  {journalLoading ? 'Saving...' : 'Save & Close'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AnimatePresence>
   );
 };

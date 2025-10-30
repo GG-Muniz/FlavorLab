@@ -10,7 +10,8 @@ from .category import Category, IngredientCategory
 from .user import User
 from .calorie_tracking import DailyCalorieGoal, CalorieIntakeEntry
 from .water_tracking import DailyWaterGoal, WaterIntakeEntry
-from .meal import MealLog, MealLogEntry
+from .meal import MealLog, MealLogEntry, Meal
+from .daily_note import DailyNote
 
 __all__ = [
     "Entity",
@@ -25,6 +26,8 @@ __all__ = [
     "WaterIntakeEntry",
     "MealLog",
     "MealLogEntry",
+    "Meal",
+    "DailyNote",
     "Category",
     "IngredientCategory",
 ]

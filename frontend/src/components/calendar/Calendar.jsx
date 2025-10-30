@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import DayDetailModal from './DayDetailModal';
+import { useData } from '../../context/DataContext';
 
 const Calendar = () => {
+  const { getMealsForDate, getNutritionSummaryForDate } = useData();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [showDayDetail, setShowDayDetail] = useState(false);
   const [monthData, setMonthData] = useState({});
   const [selectedDayData, setSelectedDayData] = useState(null);
+  const [isLoadingDayData, setIsLoadingDayData] = useState(false);
 
   // Get the first day of the month
   const getFirstDayOfMonth = (date) => {
@@ -58,64 +61,63 @@ const Calendar = () => {
     return isSameDay(date, new Date());
   };
 
-  // Fetch month data (mock for now - will connect to API later)
+  // Fetch month data - load all logged meals to determine which days have data
   useEffect(() => {
-    // Mock data - simulating API response
-    const mockMonthData = {};
-    const today = new Date();
+    const fetchMonthData = async () => {
+      try {
+        // For now, we'll fetch data on-demand when a day is clicked
+        // This prevents loading too much data upfront
+        // We could optimize later by caching the current month's meals
+        setMonthData({});
+      } catch (error) {
+        console.error("Error fetching month data:", error);
+      }
+    };
 
-    // Add mock data for last 7 days
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-      mockMonthData[dateKey] = { hasLog: true };
-    }
-
-    setMonthData(mockMonthData);
+    fetchMonthData();
   }, [currentDate]);
 
-  // Handle day click - open modal with day details
-  const handleDayClick = (day) => {
+  // Handle day click - fetch real data from backend
+  const handleDayClick = async (day) => {
     setSelectedDate(day);
+    setIsLoadingDayData(true);
 
-    // Mock day data - simulating API response
     const dateKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
-    const hasData = monthData[dateKey]?.hasLog;
 
-    if (hasData) {
-      // Mock detailed data
-      setSelectedDayData({
-        date: dateKey,
-        items: [
-          {
-            mealType: 'Breakfast',
-            name: 'Scrambled Eggs & Toast',
-            description: '2 eggs, whole wheat toast, avocado',
-            calories: 420
-          },
-          {
-            mealType: 'Lunch',
-            name: 'Grilled Chicken Salad',
-            description: 'Mixed greens, grilled chicken, olive oil dressing',
-            calories: 380
-          },
-          {
-            mealType: 'Dinner',
-            name: 'Salmon with Vegetables',
-            description: 'Baked salmon, broccoli, quinoa',
-            calories: 520
+    try {
+      // Fetch both meals and nutrition summary for the selected date
+      const [meals, nutritionSummary] = await Promise.all([
+        getMealsForDate(dateKey),
+        getNutritionSummaryForDate(dateKey)
+      ]);
+
+      if (meals.length > 0) {
+        // Format data to match DayDetailModal expectations
+        setSelectedDayData({
+          date: dateKey,
+          meals: meals.map(meal => `${meal.meal_type}: ${meal.name} (${meal.calories} cal)`),
+          totals: {
+            calories: Math.round(nutritionSummary.total_calories || 0),
+            protein: Math.round(nutritionSummary.total_protein_g || 0),
+            carbs: Math.round(nutritionSummary.total_carbs_g || 0),
+            fat: Math.round(nutritionSummary.total_fat_g || 0),
+            fiber: Math.round(nutritionSummary.total_fiber_g || 0)
           }
-        ],
-        summary: {
-          calories: 1320,
-          protein: 95,
-          carbs: 110,
-          fat: 45
-        }
-      });
-    } else {
+        });
+
+        // Update monthData to show this day has a log
+        setMonthData(prev => ({
+          ...prev,
+          [dateKey]: { hasLog: true }
+        }));
+      } else {
+        setSelectedDayData(null);
+      }
+    } catch (error) {
+      console.error("Error fetching day data:", error);
       setSelectedDayData(null);
+    } finally {
+      setIsLoadingDayData(false);
     }
 
     setShowDayDetail(true);
@@ -159,8 +161,8 @@ const Calendar = () => {
   return (
     <div style={{
       background: '#ffffff',
-      borderRadius: '20px',
-      padding: '24px',
+      borderRadius: '16px',
+      padding: '20px',
       boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
       border: '1px solid #f3f4f6'
     }}>
@@ -169,10 +171,10 @@ const Calendar = () => {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '24px'
+        marginBottom: '16px'
       }}>
         <h2 style={{
-          fontSize: '20px',
+          fontSize: '18px',
           fontWeight: '700',
           color: '#111827',
           margin: 0
@@ -305,36 +307,50 @@ const Calendar = () => {
                 gap: '4px',
                 fontSize: '14px',
                 fontWeight: '600',
-                border: isTodayDate ? '2px solid #22c55e' : '1px solid transparent',
-                borderRadius: '12px',
+                border: hasLog
+                  ? '2px solid #22c55e'
+                  : isTodayDate
+                    ? '2px solid #22c55e'
+                    : '1px solid #e5e7eb',
+                borderRadius: '10px',
                 background: isSelected
                   ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
-                  : 'transparent',
+                  : isTodayDate
+                    ? '#f0fdf4'
+                    : '#ffffff',
                 color: isSelected ? '#ffffff' : isTodayDate ? '#22c55e' : '#374151',
                 cursor: 'pointer',
-                transition: 'all 0.2s',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 position: 'relative',
-                padding: '8px'
+                padding: '8px',
+                minHeight: '60px'
               }}
               onMouseEnter={(e) => {
                 if (!isSelected) {
-                  e.currentTarget.style.background = '#f3f4f6';
+                  e.currentTarget.style.transform = 'scale(1.05) translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.15)';
+                  e.currentTarget.style.background = '#f0fdf4';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isSelected) {
-                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.transform = 'scale(1) translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.background = isTodayDate ? '#f0fdf4' : '#ffffff';
                 }
               }}
             >
               <span>{day.getDate()}</span>
               {hasLog && (
                 <div style={{
-                  width: '6px',
-                  height: '6px',
+                  position: 'absolute',
+                  bottom: '6px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '4px',
+                  height: '4px',
                   borderRadius: '50%',
-                  background: isSelected ? '#ffffff' : '#22c55e',
-                  marginTop: '2px'
+                  background: isSelected ? '#ffffff' : '#22c55e'
                 }} />
               )}
             </button>
@@ -348,6 +364,7 @@ const Calendar = () => {
         onClose={() => setShowDayDetail(false)}
         selectedDate={selectedDate}
         dayData={selectedDayData}
+        isLoading={isLoadingDayData}
       />
     </div>
   );

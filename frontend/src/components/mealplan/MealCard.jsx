@@ -24,15 +24,11 @@
  */
 
 import { motion } from 'framer-motion';
-import { Flame } from 'lucide-react';
+import { Flame, Calendar } from 'lucide-react';
 import PropTypes from 'prop-types';
 import './MealCard.css';
 
-const MealCard = ({ meal, onClick }) => {
-  /**
-   * Get color scheme based on meal type
-   * Each meal type has a unique color palette for visual distinction
-   */
+const MealCard = ({ meal, onClick, onLogMeal, isLoggedToday }) => {
   const getMealTypeColor = (type) => {
     const colorMap = {
       breakfast: {
@@ -70,16 +66,12 @@ const MealCard = ({ meal, onClick }) => {
     return colorMap[type] || colorMap.breakfast;
   };
 
-  /**
-   * Format meal type for display
-   * Converts snake_case to Title Case with proper spacing
-   */
-  const formatMealType = (type) => {
-    return type
+  const formatMealType = (type) => (
+    type
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  };
+      .join(' ')
+  );
 
   const colors = getMealTypeColor(meal.type);
 
@@ -105,7 +97,6 @@ const MealCard = ({ meal, onClick }) => {
         transition: 'all 0.3s ease'
       }}
     >
-      {/* Meal Type Badge */}
       <div
         className="meal-type-badge"
         style={{
@@ -128,7 +119,6 @@ const MealCard = ({ meal, onClick }) => {
         </span>
       </div>
 
-      {/* Meal Name */}
       <h3
         className="meal-name"
         style={{
@@ -143,7 +133,6 @@ const MealCard = ({ meal, onClick }) => {
         {meal.name}
       </h3>
 
-      {/* Calories Section */}
       <div
         className="meal-calories"
         style={{
@@ -187,7 +176,6 @@ const MealCard = ({ meal, onClick }) => {
         </div>
       </div>
 
-      {/* Meal Description */}
       <p
         className="meal-description"
         style={{
@@ -201,7 +189,6 @@ const MealCard = ({ meal, onClick }) => {
         {meal.description}
       </p>
 
-      {/* Recipe Indicators (if available) */}
       {meal.ingredients && (
         <div style={{
           marginTop: '16px',
@@ -238,7 +225,64 @@ const MealCard = ({ meal, onClick }) => {
         </div>
       )}
 
-      {/* Click Hint */}
+      {onLogMeal && (
+        <div style={{
+          marginTop: '16px',
+          paddingTop: '16px',
+          borderTop: '1px solid #f3f4f6',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px'
+        }}>
+          {isLoggedToday && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              <span style={{
+                fontSize: '12px',
+                fontWeight: '600',
+                color: '#10b981',
+                background: '#d1fae5',
+                padding: '4px 10px',
+                borderRadius: '6px'
+              }}>
+                ✓ Logged Today
+              </span>
+            </div>
+          )}
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onLogMeal(meal);
+            }}
+            style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              padding: '10px 16px',
+              background: '#22c55e',
+              color: 'white',
+              border: 'none',
+              borderRadius: '10px',
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            <Calendar width={16} height={16} />
+            Log for Today
+          </motion.button>
+        </div>
+      )}
+
       <div
         className="meal-click-hint"
         style={{
@@ -261,42 +305,22 @@ const MealCard = ({ meal, onClick }) => {
   );
 };
 
-// ============================================================================
-// PropTypes Definition
-// ============================================================================
-
 MealCard.propTypes = {
-  /**
-   * Meal data object containing all meal information
-   */
   meal: PropTypes.shape({
-    /** Type of meal (breakfast, lunch, dinner, snack, etc.) */
     type: PropTypes.string.isRequired,
-    /** Name of the meal */
     name: PropTypes.string.isRequired,
-    /** Calorie count */
     calories: PropTypes.number.isRequired,
-    /** Meal description */
     description: PropTypes.string.isRequired,
-    /** Optional: List of ingredients (for detailed view) */
     ingredients: PropTypes.arrayOf(PropTypes.string),
-    /** Optional: Number of servings */
     servings: PropTypes.number,
-    /** Optional: Preparation time in minutes */
     prep_time_minutes: PropTypes.number,
-    /** Optional: Cooking time in minutes */
     cook_time_minutes: PropTypes.number,
-    /** Optional: Cooking instructions */
     instructions: PropTypes.arrayOf(PropTypes.string),
-    /** Optional: Nutrition information */
     nutrition: PropTypes.object
   }).isRequired,
-
-  /**
-   * Click handler function called when card is clicked
-   * Receives the meal object as parameter
-   */
-  onClick: PropTypes.func.isRequired
+  onClick: PropTypes.func.isRequired,
+  onLogMeal: PropTypes.func,
+  isLoggedToday: PropTypes.bool
 };
 
 export default MealCard;

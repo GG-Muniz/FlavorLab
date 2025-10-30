@@ -23,7 +23,6 @@ export default function GoalsPreferencesForm({ onSaved }) {
   const initialPrefs = user?.preferences || user?.dietary_preferences || {};
   const initialGoalsRaw = user?.health_goals || initialPrefs?.health_goals || {};
 
-  // Health pillars list and selection (mirrors NutriTest)
   const [pillars, setPillars] = useState([]);
   const [selectedPillars, setSelectedPillars] = useState(() => {
     if (Array.isArray(initialGoalsRaw)) return initialGoalsRaw;
@@ -41,7 +40,6 @@ export default function GoalsPreferencesForm({ onSaved }) {
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
 
-  // Debounced search for disliked ingredients
   useEffect(() => {
     const q = (tagInput || '').trim();
     if (!q) {
@@ -71,10 +69,9 @@ export default function GoalsPreferencesForm({ onSaved }) {
     return () => clearTimeout(id);
   }, [tagInput]);
 
-  // Sync local state with user changes from AuthContext
   useEffect(() => {
+    const nextInitialGoals = user?.health_goals || {};
     const nextInitialPrefs = user?.preferences || user?.dietary_preferences || {};
-    const nextInitialGoals = user?.health_goals || nextInitialPrefs?.health_goals || {};
     const nextSelected = Array.isArray(nextInitialGoals?.selectedGoals)
       ? nextInitialGoals.selectedGoals
       : (Array.isArray(nextInitialGoals) ? nextInitialGoals : []);
@@ -85,7 +82,6 @@ export default function GoalsPreferencesForm({ onSaved }) {
     setMealsPerDay(nextInitialPrefs?.meals_per_day || '');
   }, [user]);
 
-  // Load pillars to mirror NutriTest labels
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -94,58 +90,48 @@ export default function GoalsPreferencesForm({ onSaved }) {
         if (!mounted) return;
         setPillars(data || []);
       } catch (e) {
-        // Non-fatal; leave empty list
+        // ignore
       }
     })();
     return () => { mounted = false; };
   }, []);
 
-  function toggleAllergy(item) {
+  const toggleAllergy = (item) => {
     const next = new Set(allergies);
     if (next.has(item)) next.delete(item); else next.add(item);
     setAllergies(next);
-  }
+  };
 
-  function addTag(e) {
+  const addTag = (e) => {
     e?.preventDefault();
     const val = (tagInput || '').trim();
     if (!val) return;
-    // When free-typing, store as name-only tag
     if (!disliked.find(t => (t?.name || t) === val)) setDisliked([...disliked, { name: val }]);
     setTagInput('');
     setShowSuggestions(false);
-  }
+  };
 
-  function removeTag(idx) {
+  const removeTag = (idx) => {
     const next = [...disliked];
     next.splice(idx, 1);
     setDisliked(next);
-  }
+  };
 
-  function selectSuggestion(item) {
+  const selectSuggestion = (item) => {
     if (!item) return;
     const exists = disliked.find(t => (t?.id || t?.name) === item.id || t?.name === item.name);
     if (!exists) setDisliked([...disliked, { id: item.id, name: item.name }]);
     setTagInput('');
     setShowSuggestions(false);
-  }
+  };
 
-  async function save() {
+  const save = async () => {
     setSaving(true);
     setMessage('');
     setError('');
     try {
       const payload = {
-        // Write into both places for compatibility
         health_goals: { selectedGoals: selectedPillars },
-        preferences: {
-          ...(user?.preferences || {}),
-          health_goals: selectedPillars,
-          diet,
-          allergies: Array.from(allergies),
-          disliked: disliked.map(t => (typeof t === 'string' ? { name: t } : t)),
-          meals_per_day: mealsPerDay || undefined
-        },
         dietary_preferences: {
           diet,
           allergies: Array.from(allergies),
@@ -161,7 +147,7 @@ export default function GoalsPreferencesForm({ onSaved }) {
     } finally {
       setSaving(false);
     }
-  }
+  };
 
   return (
     <div style={{ border: '2px solid var(--color-gray-200)', borderRadius: 12, padding: 16, background: 'var(--color-gray-100)', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
@@ -186,74 +172,120 @@ export default function GoalsPreferencesForm({ onSaved }) {
                     });
                   }}
                 />
-                {p.name || p.title || `Goal ${p.id}`}
+                <div>
+                  <div style={{ fontWeight: 600 }}>{p.name}</div>
+                  {p.description && <div style={{ fontSize: 12, color: '#6b7280' }}>{p.description}</div>}
+                </div>
               </label>
             ))}
           </div>
         </div>
 
         <div>
-          <div style={{ fontWeight: 700, marginBottom: 8 }}>Dietary Plan</div>
-          <select value={diet} onChange={(e) => setDiet(e.target.value)} style={{ width: '100%' }}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>Dietary Preferences</div>
+          <select value={diet} onChange={(e) => setDiet(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 10, border: '2px solid var(--color-gray-200)' }}>
             {DIET_OPTIONS.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
 
-          <div style={{ fontWeight: 700, margin: '16px 0 8px 0' }}>Allergies / Intolerances</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}>
-            {ALLERGENS.map(a => (
-              <label key={a} style={{ display: 'flex', alignItems: 'center', gap: 8, border: '2px solid var(--color-gray-200)', borderRadius: 10, padding: '8px 10px', background: 'transparent' }}>
-                <input type="checkbox" checked={allergies.has(a)} onChange={() => toggleAllergy(a)} />
-                {a}
-              </label>
-            ))}
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}>Allergies</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {ALLERGENS.map(item => (
+                <button
+                  key={item}
+                  onClick={() => toggleAllergy(item)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 999,
+                    border: allergies.has(item) ? '1px solid #22c55e' : '1px solid #e5e7eb',
+                    background: allergies.has(item) ? '#f0fdf4' : '#ffffff',
+                    color: allergies.has(item) ? '#16a34a' : '#4b5563',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div style={{ fontWeight: 700, margin: '16px 0 8px 0' }}>Meals Per Day</div>
-          <select value={mealsPerDay} onChange={(e) => setMealsPerDay(e.target.value)} style={{ width: '100%' }}>
-            <option value="">Select</option>
-            <option value="3-meals">3 Meals</option>
-            <option value="3-meals-2-snacks">3 Meals + 2 Snacks</option>
-            <option value="5-6-smaller">5-6 Smaller Meals</option>
-          </select>
-
-          <div style={{ fontWeight: 700, margin: '16px 0 8px 0' }}>Disliked Ingredients</div>
-          <div style={{ position: 'relative' }}>
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}>Disliked Ingredients</div>
             <form onSubmit={addTag} style={{ display: 'flex', gap: 8 }}>
-              <input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Search to add ingredient" style={{ flex: 1 }} />
-              <button type="submit" style={{ padding: '8px 12px', borderRadius: 10, background: '#22c55e', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}>Add</button>
+              <input
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                placeholder="Add ingredient"
+                style={{ flex: 1, padding: '8px 10px', borderRadius: 10, border: '2px solid #e5e7eb' }}
+              />
+              <button type="submit" style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid #e5e7eb', background: '#fff' }}>Add</button>
             </form>
-            {showSuggestions && (suggestions?.length > 0 || isSearching || searchError) && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, marginTop: 4, zIndex: 10 }}>
-                {isSearching && <div style={{ padding: 8, color: '#6b7280' }}>Searching...</div>}
-                {searchError && <div style={{ padding: 8, color: '#b91c1c' }}>{searchError}</div>}
-                {suggestions.map(item => (
-                  <button key={item.id} type="button" onClick={() => selectSuggestion(item)} style={{ width: '100%', textAlign: 'left', padding: 8, background: 'transparent', border: 'none', cursor: 'pointer' }}>
-                    {item.name}
+            {showSuggestions && (
+              <div style={{ marginTop: 8, borderRadius: 12, border: '1px solid #e5e7eb', background: '#ffffff', maxHeight: 160, overflowY: 'auto' }}>
+                {isSearching && <div style={{ padding: 12, color: '#6b7280' }}>Searching...</div>}
+                {searchError && <div style={{ padding: 12, color: '#b91c1c' }}>{searchError}</div>}
+                {!isSearching && !searchError && suggestions.length === 0 && <div style={{ padding: 12, color: '#6b7280' }}>No suggestions</div>}
+                {suggestions.map(s => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => selectSuggestion(s)}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      padding: '10px 12px',
+                      textAlign: 'left',
+                      border: 'none',
+                      background: 'transparent',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {s.name}
                   </button>
                 ))}
               </div>
             )}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+              {disliked.map((tag, idx) => (
+                <div key={idx} style={{ display: 'inline-flex', gap: 6, alignItems: 'center', padding: '6px 10px', borderRadius: 999, background: '#f1f5f9', color: '#1f2937' }}>
+                  <span>{tag?.name || tag}</span>
+                  <button onClick={() => removeTag(idx)} style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}>×</button>
+                </div>
+              ))}
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
-            {disliked.map((tag, idx) => (
-              <span key={idx} style={{ padding: '6px 10px', borderRadius: 999, border: '2px solid var(--color-gray-200)', background: 'transparent' }}>
-                {tag?.name || tag}
-                <button onClick={() => removeTag(idx)} style={{ marginLeft: 8, border: 'none', background: 'transparent', cursor: 'pointer', color: '#ef4444' }}>×</button>
-              </span>
-            ))}
+
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}>Meals Per Day</div>
+            <input
+              value={mealsPerDay}
+              onChange={(e) => setMealsPerDay(e.target.value)}
+              placeholder="e.g. 3"
+              style={{ width: '100%', padding: '8px 10px', borderRadius: 10, border: '2px solid #e5e7eb' }}
+            />
           </div>
         </div>
       </div>
 
-      <div style={{ marginTop: 16 }}>
-        <button disabled={saving} onClick={save} style={{ padding: '10px 16px', borderRadius: 10, background: '#22c55e', color: '#fff', border: 'none', fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer' }}>
-          {saving ? 'Saving...' : 'Save Goals'}
+      <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+        <button
+          onClick={save}
+          disabled={saving}
+          style={{
+            padding: '10px 18px',
+            borderRadius: 10,
+            border: 'none',
+            background: saving ? '#e5e7eb' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+            color: '#ffffff',
+            fontWeight: 600,
+            cursor: saving ? 'not-allowed' : 'pointer'
+          }}
+        >
+          {saving ? 'Saving...' : 'Save Preferences'}
         </button>
       </div>
     </div>
   );
 }
-
-

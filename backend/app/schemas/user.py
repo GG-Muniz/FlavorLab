@@ -7,6 +7,8 @@ This module defines the request/response schemas for user-related API endpoints.
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
 from pydantic import FieldValidationInfo
+from pydantic.json import pydantic_encoder
+import json
 import re
 from ..config import get_settings
 from datetime import datetime, date
@@ -107,6 +109,19 @@ class UserProfileResponse(UserResponse):
     model_config = ConfigDict(from_attributes=True)
     id: int = Field(..., description="Unique identifier for the user")
     preferences: Optional[Dict[str, Any]] = None
+
+    @field_validator('preferences', mode='before')
+    @classmethod
+    def parse_preferences(cls, v):
+        """Parse preferences from JSON string if needed."""
+        if v is None:
+            return None
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                return None
+        return v
 
 
 class UserLogin(BaseModel):

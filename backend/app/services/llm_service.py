@@ -23,28 +23,25 @@ logger = logging.getLogger(__name__)
 
 class LLMResponseError(Exception):
     """Exception raised when LLM response cannot be parsed or validated."""
+
     pass
 
 
-# Initialize the async Anthropic client
 settings = get_settings()
+logger.info("[LLM DEBUG] Loading Anthropic API key from settings...")
+logger.info(f"[LLM DEBUG] API key present: {bool(settings.anthropic_api_key)}")
+logger.info(
+    f"[LLM DEBUG] API key prefix: {settings.anthropic_api_key[:20] if settings.anthropic_api_key else 'NONE'}..."
+)
 client = AsyncAnthropic(api_key=settings.anthropic_api_key)
 
 
-def generate_meal_plan_prompt(survey_data: dict, num_days: int, include_recipes: bool, preferred_ingredients: Optional[List[str]] = None) -> str:
-    """
-    Generate a detailed prompt for the LLM to create a personalized meal plan.
-
-    Args:
-        survey_data: User's survey data including health pillars, dietary restrictions, etc.
-        num_days: Number of days for the meal plan
-        include_recipes: Whether to include detailed recipe information
-        preferred_ingredients: Optional list of ingredient names to prioritize based on health goals
-
-    Returns:
-        str: Formatted prompt for the LLM
-    """
-    # Extract survey data
+def generate_meal_plan_prompt(
+    survey_data: dict,
+    num_days: int,
+    include_recipes: bool,
+    preferred_ingredients: Optional[List[str]] = None,
+) -> str:
     health_pillars = survey_data.get("healthPillars", [])
     dietary_restrictions = survey_data.get("dietaryRestrictions", [])
     meal_complexity = survey_data.get("mealComplexity", "moderate")
@@ -53,7 +50,6 @@ def generate_meal_plan_prompt(survey_data: dict, num_days: int, include_recipes:
     allergies = survey_data.get("allergies", [])
     primary_goal = survey_data.get("primaryGoal", "")
 
-    # Format allergies for critical constraint
     allergy_constraint = ""
     if allergies:
         allergy_list = ", ".join(allergies)
@@ -64,16 +60,13 @@ YOU MUST NEVER include these ingredients in any meal. This is a safety requireme
 Double-check every ingredient against this allergy list before including it.
 """
 
-    # Determine meal structure
     meal_structure_map = {
         "3": "3 meals (breakfast, lunch, dinner)",
         "3-meals-2-snacks": "3 main meals (breakfast, lunch, dinner) + 2 snacks (morning snack, afternoon snack)",
-        "6": "6 small meals throughout the day"
+        "6": "6 small meals throughout the day",
     }
     meal_structure = meal_structure_map.get(meals_per_day, "3 main meals + 2 snacks")
 
-    # Conditional recipe details section
-    recipe_section = ""
     if include_recipes:
         recipe_section = """
 For each meal, include:
@@ -90,7 +83,6 @@ For each meal, only include the basic fields (type, name, calories, description)
 DO NOT include ingredients, servings, prep_time_minutes, cook_time_minutes, instructions, or nutrition fields.
 """
 
-    # Preferred ingredients section
     preferred_ingredients_section = ""
     if preferred_ingredients:
         preferred_ingredients_section = f"""
@@ -99,26 +91,30 @@ Based on the user's health goals, prioritize using the following ingredients in 
 {', '.join(preferred_ingredients)}
 """
 
-    # Build an example JSON structure to avoid brace-escaping issues in f-strings
-    example_meal = {
-        "type": "breakfast",
-        "name": "Meal Name",
-        "calories": 400,
-        "description": "Brief description",
+    example_day = {
+        "day": "Day 1",
+        "meals": [
+            {
+                "type": "breakfast",
+                "name": "Meal Name",
+                "calories": 400,
+                "description": "Brief description",
+            }
+        ],
     }
     if include_recipes:
-        example_meal.update({
-            "ingredients": ["ingredient 1", "ingredient 2"],
-            "servings": 2,
-            "prep_time_minutes": 10,
-            "cook_time_minutes": 15,
-            "instructions": ["step 1", "step 2"],
-            "nutrition": {"protein": "20g", "carbs": "45g", "fat": "12g"},
-        })
-    example_day = {"day": "Day 1", "meals": [example_meal]}
+        example_day["meals"][0].update(
+            {
+                "ingredients": ["ingredient 1", "ingredient 2"],
+                "servings": 2,
+                "prep_time_minutes": 10,
+                "cook_time_minutes": 15,
+                "instructions": ["step 1", "step 2"],
+                "nutrition": {"protein": "20g", "carbs": "45g", "fat": "12g"},
+            }
+        )
     example_json = json.dumps([example_day], indent=2)
 
-    # Build the complete prompt
     prompt = f"""You are FlavorLab's expert nutritionist and meal planning AI. Create a personalized {num_days}-day meal plan.
 {allergy_constraint}
 ## DAILY MEAL STRUCTURE MANDATE
@@ -141,7 +137,7 @@ Each day MUST have exactly this structure: {meal_structure}
 
 ## JSON-ONLY MANDATE
 Respond ONLY with a JSON array. No markdown, no explanations, no code blocks.
-The JSON must be a valid array matching this structure (example only):
+The JSON must be a valid array that matches this schema:
 
 {example_json}
 
@@ -150,110 +146,102 @@ Generate the {num_days}-day meal plan now as pure JSON:"""
     return prompt
 
 
+def _resolve_user_preferences(user: User) -> Dict[str, Any]:
+    if isinstance(user.preferences, str):
+        try:
+            return json.loads(user.preferences) if user.preferences else {}
+        except json.JSONDecodeError:
+            logger.warning("User %s preferences JSON decode failed; defaulting to empty dict", user.id)
+            return {}
+    return user.preferences or {}
+
+
 async def generate_llm_meal_plan(
     user: User,
     num_days: int = 1,
     include_recipes: bool = False,
-    db: Session = None
+    db: Session = None,
 ) -> List[DailyMealPlan]:
-    """
-    Generate a personalized meal plan using Claude Haiku LLM.
-
-    Args:
-        user: User model with preferences containing survey_data
-        num_days: Number of days for the meal plan (default: 1)
-        include_recipes: Whether to include detailed recipe information (default: False)
-        db: Database session for fetching preferred ingredients (optional)
-
-    Returns:
-        List[DailyMealPlan]: Validated list of daily meal plans
-
-    Raises:
-        LLMResponseError: If LLM response cannot be parsed or validated
-        ValueError: If user has no survey_data in preferences
-    """
     try:
-        # Retrieve survey data from user preferences
-        if not user.preferences or "survey_data" not in user.preferences:
+        preferences = _resolve_user_preferences(user)
+        if not preferences or "survey_data" not in preferences:
             raise ValueError("User has no survey data in preferences")
 
-        survey_data = user.preferences["survey_data"]
+        survey_data = preferences["survey_data"]
 
-        # Fetch preferred ingredients based on user health goals
-        preferred_ingredient_names = []
+        preferred_ingredient_names: List[str] = []
         if db is not None:
-            user_health_goals = user.preferences.get("health_goals", [])
+            user_health_goals = preferences.get("health_goals", [])
             if user_health_goals:
                 preferred_ingredients = []
                 for pillar_id in user_health_goals:
                     try:
-                        pillar_ingredients = IngredientEntity.get_ingredients_by_pillar(
-                            db, pillar_id=pillar_id, limit=10
-                        )
+                        pillar_ingredients = IngredientEntity.get_ingredients_by_pillar(db, pillar_id=pillar_id, limit=10)
                         preferred_ingredients.extend(pillar_ingredients)
-                    except Exception as e:
-                        logger.warning(f"Could not fetch ingredients for pillar {pillar_id}: {e}")
+                    except Exception as exc:
+                        logger.warning("Could not fetch ingredients for pillar %s: %s", pillar_id, exc)
                         continue
 
-                # Deduplicate ingredients
                 seen = set()
                 unique_ingredients = [
-                    ing for ing in preferred_ingredients
-                    if not (ing.id in seen or seen.add(ing.id))
+                    ingredient
+                    for ingredient in preferred_ingredients
+                    if not (ingredient.id in seen or seen.add(ingredient.id))
                 ]
+                preferred_ingredient_names = [ingredient.name for ingredient in unique_ingredients]
+                logger.info(
+                    "Found %s preferred ingredients for user %s",
+                    len(preferred_ingredient_names),
+                    user.id,
+                )
 
-                # Extract ingredient names
-                preferred_ingredient_names = [ing.name for ing in unique_ingredients]
-                logger.info(f"Found {len(preferred_ingredient_names)} preferred ingredients for user {user.id}")
-
-        # Generate the prompt
         prompt = generate_meal_plan_prompt(
             survey_data,
             num_days,
             include_recipes,
-            preferred_ingredients=preferred_ingredient_names if preferred_ingredient_names else None
+            preferred_ingredients=preferred_ingredient_names if preferred_ingredient_names else None,
         )
 
-        logger.info(f"Generating LLM meal plan for user {user.id} ({num_days} days, recipes={include_recipes})")
-
-        # Make async API call to Claude Haiku
-        message = await client.messages.create(
-            model="claude-3-haiku-20240307",
-            max_tokens=4096,  # Haiku's max token limit
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
+        logger.info(
+            "Generating LLM meal plan for user %s (%s days, recipes=%s)",
+            user.id,
+            num_days,
+            include_recipes,
         )
+        logger.info("[LLM DEBUG] Prompt length: %s chars", len(prompt))
 
-        # Extract the response content
+        try:
+            logger.info("[LLM DEBUG] Calling Anthropic API with model: claude-3-haiku-20240307")
+            message = await client.messages.create(
+                model="claude-3-haiku-20240307",
+                max_tokens=4096,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            logger.info("[LLM DEBUG] API call successful!")
+        except Exception as api_error:
+            logger.error("[LLM DEBUG] Anthropic API call failed: %s: %s", type(api_error).__name__, api_error)
+            raise
+
         response_text = message.content[0].text.strip()
-        logger.debug(f"LLM response: {response_text[:500]}...")
+        logger.debug("LLM response: %s...", response_text[:500])
 
-        # Parse JSON response
         try:
             meal_plan_data = json.loads(response_text)
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse LLM response as JSON: {e}")
-            logger.error(f"Response text: {response_text}")
-            raise LLMResponseError(f"LLM returned invalid JSON: {e}")
+        except json.JSONDecodeError as exc:
+            logger.error("Failed to parse LLM response as JSON: %s", exc)
+            logger.error("Response text: %s", response_text)
+            raise LLMResponseError(f"LLM returned invalid JSON: {exc}")
 
-        # Validate against Pydantic model
         try:
             validated_plans = [DailyMealPlan.model_validate(day) for day in meal_plan_data]
-            logger.info(f"Successfully generated and validated {len(validated_plans)} days")
+            logger.info("Successfully generated and validated %s days", len(validated_plans))
             return validated_plans
-        except ValidationError as e:
-            logger.error(f"Failed to validate LLM response against schema: {e}")
-            logger.error(f"Meal plan data: {meal_plan_data}")
-            raise LLMResponseError(f"LLM response does not match expected schema: {e}")
-
+        except ValidationError as exc:
+            logger.error("Failed to validate LLM response against schema: %s", exc)
+            logger.error("Meal plan data: %s", meal_plan_data)
+            raise LLMResponseError(f"LLM response does not match expected schema: {exc}")
     except (ValueError, LLMResponseError):
-        # Re-raise expected errors
         raise
-    except Exception as e:
-        # Catch any unexpected errors
-        logger.error(f"Unexpected error generating LLM meal plan: {e}")
-        raise LLMResponseError(f"Failed to generate meal plan: {e}")
+    except Exception as exc:
+        logger.error("Unexpected error generating LLM meal plan: %s", exc)
+        raise LLMResponseError(f"Failed to generate meal plan: {exc}")
