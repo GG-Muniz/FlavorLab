@@ -28,7 +28,7 @@ import { Flame } from 'lucide-react';
 import PropTypes from 'prop-types';
 import './MealCard.css';
 
-const MealCard = ({ meal, onClick }) => {
+const MealCard = ({ meal, pillarNames = [], onClick }) => {
   /**
    * Get color scheme based on meal type
    * Each meal type has a unique color palette for visual distinction
@@ -82,6 +82,29 @@ const MealCard = ({ meal, onClick }) => {
   };
 
   const colors = getMealTypeColor(meal.type);
+
+  /**
+   * Filter tags into dietary/constraint tags and health goal tags
+   */
+  const dietaryTags = meal.tags?.filter(tag => !pillarNames.includes(tag)) || [];
+  const healthGoalTags = meal.tags?.filter(tag => pillarNames.includes(tag)) || [];
+
+  /**
+   * Get emoji for health pillar based on pillar name
+   */
+  const getPillarEmoji = (pillarName) => {
+    const emojiMap = {
+      'Increased Energy': '⚡',
+      'Improved Digestion': '🌿',
+      'Enhanced Immunity': '🛡️',
+      'Better Sleep': '😴',
+      'Mental Clarity': '🧠',
+      'Heart Health': '❤️',
+      'Muscle Recovery': '💪',
+      'Inflammation Reduction': '🔥'
+    };
+    return emojiMap[pillarName] || '🎯';
+  };
 
   return (
     <motion.div
@@ -143,6 +166,104 @@ const MealCard = ({ meal, onClick }) => {
         {meal.name}
       </h3>
 
+      {/* Dietary/Constraint Tags */}
+      {dietaryTags.length > 0 && (
+        <div
+          className="dietary-tags"
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '6px',
+            marginBottom: '8px'
+          }}
+        >
+          {dietaryTags.map((tag, index) => {
+            // Color mapping for dietary constraint tags
+            const getTagColor = (tagName) => {
+              const lowerTag = tagName.toLowerCase();
+
+              // Dietary restrictions - green theme
+              if (lowerTag.includes('gluten-free') || lowerTag.includes('dairy-free') ||
+                  lowerTag.includes('vegan') || lowerTag.includes('vegetarian')) {
+                return { bg: '#d1fae5', text: '#065f46', border: '#a7f3d0' };
+              }
+
+              // Keto - purple theme
+              if (lowerTag.includes('keto')) {
+                return { bg: '#e9d5ff', text: '#7e22ce', border: '#d8b4fe' };
+              }
+
+              // Allergy-free tags - red theme
+              if (lowerTag.includes('-free')) {
+                return { bg: '#fee2e2', text: '#991b1b', border: '#fca5a5' };
+              }
+
+              // Default - gray theme
+              return { bg: '#f3f4f6', text: '#374151', border: '#e5e7eb' };
+            };
+
+            const tagColors = getTagColor(tag);
+
+            return (
+              <span
+                key={index}
+                style={{
+                  display: 'inline-block',
+                  padding: '4px 10px',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  color: tagColors.text,
+                  background: tagColors.bg,
+                  border: `1px solid ${tagColors.border}`,
+                  borderRadius: '6px',
+                  textTransform: 'capitalize',
+                  letterSpacing: '0.3px'
+                }}
+              >
+                {tag}
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Health Goal Tags */}
+      {healthGoalTags.length > 0 && (
+        <div
+          className="health-goal-tags"
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '6px',
+            marginBottom: '16px'
+          }}
+        >
+          {healthGoalTags.map((tag, index) => (
+            <span
+              key={index}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '5px 12px',
+                fontSize: '11px',
+                fontWeight: '700',
+                color: '#16a34a',
+                background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                border: '1.5px solid #86efac',
+                borderRadius: '8px',
+                textTransform: 'capitalize',
+                letterSpacing: '0.3px',
+                boxShadow: '0 1px 2px rgba(34, 197, 94, 0.1)'
+              }}
+            >
+              <span style={{ fontSize: '12px' }}>{getPillarEmoji(tag)}</span>
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Calories Section */}
       <div
         className="meal-calories"
@@ -192,7 +313,7 @@ const MealCard = ({ meal, onClick }) => {
         className="meal-description"
         style={{
           fontSize: '14px',
-          color: '#6b7280',
+          color: '#ffffff',
           lineHeight: '1.6',
           margin: 0,
           minHeight: '64px'
@@ -201,12 +322,12 @@ const MealCard = ({ meal, onClick }) => {
         {meal.description}
       </p>
 
-      {/* Recipe Indicators (if available) */}
-      {meal.ingredients && (
+      {/* Recipe Indicators - Always show if we have the data */}
+      {(meal.servings || meal.prep_time_minutes || meal.cook_time_minutes) && (
         <div style={{
           marginTop: '16px',
           paddingTop: '16px',
-          borderTop: '1px solid #f3f4f6',
+          borderTop: '1px solid #4b5563',
           display: 'flex',
           gap: '12px',
           flexWrap: 'wrap'
@@ -217,22 +338,24 @@ const MealCard = ({ meal, onClick }) => {
               alignItems: 'center',
               gap: '4px',
               fontSize: '12px',
-              color: '#6b7280'
+              color: '#ffffff',
+              fontWeight: '500'
             }}>
               <span>👥</span>
               <span>{meal.servings} servings</span>
             </div>
           )}
-          {meal.prep_time_minutes && (
+          {(meal.prep_time_minutes || meal.cook_time_minutes) && (
             <div style={{
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
               fontSize: '12px',
-              color: '#6b7280'
+              color: '#ffffff',
+              fontWeight: '500'
             }}>
               <span>⏱️</span>
-              <span>{meal.prep_time_minutes + (meal.cook_time_minutes || 0)} min</span>
+              <span>{(meal.prep_time_minutes || 0) + (meal.cook_time_minutes || 0)} min</span>
             </div>
           )}
         </div>
@@ -278,6 +401,8 @@ MealCard.propTypes = {
     calories: PropTypes.number.isRequired,
     /** Meal description */
     description: PropTypes.string.isRequired,
+    /** Optional: Tags for meal attributes (e.g., 'Gluten-Free', 'High-Protein') */
+    tags: PropTypes.arrayOf(PropTypes.string),
     /** Optional: List of ingredients (for detailed view) */
     ingredients: PropTypes.arrayOf(PropTypes.string),
     /** Optional: Number of servings */
@@ -291,6 +416,11 @@ MealCard.propTypes = {
     /** Optional: Nutrition information */
     nutrition: PropTypes.object
   }).isRequired,
+
+  /**
+   * Array of health pillar names for tag filtering
+   */
+  pillarNames: PropTypes.arrayOf(PropTypes.string),
 
   /**
    * Click handler function called when card is clicked

@@ -135,6 +135,7 @@ export default function GoalsPreferencesForm({ onSaved }) {
     setMessage('');
     setError('');
     try {
+      const healthPillarNames = pillars.filter(p => selectedPillars.includes(p.id)).map(p => p.name);
       const payload = {
         // Write into both places for compatibility
         health_goals: { selectedGoals: selectedPillars },
@@ -151,8 +152,20 @@ export default function GoalsPreferencesForm({ onSaved }) {
           allergies: Array.from(allergies),
           disliked: disliked.map(t => (typeof t === 'string' ? { name: t } : t)),
           meals_per_day: mealsPerDay || undefined
+        },
+        preferences: {
+          health_goals: selectedPillars,
+          survey_data: {
+            healthPillars: healthPillarNames,
+            dietaryRestrictions: diet ? [diet] : [],
+            allergies: Array.from(allergies),
+            mealsPerDay: mealsPerDay || undefined
+          }
         }
       };
+      console.log('GoalsPreferencesForm saving payload:', payload);
+      console.log('Selected pillar IDs:', selectedPillars);
+      console.log('Selected pillar names:', healthPillarNames);
       await updateProfile(payload);
       setMessage('Goals & preferences saved');
       onSaved && onSaved();

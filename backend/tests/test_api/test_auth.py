@@ -220,7 +220,7 @@ class TestJWTToken:
         
         decoded_token = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
         assert "exp" in decoded_token
-        assert decoded_token["exp"] > datetime.utcnow().timestamp()
+        assert decoded_token["exp"] > datetime.now(UTC.utc).timestamp()
 
     def test_token_usage(self, authenticated_client: TestClient):
         """Test using the token to access a protected endpoint."""

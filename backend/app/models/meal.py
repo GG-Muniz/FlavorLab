@@ -4,7 +4,7 @@ SQLAlchemy models for meal logging.
 
 from __future__ import annotations
 
-from datetime import date, datetime, UTC
+from datetime import date, datetime, timezone as UTC
 from sqlalchemy import Column, Integer, String, Date, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 

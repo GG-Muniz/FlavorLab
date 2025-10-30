@@ -54,8 +54,8 @@ class User(Base):
     preferences = Column(JSON)  # JSON string
     
     # Metadata
-    created_at = Column(DateTime, default=datetime.datetime.now(datetime.UTC))
-    updated_at = Column(DateTime, default=datetime.datetime.now(datetime.UTC), onupdate=datetime.datetime.now(datetime.UTC))
+    created_at = Column(DateTime, default=datetime.datetime.now(datetime.timezone.utc))
+    updated_at = Column(DateTime, default=datetime.datetime.now(datetime.timezone.utc), onupdate=datetime.datetime.now(datetime.timezone.utc))
     last_login = Column(DateTime)
 
     # Relationships (from calorie tracking feature)
@@ -82,7 +82,7 @@ class User(Base):
     
     def update_last_login(self):
         """Updates the last login time to the current time."""
-        self.last_login = datetime.datetime.now(datetime.UTC)
+        self.last_login = datetime.datetime.now(datetime.timezone.utc)
     
     def to_dict(self, include_sensitive: bool = False) -> dict:
         """

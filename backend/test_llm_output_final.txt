@@ -1,0 +1,730 @@
+
+================================================================================
+Starting LLM Behavior Test Script...
+================================================================================
+
+================================================================================
+  LLM MEAL PLAN GENERATOR BEHAVIOR TEST SUITE
+================================================================================
+Test Run: 2025-10-20 11:05:01
+Total Personas: 4
+
+
+================================================================================
+PERSONA 1/4
+================================================================================
+
+================================================================================
+  TESTING PERSONA: The Celiac Vegan
+================================================================================
+Description: Gluten-free vegan with multiple allergies
+
+Health Goals: ['Improved Digestion', 'Increased Energy']
+Dietary Restrictions: ['vegetarian', 'gluten-free']
+Allergies: ['dairy', 'peanuts']
+Disliked: ['mushrooms', 'eggplant']
+Meals/Day: 3-meals-2-snacks
+
+🔄 Generating meal plan with Claude Haiku...
+2025-10-20 11:05:01,168 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-10-20 11:05:01,171 INFO sqlalchemy.engine.Engine SELECT ingredient_entities.id AS ingredient_entities_id, entities.id AS entities_id, entities.name AS entities_name, entities.primary_classification AS entities_primary_classification, entities.classifications AS entities_classifications, entities.attributes AS entities_attributes, entities.created_at AS entities_created_at, entities.updated_at AS entities_updated_at, ingredient_entities.foodb_priority AS ingredient_entities_foodb_priority, ingredient_entities.health_outcomes AS ingredient_entities_health_outcomes, ingredient_entities.compounds AS ingredient_entities_compounds 
+FROM entities JOIN ingredient_entities ON entities.id = ingredient_entities.id 
+WHERE json_extract(ingredient_entities.health_outcomes, ?) IS NOT NULL
+ LIMIT ? OFFSET ?
+2025-10-20 11:05:01,171 INFO sqlalchemy.engine.Engine [generated in 0.00017s] ('$', 10, 0)
+2025-10-20 11:05:01,172 INFO sqlalchemy.engine.Engine SELECT ingredient_entities.id AS ingredient_entities_id, entities.id AS entities_id, entities.name AS entities_name, entities.primary_classification AS entities_primary_classification, entities.classifications AS entities_classifications, entities.attributes AS entities_attributes, entities.created_at AS entities_created_at, entities.updated_at AS entities_updated_at, ingredient_entities.foodb_priority AS ingredient_entities_foodb_priority, ingredient_entities.health_outcomes AS ingredient_entities_health_outcomes, ingredient_entities.compounds AS ingredient_entities_compounds 
+FROM entities JOIN ingredient_entities ON entities.id = ingredient_entities.id 
+WHERE json_extract(ingredient_entities.health_outcomes, ?) IS NOT NULL
+ LIMIT ? OFFSET ?
+2025-10-20 11:05:01,172 INFO sqlalchemy.engine.Engine [cached since 0.001499s ago] ('$', 10, 0)
+✅ Meal plan generated successfully!
+
+✅ Meal structure correct: 5 meals
+
+🔍 VIOLATION ANALYSIS:
+--------------------------------------------------------------------------------
+✅ No violations detected - all constraints respected!
+
+📋 GENERATED MEAL PLAN (Manual Review):
+--------------------------------------------------------------------------------
+
+Day 1:
+
+  [BREAKFAST] Vegetable Frittata (350 cal)
+  Description: A protein-packed egg dish with sautéed vegetables
+  Ingredients: 8 large eggs, 1 cup chopped spinach, 1 cup diced bell pepper, 1/2 cup diced onion, 2 tablespoons olive oil ... (7 total)
+  Nutrition: Protein 22g, Carbs 8g, Fat 22g
+
+  [MORNING_SNACK] Roasted Beet Juice (80 cal)
+  Description: A refreshing and nutrient-dense beet juice
+  Ingredients: 2 medium beets, roasted and peeled, 1 cup water, Juice of 1 lemon
+  Nutrition: Protein 2g, Carbs 18g, Fat 0g
+
+  [LUNCH] Quinoa and Vegetable Stir-Fry (425 cal)
+  Description: A colorful and nutrient-dense stir-fry over quinoa
+  Ingredients: 1 cup cooked quinoa, 1 tablespoon sesame oil, 1 cup chopped broccoli, 1 cup sliced carrots, 1 cup diced zucchini ... (8 total)
+  Nutrition: Protein 12g, Carbs 55g, Fat 15g
+
+  [AFTERNOON_SNACK] Almond Butter Energy Bites (150 cal)
+  Description: Portable, nutrient-dense snack bites
+  Ingredients: 1/2 cup almond butter, 1/2 cup rolled oats, 2 tablespoons unsweetened shredded coconut, 1 tablespoon chia seeds, 1 tablespoon maple syrup
+  Nutrition: Protein 4g, Carbs 12g, Fat 9g
+
+  [DINNER] Lentil and Sweet Potato Curry (475 cal)
+  Description: A nourishing and flavorful vegetarian curry
+  Ingredients: 1 cup brown lentils, rinsed, 2 cups diced sweet potatoes, 1 cup diced onion, 2 cloves garlic, minced, 1 tablespoon grated ginger ... (13 total)
+  Nutrition: Protein 18g, Carbs 55g, Fat 17g
+
+
+--------------------------------------------------------------------------------
+📄 FULL JSON OUTPUT:
+--------------------------------------------------------------------------------
+[
+  {
+    "day": "Day 1",
+    "meals": [
+      {
+        "type": "breakfast",
+        "name": "Vegetable Frittata",
+        "calories": 350,
+        "description": "A protein-packed egg dish with saut\u00e9ed vegetables",
+        "ingredients": [
+          "8 large eggs",
+          "1 cup chopped spinach",
+          "1 cup diced bell pepper",
+          "1/2 cup diced onion",
+          "2 tablespoons olive oil",
+          "1 teaspoon garlic powder",
+          "1/4 teaspoon black pepper"
+        ],
+        "servings": 2,
+        "prep_time_minutes": 15,
+        "cook_time_minutes": 20,
+        "instructions": [
+          "Preheat oven to 375\u00b0F.",
+          "In a medium bowl, whisk the eggs and season with garlic powder and black pepper.",
+          "Heat olive oil in a 9-inch oven-safe skillet over medium heat. Saut\u00e9 the onion and bell pepper for 5 minutes until softened.",
+          "Pour the egg mixture over the vegetables and cook for 2-3 minutes until the edges start to set.",
+          "Transfer the skillet to the oven and bake for 12-15 minutes until the frittata is puffed and set in the center.",
+          "Remove from oven and let cool for 5 minutes before slicing and serving."
+        ],
+        "nutrition": {
+          "protein": "22g",
+          "carbs": "8g",
+          "fat": "22g",
+          "fiber": "3g"
+        }
+      },
+      {
+        "type": "morning_snack",
+        "name": "Roasted Beet Juice",
+        "calories": 80,
+        "description": "A refreshing and nutrient-dense beet juice",
+        "ingredients": [
+          "2 medium beets, roasted and peeled",
+          "1 cup water",
+          "Juice of 1 lemon"
+        ],
+        "servings": 1,
+        "prep_time_minutes": 10,
+        "cook_time_minutes": 0,
+        "instructions": [
+          "Preheat oven to 400\u00b0F.",
+          "Wrap the beets in foil and roast for 45-60 minutes until tender.",
+          "Allow the beets to cool, then peel and chop them.",
+          "Add the chopped beets, water, and lemon juice to a blender and blend until smooth.",
+          "Pour the beet juice into a glass and enjoy."
+        ],
+        "nutrition": {
+          "protein": "2g",
+          "carbs": "18g",
+          "fat": "0g",
+          "fiber": "4g"
+        }
+      },
+      {
+        "type": "lunch",
+        "name": "Quinoa and Vegetable Stir-Fry",
+        "calories": 425,
+        "description": "A colorful and nutrient-dense stir-fry over quinoa",
+        "ingredients": [
+          "1 cup cooked quinoa",
+          "1 tablespoon sesame oil",
+          "1 cup chopped broccoli",
+          "1 cup sliced carrots",
+          "1 cup diced zucchini",
+          "1 tablespoon coconut aminos",
+          "1 teaspoon ground ginger",
+          "1/4 teaspoon black pepper"
+        ],
+        "servings": 2,
+        "prep_time_minutes": 15,
+        "cook_time_minutes": 20,
+        "instructions": [
+          "Cook the quinoa according to package instructions and set aside.",
+          "Heat the sesame oil in a large skillet or wok over medium-high heat.",
+          "Add the broccoli, carrots, and zucchini and stir-fry for 5-7 minutes until vegetables are tender-crisp.",
+          "Stir in the cooked quinoa, coconut aminos, ginger, and black pepper. Toss to combine.",
+          "Serve the quinoa and vegetable stir-fry immediately."
+        ],
+        "nutrition": {
+          "protein": "12g",
+          "carbs": "55g",
+          "fat": "15g",
+          "fiber": "8g"
+        }
+      },
+      {
+        "type": "afternoon_snack",
+        "name": "Almond Butter Energy Bites",
+        "calories": 150,
+        "description": "Portable, nutrient-dense snack bites",
+        "ingredients": [
+          "1/2 cup almond butter",
+          "1/2 cup rolled oats",
+          "2 tablespoons unsweetened shredded coconut",
+          "1 tablespoon chia seeds",
+          "1 tablespoon maple syrup"
+        ],
+        "servings": 10,
+        "prep_time_minutes": 15,
+        "cook_time_minutes": 0,
+        "instructions": [
+          "In a medium bowl, mix together the almond butter, rolled oats, shredded coconut, chia seeds, and maple syrup until well combined.",
+          "Scoop the mixture by the tablespoonful and roll into bite-sized balls.",
+          "Refrigerate the energy bites for at least 30 minutes before serving."
+        ],
+        "nutrition": {
+          "protein": "4g",
+          "carbs": "12g",
+          "fat": "9g",
+          "fiber": "3g"
+        }
+      },
+      {
+        "type": "dinner",
+        "name": "Lentil and Sweet Potato Curry",
+        "calories": 475,
+        "description": "A nourishing and flavorful vegetarian curry",
+        "ingredients": [
+          "1 cup brown lentils, rinsed",
+          "2 cups diced sweet potatoes",
+          "1 cup diced onion",
+          "2 cloves garlic, minced",
+          "1 tablespoon grated ginger",
+          "1 tablespoon curry powder",
+          "1 teaspoon ground cumin",
+          "1/2 teaspoon ground coriander",
+          "1 cup unsweetened coconut milk",
+          "1 cup vegetable broth",
+          "1 tablespoon coconut oil",
+          "1/4 teaspoon cayenne pepper (optional)",
+          "Chopped cilantro for garnish"
+        ],
+        "servings": 2,
+        "prep_time_minutes": 20,
+        "cook_time_minutes": 30,
+        "instructions": [
+          "In a large pot, heat the coconut oil over medium heat.",
+          "Add the onion and saut\u00e9 for 3-5 minutes until translucent.",
+          "Stir in the garlic, ginger, curry powder, cumin, and coriander. Cook for 1 minute until fragrant.",
+          "Add the lentils, sweet potatoes, coconut milk, and vegetable broth. Bring to a boil, then reduce heat and simmer for 20-25 minutes, until the lentils and sweet potatoes are tender.",
+          "Stir in the cayenne pepper (if using) and season with salt and pepper to taste.",
+          "Serve the lentil and sweet potato curry over cauliflower rice or quinoa, garnished with chopped cilantro."
+        ],
+        "nutrition": {
+          "protein": "18g",
+          "carbs": "55g",
+          "fat": "17g",
+          "fiber": "12g"
+        }
+      }
+    ]
+  }
+]
+
+
+--------------------------------------------------------------------------------
+✅ PERSONA TEST PASSED
+--------------------------------------------------------------------------------
+
+
+
+⏳ Pausing 2 seconds before next test...
+
+================================================================================
+PERSONA 2/4
+================================================================================
+
+================================================================================
+  TESTING PERSONA: The Keto Bodybuilder
+================================================================================
+Description: High-protein keto with shellfish allergy
+
+Health Goals: ['Muscle Recovery', 'Mental Clarity']
+Dietary Restrictions: ['keto']
+Allergies: ['shellfish']
+Disliked: ['avocado']
+Meals/Day: 6
+
+🔄 Generating meal plan with Claude Haiku...
+2025-10-20 11:05:16,662 INFO sqlalchemy.engine.Engine SELECT ingredient_entities.id AS ingredient_entities_id, entities.id AS entities_id, entities.name AS entities_name, entities.primary_classification AS entities_primary_classification, entities.classifications AS entities_classifications, entities.attributes AS entities_attributes, entities.created_at AS entities_created_at, entities.updated_at AS entities_updated_at, ingredient_entities.foodb_priority AS ingredient_entities_foodb_priority, ingredient_entities.health_outcomes AS ingredient_entities_health_outcomes, ingredient_entities.compounds AS ingredient_entities_compounds 
+FROM entities JOIN ingredient_entities ON entities.id = ingredient_entities.id 
+WHERE json_extract(ingredient_entities.health_outcomes, ?) IS NOT NULL
+ LIMIT ? OFFSET ?
+2025-10-20 11:05:16,662 INFO sqlalchemy.engine.Engine [cached since 15.49s ago] ('$', 10, 0)
+2025-10-20 11:05:16,667 INFO sqlalchemy.engine.Engine SELECT ingredient_entities.id AS ingredient_entities_id, entities.id AS entities_id, entities.name AS entities_name, entities.primary_classification AS entities_primary_classification, entities.classifications AS entities_classifications, entities.attributes AS entities_attributes, entities.created_at AS entities_created_at, entities.updated_at AS entities_updated_at, ingredient_entities.foodb_priority AS ingredient_entities_foodb_priority, ingredient_entities.health_outcomes AS ingredient_entities_health_outcomes, ingredient_entities.compounds AS ingredient_entities_compounds 
+FROM entities JOIN ingredient_entities ON entities.id = ingredient_entities.id 
+WHERE json_extract(ingredient_entities.health_outcomes, ?) IS NOT NULL
+ LIMIT ? OFFSET ?
+2025-10-20 11:05:16,667 INFO sqlalchemy.engine.Engine [cached since 15.5s ago] ('$', 10, 0)
+Failed to validate LLM response against schema: 6 validation errors for DailyMealPlan
+meals.0.description
+  Field required [type=missing, input_value={'type': 'breakfast', 'na...: '27g', 'fiber': '2g'}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+meals.1.description
+  Field required [type=missing, input_value={'type': 'snack', 'name':...: '12g', 'fiber': '7g'}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+meals.2.description
+  Field required [type=missing, input_value={'type': 'lunch', 'name':...: '22g', 'fiber': '3g'}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+meals.3.description
+  Field required [type=missing, input_value={'type': 'snack', 'name':...: '14g', 'fiber': '4g'}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+meals.4.description
+  Field required [type=missing, input_value={'type': 'dinner', 'name'...: '22g', 'fiber': '3g'}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+meals.5.description
+  Field required [type=missing, input_value={'type': 'snack', 'name':...': '9g', 'fiber': '2g'}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+Meal plan data: [{'day': 'Day 1', 'meals': [{'type': 'breakfast', 'name': 'Spinach and Feta Crustless Quiche', 'calories': 375, 'ingredients': ['8 eggs', '1 cup unsweetened almond milk', '1/2 cup crumbled feta cheese', '2 cups fresh spinach, chopped', '1/4 teaspoon garlic powder', '1/4 teaspoon onion powder', 'Salt and pepper to taste'], 'servings': 4, 'prep_time_minutes': 15, 'cook_time_minutes': 30, 'instructions': ['Preheat oven to 375°F. Grease a 9-inch pie dish with non-stick cooking spray.', 'In a large bowl, whisk together the eggs and almond milk. Stir in the feta cheese, spinach, garlic powder, onion powder, salt, and pepper.', 'Pour the egg mixture into the prepared pie dish.', 'Bake for 30-35 minutes, or until the center is set.', 'Allow to cool for 5 minutes before slicing and serving.'], 'nutrition': {'protein': '26g', 'carbs': '4g', 'fat': '27g', 'fiber': '2g'}}, {'type': 'snack', 'name': 'Mixed Berry Smoothie', 'calories': 200, 'ingredients': ['1 cup frozen mixed berries (blueberries, raspberries, blackberries)', '1 cup unsweetened almond milk', '2 tablespoons ground flaxseed', '1 tablespoon nut butter (almond or peanut)'], 'servings': 1, 'prep_time_minutes': 5, 'cook_time_minutes': 0, 'instructions': ['Add all ingredients to a blender and blend until smooth.'], 'nutrition': {'protein': '8g', 'carbs': '16g', 'fat': '12g', 'fiber': '7g'}}, {'type': 'lunch', 'name': 'Grilled Chicken Salad with Balsamic Vinaigrette', 'calories': 375, 'ingredients': ['4 ounces grilled chicken breast', '2 cups mixed greens', '1/2 cup cherry tomatoes, halved', '1/4 cup crumbled feta cheese', '2 tablespoons balsamic vinegar', '1 tablespoon extra virgin olive oil', '1 teaspoon Dijon mustard', 'Salt and pepper to taste'], 'servings': 1, 'prep_time_minutes': 10, 'cook_time_minutes': 15, 'instructions': ['In a small bowl, whisk together the balsamic vinegar, olive oil, Dijon mustard, salt, and pepper to make the vinaigrette.', 'In a large salad bowl, combine the mixed greens, cherry tomatoes, and feta cheese.', 'Top the salad with the grilled chicken breast.', 'Drizzle the balsamic vinaigrette over the top and toss to coat.'], 'nutrition': {'protein': '32g', 'carbs': '9g', 'fat': '22g', 'fiber': '3g'}}, {'type': 'snack', 'name': 'Keto Energy Bites', 'calories': 170, 'ingredients': ['1/2 cup unsweetened shredded coconut', '1/4 cup unsweetened almond butter', '2 tablespoons ground flaxseed', '1 tablespoon chia seeds', '1 tablespoon unsweetened cocoa powder', '1 teaspoon ground cinnamon', '1 teaspoon vanilla extract'], 'servings': 5, 'prep_time_minutes': 10, 'cook_time_minutes': 0, 'instructions': ['In a food processor or blender, combine all the ingredients and pulse until a sticky dough forms.', 'Roll the mixture into 1-inch balls and place on a parchment-lined baking sheet.', 'Refrigerate for at least 30 minutes before serving.'], 'nutrition': {'protein': '6g', 'carbs': '6g', 'fat': '14g', 'fiber': '4g'}}, {'type': 'dinner', 'name': 'Baked Salmon with Roasted Broccoli', 'calories': 385, 'ingredients': ['4 ounces baked salmon fillet', '1 cup broccoli florets', '1 tablespoon olive oil', '1/4 teaspoon garlic powder', 'Salt and pepper to taste'], 'servings': 1, 'prep_time_minutes': 10, 'cook_time_minutes': 20, 'instructions': ['Preheat oven to 400°F.', 'Toss the broccoli florets with the olive oil, garlic powder, salt, and pepper.', 'Spread the broccoli on a baking sheet and roast for 15-20 minutes, or until tender and lightly browned.', 'Meanwhile, bake the salmon fillet for 12-15 minutes, or until cooked through.', 'Serve the baked salmon with the roasted broccoli.'], 'nutrition': {'protein': '32g', 'carbs': '8g', 'fat': '22g', 'fiber': '3g'}}, {'type': 'snack', 'name': 'Cucumber Slices with Cream Cheese', 'calories': 120, 'ingredients': ['1 medium cucumber, sliced', '2 tablespoons cream cheese (plant-based or dairy-free)'], 'servings': 1, 'prep_time_minutes': 5, 'cook_time_minutes': 0, 'instructions': ['Wash and slice the cucumber into thin rounds.', 'Spread the cream cheese evenly over the cucumber slices.'], 'nutrition': {'protein': '5g', 'carbs': '6g', 'fat': '9g', 'fiber': '2g'}}]}]
+❌ LLM ERROR: LLM response does not match expected schema: 6 validation errors for DailyMealPlan
+meals.0.description
+  Field required [type=missing, input_value={'type': 'breakfast', 'na...: '27g', 'fiber': '2g'}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+meals.1.description
+  Field required [type=missing, input_value={'type': 'snack', 'name':...: '12g', 'fiber': '7g'}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+meals.2.description
+  Field required [type=missing, input_value={'type': 'lunch', 'name':...: '22g', 'fiber': '3g'}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+meals.3.description
+  Field required [type=missing, input_value={'type': 'snack', 'name':...: '14g', 'fiber': '4g'}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+meals.4.description
+  Field required [type=missing, input_value={'type': 'dinner', 'name'...: '22g', 'fiber': '3g'}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+meals.5.description
+  Field required [type=missing, input_value={'type': 'snack', 'name':...': '9g', 'fiber': '2g'}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+The LLM failed to generate a valid meal plan for this persona.
+
+
+
+⏳ Pausing 2 seconds before next test...
+
+================================================================================
+PERSONA 3/4
+================================================================================
+
+================================================================================
+  TESTING PERSONA: The Adventurous Sleeper
+================================================================================
+Description: Sleep-focused with complex meals, minimal restrictions
+
+Health Goals: ['Better Sleep', 'Inflammation Reduction']
+Dietary Restrictions: []
+Allergies: []
+Disliked: ['cilantro']
+Meals/Day: 3
+
+🔄 Generating meal plan with Claude Haiku...
+2025-10-20 11:05:30,810 INFO sqlalchemy.engine.Engine SELECT ingredient_entities.id AS ingredient_entities_id, entities.id AS entities_id, entities.name AS entities_name, entities.primary_classification AS entities_primary_classification, entities.classifications AS entities_classifications, entities.attributes AS entities_attributes, entities.created_at AS entities_created_at, entities.updated_at AS entities_updated_at, ingredient_entities.foodb_priority AS ingredient_entities_foodb_priority, ingredient_entities.health_outcomes AS ingredient_entities_health_outcomes, ingredient_entities.compounds AS ingredient_entities_compounds 
+FROM entities JOIN ingredient_entities ON entities.id = ingredient_entities.id 
+WHERE json_extract(ingredient_entities.health_outcomes, ?) IS NOT NULL
+ LIMIT ? OFFSET ?
+2025-10-20 11:05:30,810 INFO sqlalchemy.engine.Engine [cached since 29.64s ago] ('$', 10, 0)
+2025-10-20 11:05:30,811 INFO sqlalchemy.engine.Engine SELECT ingredient_entities.id AS ingredient_entities_id, entities.id AS entities_id, entities.name AS entities_name, entities.primary_classification AS entities_primary_classification, entities.classifications AS entities_classifications, entities.attributes AS entities_attributes, entities.created_at AS entities_created_at, entities.updated_at AS entities_updated_at, ingredient_entities.foodb_priority AS ingredient_entities_foodb_priority, ingredient_entities.health_outcomes AS ingredient_entities_health_outcomes, ingredient_entities.compounds AS ingredient_entities_compounds 
+FROM entities JOIN ingredient_entities ON entities.id = ingredient_entities.id 
+WHERE json_extract(ingredient_entities.health_outcomes, ?) IS NOT NULL
+ LIMIT ? OFFSET ?
+2025-10-20 11:05:30,811 INFO sqlalchemy.engine.Engine [cached since 29.64s ago] ('$', 10, 0)
+✅ Meal plan generated successfully!
+
+✅ Meal structure correct: 3 meals
+
+🔍 VIOLATION ANALYSIS:
+--------------------------------------------------------------------------------
+✅ No violations detected - all constraints respected!
+
+📋 GENERATED MEAL PLAN (Manual Review):
+--------------------------------------------------------------------------------
+
+Day 1:
+
+  [BREAKFAST] Berry Smoothie Bowl (350 cal)
+  Description: Nutrient-dense smoothie bowl packed with antioxidants and anti-inflammatory ingredients to support better sleep and reduced inflammation.
+  Ingredients: 1 cup frozen mixed berries, 1 cup unsweetened almond milk, 1 tbsp almond butter, 1 tsp ground flaxseed, 1 tsp honey ... (7 total)
+  Nutrition: Protein 12g, Carbs 34g, Fat 18g
+
+  [LUNCH] Garlic Roasted Broccoli and Quinoa Bowl (420 cal)
+  Description: A nourishing bowl featuring antioxidant-rich broccoli, protein-packed quinoa, and anti-inflammatory garlic.
+  Ingredients: 2 cups broccoli florets, 2 tbsp olive oil, 3 cloves garlic, minced, 1 cup cooked quinoa, 1/2 cup cherry tomatoes, halved ... (8 total)
+  Nutrition: Protein 12g, Carbs 53g, Fat 16g
+
+  [DINNER] Bone Broth and Vegetable Stew (380 cal)
+  Description: A comforting and nourishing stew made with anti-inflammatory bone broth, vegetables, and herbs to support better sleep and reduced inflammation.
+  Ingredients: 4 cups bone broth, 1 cup diced carrots, 1 cup diced celery, 1 cup diced onion, 2 cloves garlic, minced ... (10 total)
+  Nutrition: Protein 16g, Carbs 32g, Fat 14g
+
+
+--------------------------------------------------------------------------------
+📄 FULL JSON OUTPUT:
+--------------------------------------------------------------------------------
+[
+  {
+    "day": "Day 1",
+    "meals": [
+      {
+        "type": "breakfast",
+        "name": "Berry Smoothie Bowl",
+        "calories": 350,
+        "description": "Nutrient-dense smoothie bowl packed with antioxidants and anti-inflammatory ingredients to support better sleep and reduced inflammation.",
+        "ingredients": [
+          "1 cup frozen mixed berries",
+          "1 cup unsweetened almond milk",
+          "1 tbsp almond butter",
+          "1 tsp ground flaxseed",
+          "1 tsp honey",
+          "1/2 cup fresh blueberries",
+          "2 tbsp sliced almonds"
+        ],
+        "servings": 1,
+        "prep_time_minutes": 5,
+        "cook_time_minutes": 0,
+        "instructions": [
+          "Combine the frozen mixed berries, almond milk, almond butter, flaxseed, and honey in a high-speed blender and blend until smooth.",
+          "Pour the smoothie into a bowl and top with the fresh blueberries and sliced almonds."
+        ],
+        "nutrition": {
+          "protein": "12g",
+          "carbs": "34g",
+          "fat": "18g",
+          "fiber": "9g"
+        }
+      },
+      {
+        "type": "lunch",
+        "name": "Garlic Roasted Broccoli and Quinoa Bowl",
+        "calories": 420,
+        "description": "A nourishing bowl featuring antioxidant-rich broccoli, protein-packed quinoa, and anti-inflammatory garlic.",
+        "ingredients": [
+          "2 cups broccoli florets",
+          "2 tbsp olive oil",
+          "3 cloves garlic, minced",
+          "1 cup cooked quinoa",
+          "1/2 cup cherry tomatoes, halved",
+          "2 tbsp sliced green onions",
+          "1 tbsp lemon juice",
+          "Salt and pepper to taste"
+        ],
+        "servings": 2,
+        "prep_time_minutes": 10,
+        "cook_time_minutes": 20,
+        "instructions": [
+          "Preheat the oven to 400\u00b0F (200\u00b0C).",
+          "Toss the broccoli florets with the olive oil and minced garlic. Spread on a baking sheet and roast for 15-20 minutes, until broccoli is tender and lightly browned.",
+          "In a bowl, combine the roasted broccoli, cooked quinoa, cherry tomatoes, and sliced green onions.",
+          "Drizzle with lemon juice and season with salt and pepper to taste."
+        ],
+        "nutrition": {
+          "protein": "12g",
+          "carbs": "53g",
+          "fat": "16g",
+          "fiber": "8g"
+        }
+      },
+      {
+        "type": "dinner",
+        "name": "Bone Broth and Vegetable Stew",
+        "calories": 380,
+        "description": "A comforting and nourishing stew made with anti-inflammatory bone broth, vegetables, and herbs to support better sleep and reduced inflammation.",
+        "ingredients": [
+          "4 cups bone broth",
+          "1 cup diced carrots",
+          "1 cup diced celery",
+          "1 cup diced onion",
+          "2 cloves garlic, minced",
+          "1 cup diced potatoes",
+          "1 cup chopped kale",
+          "1 tbsp dried thyme",
+          "1 tbsp dried rosemary",
+          "Salt and pepper to taste"
+        ],
+        "servings": 2,
+        "prep_time_minutes": 15,
+        "cook_time_minutes": 30,
+        "instructions": [
+          "In a large pot, combine the bone broth, diced carrots, celery, onion, and garlic. Bring to a boil.",
+          "Reduce heat and simmer for 10 minutes.",
+          "Add the diced potatoes and chopped kale. Simmer for an additional 15-20 minutes, until vegetables are tender.",
+          "Stir in the dried thyme and rosemary. Season with salt and pepper to taste."
+        ],
+        "nutrition": {
+          "protein": "16g",
+          "carbs": "32g",
+          "fat": "14g",
+          "fiber": "6g"
+        }
+      }
+    ]
+  }
+]
+
+
+--------------------------------------------------------------------------------
+✅ PERSONA TEST PASSED
+--------------------------------------------------------------------------------
+
+
+
+⏳ Pausing 2 seconds before next test...
+
+================================================================================
+PERSONA 4/4
+================================================================================
+
+================================================================================
+  TESTING PERSONA: The Empty Profile (Edge Case)
+================================================================================
+Description: Minimal preferences to test default behavior
+
+Health Goals: ['Heart Health']
+Dietary Restrictions: []
+Allergies: []
+Disliked: []
+Meals/Day: 3-meals-2-snacks
+
+🔄 Generating meal plan with Claude Haiku...
+2025-10-20 11:05:41,354 INFO sqlalchemy.engine.Engine SELECT ingredient_entities.id AS ingredient_entities_id, entities.id AS entities_id, entities.name AS entities_name, entities.primary_classification AS entities_primary_classification, entities.classifications AS entities_classifications, entities.attributes AS entities_attributes, entities.created_at AS entities_created_at, entities.updated_at AS entities_updated_at, ingredient_entities.foodb_priority AS ingredient_entities_foodb_priority, ingredient_entities.health_outcomes AS ingredient_entities_health_outcomes, ingredient_entities.compounds AS ingredient_entities_compounds 
+FROM entities JOIN ingredient_entities ON entities.id = ingredient_entities.id 
+WHERE json_extract(ingredient_entities.health_outcomes, ?) IS NOT NULL
+ LIMIT ? OFFSET ?
+2025-10-20 11:05:41,354 INFO sqlalchemy.engine.Engine [cached since 40.18s ago] ('$', 10, 0)
+✅ Meal plan generated successfully!
+
+✅ Meal structure correct: 5 meals
+
+🔍 VIOLATION ANALYSIS:
+--------------------------------------------------------------------------------
+✅ No violations detected - all constraints respected!
+
+📋 GENERATED MEAL PLAN (Manual Review):
+--------------------------------------------------------------------------------
+
+Day 1:
+
+  [BREAKFAST] Garlic Herb Scrambled Tofu (350 cal)
+  Description: Flavorful scrambled tofu with garlic, herbs, and a side of greens
+  Ingredients: 1 block firm tofu, pressed and crumbled, 2 cloves garlic, minced, 1 tbsp fresh parsley, chopped, 1 tsp dried oregano, 1/4 tsp turmeric ... (8 total)
+  Nutrition: Protein 25g, Carbs 12g, Fat 20g
+
+  [MORNING_SNACK] Beet and Greens Smoothie (180 cal)
+  Description: Refreshing smoothie with beet juice, greens, and a touch of sweetness
+  Ingredients: 1 cup beet juice, 1 cup kale, stems removed, 1 banana, frozen, 1 tbsp honey
+  Nutrition: Protein 5g, Carbs 36g, Fat 1g
+
+  [LUNCH] Grilled Salmon with Garlic Green Beans (450 cal)
+  Description: Flavorful grilled salmon paired with sautéed garlic green beans
+  Ingredients: 4 oz salmon filet, 1 tbsp olive oil, 2 cloves garlic, minced, 1 lb green beans, trimmed, 1/4 tsp salt ... (6 total)
+  Nutrition: Protein 35g, Carbs 15g, Fat 25g
+
+  [AFTERNOON_SNACK] Matcha Green Tea Latte (120 cal)
+  Description: Refreshing and energizing matcha green tea latte
+  Ingredients: 1 tsp matcha green tea powder, 1 cup unsweetened plant-based milk, 1 tsp honey (optional)
+  Nutrition: Protein 4g, Carbs 12g, Fat 4g
+
+  [DINNER] Garlic Herb Baked Chicken with Roasted Beets (420 cal)
+  Description: Tender baked chicken seasoned with garlic and herbs, served with roasted beets
+  Ingredients: 4 oz boneless, skinless chicken breast, 1 tbsp olive oil, 2 cloves garlic, minced, 1 tsp dried thyme, 1 tsp dried rosemary ... (8 total)
+  Nutrition: Protein 35g, Carbs 20g, Fat 15g
+
+
+--------------------------------------------------------------------------------
+📄 FULL JSON OUTPUT:
+--------------------------------------------------------------------------------
+[
+  {
+    "day": "Day 1",
+    "meals": [
+      {
+        "type": "breakfast",
+        "name": "Garlic Herb Scrambled Tofu",
+        "calories": 350,
+        "description": "Flavorful scrambled tofu with garlic, herbs, and a side of greens",
+        "ingredients": [
+          "1 block firm tofu, pressed and crumbled",
+          "2 cloves garlic, minced",
+          "1 tbsp fresh parsley, chopped",
+          "1 tsp dried oregano",
+          "1/4 tsp turmeric",
+          "1/4 tsp black pepper",
+          "1 tbsp olive oil",
+          "2 cups baby spinach"
+        ],
+        "servings": 2,
+        "prep_time_minutes": 10,
+        "cook_time_minutes": 15,
+        "instructions": [
+          "In a non-stick skillet, heat the olive oil over medium heat.",
+          "Add the crumbled tofu, garlic, parsley, oregano, turmeric, and black pepper. Saut\u00e9 for 5-7 minutes, stirring occasionally, until the tofu is heated through and the flavors are blended.",
+          "Serve the scrambled tofu over a bed of baby spinach."
+        ],
+        "nutrition": {
+          "protein": "25g",
+          "carbs": "12g",
+          "fat": "20g",
+          "fiber": "4g"
+        }
+      },
+      {
+        "type": "morning_snack",
+        "name": "Beet and Greens Smoothie",
+        "calories": 180,
+        "description": "Refreshing smoothie with beet juice, greens, and a touch of sweetness",
+        "ingredients": [
+          "1 cup beet juice",
+          "1 cup kale, stems removed",
+          "1 banana, frozen",
+          "1 tbsp honey"
+        ],
+        "servings": 1,
+        "prep_time_minutes": 5,
+        "cook_time_minutes": 0,
+        "instructions": [
+          "Add all ingredients to a high-speed blender and blend until smooth."
+        ],
+        "nutrition": {
+          "protein": "5g",
+          "carbs": "36g",
+          "fat": "1g",
+          "fiber": "6g"
+        }
+      },
+      {
+        "type": "lunch",
+        "name": "Grilled Salmon with Garlic Green Beans",
+        "calories": 450,
+        "description": "Flavorful grilled salmon paired with saut\u00e9ed garlic green beans",
+        "ingredients": [
+          "4 oz salmon filet",
+          "1 tbsp olive oil",
+          "2 cloves garlic, minced",
+          "1 lb green beans, trimmed",
+          "1/4 tsp salt",
+          "1/4 tsp black pepper"
+        ],
+        "servings": 1,
+        "prep_time_minutes": 10,
+        "cook_time_minutes": 20,
+        "instructions": [
+          "Preheat grill or grill pan to medium-high heat.",
+          "Season the salmon filet with salt and pepper.",
+          "Grill the salmon for 4-6 minutes per side, or until cooked through.",
+          "In a skillet, heat the olive oil over medium heat. Add the minced garlic and saut\u00e9 for 1 minute.",
+          "Add the green beans to the skillet and saut\u00e9 for 5-7 minutes, until tender-crisp.",
+          "Serve the grilled salmon with the saut\u00e9ed garlic green beans."
+        ],
+        "nutrition": {
+          "protein": "35g",
+          "carbs": "15g",
+          "fat": "25g",
+          "fiber": "7g"
+        }
+      },
+      {
+        "type": "afternoon_snack",
+        "name": "Matcha Green Tea Latte",
+        "calories": 120,
+        "description": "Refreshing and energizing matcha green tea latte",
+        "ingredients": [
+          "1 tsp matcha green tea powder",
+          "1 cup unsweetened plant-based milk",
+          "1 tsp honey (optional)"
+        ],
+        "servings": 1,
+        "prep_time_minutes": 5,
+        "cook_time_minutes": 0,
+        "instructions": [
+          "In a small bowl, whisk the matcha powder with a small amount of the plant-based milk until it forms a smooth paste.",
+          "Heat the remaining plant-based milk in a small saucepan over medium heat, stirring occasionally, until steaming hot but not boiling.",
+          "Slowly pour the hot milk into the matcha paste, whisking constantly to combine.",
+          "Stir in honey, if desired."
+        ],
+        "nutrition": {
+          "protein": "4g",
+          "carbs": "12g",
+          "fat": "4g",
+          "fiber": "2g"
+        }
+      },
+      {
+        "type": "dinner",
+        "name": "Garlic Herb Baked Chicken with Roasted Beets",
+        "calories": 420,
+        "description": "Tender baked chicken seasoned with garlic and herbs, served with roasted beets",
+        "ingredients": [
+          "4 oz boneless, skinless chicken breast",
+          "1 tbsp olive oil",
+          "2 cloves garlic, minced",
+          "1 tsp dried thyme",
+          "1 tsp dried rosemary",
+          "1/4 tsp salt",
+          "1/4 tsp black pepper",
+          "1 medium beet, peeled and cubed"
+        ],
+        "servings": 1,
+        "prep_time_minutes": 10,
+        "cook_time_minutes": 30,
+        "instructions": [
+          "Preheat oven to 400\u00b0F.",
+          "In a small bowl, mix together the olive oil, garlic, thyme, rosemary, salt, and black pepper.",
+          "Place the chicken breast in a baking dish and rub the garlic herb mixture all over the chicken.",
+          "Toss the cubed beets in the remaining garlic herb mixture and spread them around the chicken in the baking dish.",
+          "Bake for 25-30 minutes, or until the chicken is cooked through and the beets are tender."
+        ],
+        "nutrition": {
+          "protein": "35g",
+          "carbs": "20g",
+          "fat": "15g",
+          "fiber": "5g"
+        }
+      }
+    ]
+  }
+]
+
+
+--------------------------------------------------------------------------------
+✅ PERSONA TEST PASSED
+--------------------------------------------------------------------------------
+
+
+
+================================================================================
+  TEST SUITE COMPLETE
+================================================================================
+✅ Tested 4 personas
+📊 Review the output above for violations and quality assessment
+
+NOTE: Some violations may be false positives (e.g., 'butter' in 'peanut butter')
+      Always perform manual review of the JSON output.
+================================================================================
+2025-10-20 11:05:53,265 INFO sqlalchemy.engine.Engine ROLLBACK
+
+🔒 Database session closed.
+
+================================================================================
+Test script completed.
+================================================================================
+

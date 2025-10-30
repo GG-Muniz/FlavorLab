@@ -99,18 +99,24 @@ export const submitSurvey = async (surveyData) => {
 
         if (pillarsResponse.ok) {
           const pillars = await pillarsResponse.json();
+          console.log('📋 Fetched pillars from API:', pillars);
+          console.log('🎯 Survey health pillar IDs:', surveyData.healthPillars);
+
           // Map selected IDs to names
           healthPillarNames = surveyData.healthPillars
             .map(id => {
               const pillar = pillars.find(p => p.id === id);
+              console.log(`  Mapping ID ${id} to:`, pillar ? pillar.name : 'NOT FOUND');
               return pillar ? pillar.name : null;
             })
             .filter(name => name !== null);  // Remove nulls
+
+          console.log('✅ Final health pillar names:', healthPillarNames);
         }
       } catch (err) {
-        console.error('Error fetching health pillars:', err);
-        // Fallback: use IDs as strings if fetch fails
-        healthPillarNames = surveyData.healthPillars.map(id => `Goal ${id}`);
+        console.error('❌ CRITICAL: Error fetching health pillars:', err);
+        // Don't use a fallback - throw error so user knows there's a problem
+        throw new Error(`Failed to load health pillar data. Please refresh the page and try again. Error: ${err.message}`);
       }
     }
 

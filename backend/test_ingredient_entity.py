@@ -9,7 +9,7 @@ sys.path.insert(0, '/home/holberton/FlavorLab/backend')
 
 from app.database import SessionLocal, engine, Base
 from app.models.entity import Entity, IngredientEntity
-from datetime import datetime, UTC
+from datetime import datetime, timezone as UTC
 import json
 
 # Create tables if needed

@@ -9,7 +9,7 @@ from sqlalchemy import Column, Integer, String, Text, JSON, DateTime, Boolean, F
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import relationship, Session, Query
 from sqlalchemy.orm.attributes import flag_modified
-from datetime import datetime, UTC
+from datetime import datetime, timezone as UTC
 from typing import Dict, Any, Optional, List
 from ..database import Base
 from sqlalchemy import Table
