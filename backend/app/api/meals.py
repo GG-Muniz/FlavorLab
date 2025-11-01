@@ -214,7 +214,7 @@ async def get_daily_summary(
     total_fat = sum(float(meal.fat_g or 0) for meal in meals)
     total_fiber = sum(float(meal.fiber_g or 0) for meal in meals)
 
-        return DailyNutritionSummary(
+    return DailyNutritionSummary(
         total_calories=round(total_calories, 2),
         total_protein_g=round(total_protein, 2),
         total_carbs_g=round(total_carbs, 2),
