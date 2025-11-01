@@ -43,6 +43,7 @@ from ..schemas.meal_plan import (
     DailyMealPlan,
     LLMMealPlanResponse,
 )
+from ..schemas.meals import DailyCaloriesSummaryResponse, SetCalorieGoalRequest
 from ..services.auth import AuthService, get_current_active_user, get_current_verified_user
 from ..database import get_db
 from ..config import get_settings
