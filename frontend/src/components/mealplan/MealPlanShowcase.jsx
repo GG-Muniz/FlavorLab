@@ -20,6 +20,7 @@ import { getHealthPillars } from '../../services/healthPillarsApi';
 import { motion } from 'framer-motion';
 import { ChefHat, RefreshCw, AlertCircle, Sparkles, Flame, Dumbbell, HeartPulse, Edit } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useData } from '../../context/DataContext';
 import MealCard from './MealCard';
 import MealDetailModal from './MealDetailModal';
 
@@ -55,9 +56,10 @@ const MealPlanShowcase = () => {
   const [selectedMeal, setSelectedMeal] = useState(null);
 
   /**
-   * Get user data from auth context
+   * Get user data from auth context and logged meals from data context
    */
   const { user } = useAuth();
+  const { loggedMeals, refetchAll } = useData();
 
   /**
    * Navigation for editing preferences
@@ -91,6 +93,9 @@ const MealPlanShowcase = () => {
       // Fetch meal plan WITH recipes for modal display
       const data = await generateMealPlan(true);
 
+      // Debug: Log the meal plan data to inspect IDs
+      console.log('📋 [MealPlanShowcase] Generated meal plan:', JSON.stringify(data, null, 2));
+
       // Store the meal plan data
       setMealPlan(data);
     } catch (err) {
@@ -118,6 +123,53 @@ const MealPlanShowcase = () => {
     };
 
     fetchPillars();
+  }, []);
+
+  /**
+   * Load existing generated meals on mount if available
+   */
+  useEffect(() => {
+    const loadExistingMealPlan = async () => {
+      try {
+        const { getMeals } = await import('../../services/mealsApi');
+        const existingMeals = await getMeals('generated');
+
+        if (existingMeals && existingMeals.length > 0) {
+          console.log('📋 [MealPlanShowcase] Found existing generated meals:', existingMeals);
+
+          // Convert MealResponse[] format to LLMMealPlanResponse format
+          const convertedPlan = {
+            plan: [{
+              day: 'Today',
+              meals: existingMeals.map(meal => ({
+                id: meal.id,
+                type: meal.meal_type || meal.type,
+                name: meal.name,
+                calories: meal.calories,
+                description: meal.description,
+                tags: meal.nutrition_info?.tags || [],
+                ingredients: meal.ingredients || [],
+                servings: meal.servings,
+                prep_time_minutes: meal.prep_time_minutes,
+                cook_time_minutes: meal.cook_time_minutes,
+                instructions: meal.instructions || [],
+                nutrition: meal.nutrition_info || {}
+              }))
+            }],
+            health_goal_summary: null
+          };
+
+          console.log('📋 [MealPlanShowcase] Converted plan:', convertedPlan);
+          setMealPlan(convertedPlan);
+          setIsInitialState(false);
+        }
+      } catch (err) {
+        console.error('Error loading existing meal plan:', err);
+        // Fail silently - user can still generate new plans
+      }
+    };
+
+    loadExistingMealPlan();
   }, []);
 
   // ============================================================================
@@ -554,47 +606,48 @@ const MealPlanShowcase = () => {
               alignItems: 'center',
               gap: '8px',
               padding: '12px 20px',
-              background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
               color: '#ffffff',
               border: 'none',
               borderRadius: '12px',
               fontSize: '14px',
               fontWeight: '600',
               cursor: 'pointer',
-              boxShadow: '0 4px 6px -1px rgba(34, 197, 94, 0.3)',
+              boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3)',
               transition: 'all 0.2s'
             }}
           >
-            <RefreshCw width={16} height={16} />
-            <span>Generate New Plan</span>
+            <RefreshCw width={16} height={16} color="#ffffff" />
+            <span style={{ color: '#ffffff' }}>Generate New Meal Plan</span>
           </motion.button>
         </div>
 
-        {/* User Preferences Summary - Table Layout */}
+        {/* User Preferences Summary - Vertical Layout */}
         {(userPillarNames.length > 0 || dietaryRestrictions.length > 0 || allergies.length > 0 || dislikedIngredients.length > 0) && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             style={{
-              padding: '18px 24px',
-              background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-              borderRadius: '16px',
-              border: '2px solid #bbf7d0',
-              boxShadow: '0 4px 6px -1px rgba(34, 197, 94, 0.1)',
+              padding: '24px',
+              background: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              borderRadius: '12px',
+              border: '2px solid #f3f4f6',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               display: 'flex',
-              alignItems: 'center',
-              gap: '24px',
-              flexWrap: 'wrap'
+              flexDirection: 'column',
+              gap: '20px'
             }}
           >
             {/* Health Goals Row */}
             {userPillarNames.length > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <strong style={{ fontSize: '13px', color: '#166534', fontWeight: '600', minWidth: '90px' }}>
+                <strong style={{ fontSize: '14px', color: '#374151', fontWeight: '600', minWidth: '90px' }}>
                   Health Goals:
                 </strong>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
                   {userPillarNames.map((name, idx) => (
                     <span
                       key={`goal-${idx}`}
@@ -602,14 +655,15 @@ const MealPlanShowcase = () => {
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '4px',
-                        padding: '4px 10px',
-                        background: '#ffffff',
-                        border: '1.5px solid #86efac',
+                        padding: '6px 12px',
+                        background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                        border: 'none',
                         borderRadius: '6px',
-                        fontSize: '12px',
+                        fontSize: '13px',
                         fontWeight: '500',
-                        color: '#15803d',
-                        whiteSpace: 'nowrap'
+                        color: '#ffffff',
+                        whiteSpace: 'nowrap',
+                        boxShadow: '0 1px 2px rgba(59, 130, 246, 0.3)'
                       }}
                     >
                       <span style={{ fontSize: '13px' }}>{getPillarEmoji(name)}</span>
@@ -620,138 +674,132 @@ const MealPlanShowcase = () => {
               </div>
             )}
 
-            {/* Vertical Divider */}
-            {userPillarNames.length > 0 && (dietaryRestrictions.length > 0 || allergies.length > 0 || dislikedIngredients.length > 0) && (
-              <div style={{ width: '1px', height: '24px', background: '#bbf7d0' }} />
-            )}
-
-            {/* Dietary Style Row */}
-            {dietaryRestrictions.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <strong style={{ fontSize: '13px', color: '#166534', fontWeight: '600', minWidth: '90px' }}>
-                  Dietary Style:
-                </strong>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  {dietaryRestrictions.map((restriction, idx) => (
-                    <span
-                      key={`diet-${idx}`}
-                      style={{
-                        padding: '4px 10px',
-                        background: '#ffffff',
-                        border: '1.5px solid #86efac',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        color: '#15803d',
-                        textTransform: 'capitalize',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {restriction}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Vertical Divider */}
-            {dietaryRestrictions.length > 0 && (allergies.length > 0 || dislikedIngredients.length > 0) && (
-              <div style={{ width: '1px', height: '24px', background: '#bbf7d0' }} />
-            )}
-
-            {/* Allergies Row */}
-            {allergies.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <strong style={{ fontSize: '13px', color: '#166534', fontWeight: '600', minWidth: '70px' }}>
-                  Allergies:
-                </strong>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  {allergies.map((allergy, idx) => (
-                    <span
-                      key={`allergy-${idx}`}
-                      style={{
-                        padding: '4px 10px',
-                        background: '#fef2f2',
-                        border: '1.5px solid #fca5a5',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        color: '#dc2626',
-                        textTransform: 'capitalize',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {allergy}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Vertical Divider */}
-            {allergies.length > 0 && dislikedIngredients.length > 0 && (
-              <div style={{ width: '1px', height: '24px', background: '#bbf7d0' }} />
-            )}
-
-            {/* Avoiding Row */}
-            {dislikedIngredients.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <strong style={{ fontSize: '13px', color: '#166534', fontWeight: '600', minWidth: '70px' }}>
-                  Avoiding:
-                </strong>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  {dislikedIngredients.map((item, idx) => {
-                    const displayName = item?.name || item;
-                    return (
+            {/* Dietary Style & Allergies Container */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {/* Dietary Style Row */}
+              {dietaryRestrictions.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <strong style={{ fontSize: '14px', color: '#374151', fontWeight: '600', minWidth: '90px' }}>
+                    Dietary Style:
+                  </strong>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
+                    {dietaryRestrictions.map((restriction, idx) => (
                       <span
-                        key={`disliked-${idx}`}
+                        key={`diet-${idx}`}
                         style={{
-                          padding: '4px 10px',
-                          background: '#fffbeb',
-                          border: '1.5px solid #fcd34d',
+                          padding: '6px 12px',
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          border: 'none',
                           borderRadius: '6px',
-                          fontSize: '12px',
+                          fontSize: '13px',
                           fontWeight: '500',
-                          color: '#b45309',
+                          color: '#ffffff',
                           textTransform: 'capitalize',
-                          whiteSpace: 'nowrap'
+                          whiteSpace: 'nowrap',
+                          boxShadow: '0 1px 2px rgba(16, 185, 129, 0.3)'
                         }}
                       >
-                        {displayName}
+                        {restriction}
                       </span>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Vertical Divider before Edit Button */}
-            <div style={{ width: '1px', height: '24px', background: '#bbf7d0', marginLeft: 'auto' }} />
+              {/* Allergies Row */}
+              {allergies.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <strong style={{ fontSize: '14px', color: '#374151', fontWeight: '600', minWidth: '90px' }}>
+                    Allergies:
+                  </strong>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
+                    {allergies.map((allergy, idx) => (
+                      <span
+                        key={`allergy-${idx}`}
+                        style={{
+                          padding: '6px 12px',
+                          background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          color: '#ffffff',
+                          textTransform: 'capitalize',
+                          whiteSpace: 'nowrap',
+                          boxShadow: '0 1px 2px rgba(245, 158, 11, 0.3)'
+                        }}
+                      >
+                        {allergy}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Avoiding Row */}
+              {dislikedIngredients.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <strong style={{ fontSize: '14px', color: '#374151', fontWeight: '600', minWidth: '90px' }}>
+                    Avoiding:
+                  </strong>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
+                    {dislikedIngredients.map((item, idx) => {
+                      const displayName = item?.name || item;
+                      return (
+                        <span
+                          key={`disliked-${idx}`}
+                          style={{
+                            padding: '6px 12px',
+                            background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '13px',
+                            fontWeight: '500',
+                            color: '#ffffff',
+                            textTransform: 'capitalize',
+                            whiteSpace: 'nowrap',
+                            boxShadow: '0 1px 2px rgba(236, 72, 153, 0.3)'
+                          }}
+                        >
+                          {displayName}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Horizontal Divider before Edit Button */}
+            <div style={{ width: '100%', height: '1px', background: '#e5e7eb' }} />
 
             {/* Edit Preferences Button */}
-            <motion.button
-              onClick={() => navigate('/app/nutritest')}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 14px',
-                background: '#ffffff',
-                color: '#16a34a',
-                border: '1.5px solid #86efac',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              <Edit width={14} height={14} />
-              <span>Edit</span>
-            </motion.button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
+              <motion.button
+                onClick={() => navigate('/app/nutritest')}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  background: '#ffffff',
+                  color: '#374151',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  whiteSpace: 'nowrap',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                }}
+              >
+                <Edit width={14} height={14} />
+                <span>Edit Preferences</span>
+              </motion.button>
+            </div>
           </motion.div>
         )}
       </div>
@@ -763,16 +811,41 @@ const MealPlanShowcase = () => {
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '24px'
       }}>
-        {mealPlan?.plan[0]?.meals.map((meal, idx) => (
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 * idx, duration: 0.4 }}
-          >
-            <MealCard meal={meal} pillarNames={allPillarNames} onClick={() => setSelectedMeal(meal)} />
-          </motion.div>
-        ))}
+        {mealPlan?.plan[0]?.meals.map((meal, idx) => {
+          // Check if this meal is already logged today
+          const mealType = meal.type || meal.meal_type;
+          const isLogged = loggedMeals?.some(
+            loggedMeal => loggedMeal.name === meal.name &&
+                         loggedMeal.meal_type?.toLowerCase() === mealType?.toLowerCase()
+          ) || false;
+
+          return (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * idx, duration: 0.4 }}
+            >
+              <MealCard
+                meal={meal}
+                pillarNames={allPillarNames}
+                isLogged={isLogged}
+                onClick={() => setSelectedMeal(meal)}
+                onLogMeal={async (mealToLog) => {
+                  try {
+                    const { logMealForToday } = await import('../../services/mealsApi');
+                    await logMealForToday(mealToLog.id);
+                    // Refresh data to update logged status
+                    await refetchAll();
+                  } catch (error) {
+                    console.error('Error logging meal:', error);
+                    alert(`Failed to log meal: ${error.message || 'Unknown error'}`);
+                  }
+                }}
+              />
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Meal Detail Modal */}

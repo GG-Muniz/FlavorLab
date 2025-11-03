@@ -24,11 +24,11 @@
  */
 
 import { motion } from 'framer-motion';
-import { Flame } from 'lucide-react';
+import { Flame, CheckCircle2 } from 'lucide-react';
 import PropTypes from 'prop-types';
 import './MealCard.css';
 
-const MealCard = ({ meal, pillarNames = [], onClick }) => {
+const MealCard = ({ meal, pillarNames = [], isLogged = false, onClick, onLogMeal }) => {
   /**
    * Get color scheme based on meal type
    * Each meal type has a unique color palette for visual distinction
@@ -248,13 +248,13 @@ const MealCard = ({ meal, pillarNames = [], onClick }) => {
                 padding: '5px 12px',
                 fontSize: '11px',
                 fontWeight: '700',
-                color: '#16a34a',
-                background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-                border: '1.5px solid #86efac',
+                color: '#ffffff',
+                background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                border: 'none',
                 borderRadius: '8px',
                 textTransform: 'capitalize',
                 letterSpacing: '0.3px',
-                boxShadow: '0 1px 2px rgba(34, 197, 94, 0.1)'
+                boxShadow: '0 1px 2px rgba(59, 130, 246, 0.3)'
               }}
             >
               <span style={{ fontSize: '12px' }}>{getPillarEmoji(tag)}</span>
@@ -313,7 +313,7 @@ const MealCard = ({ meal, pillarNames = [], onClick }) => {
         className="meal-description"
         style={{
           fontSize: '14px',
-          color: '#ffffff',
+          color: '#6b7280',
           lineHeight: '1.6',
           margin: 0,
           minHeight: '64px'
@@ -327,7 +327,7 @@ const MealCard = ({ meal, pillarNames = [], onClick }) => {
         <div style={{
           marginTop: '16px',
           paddingTop: '16px',
-          borderTop: '1px solid #4b5563',
+          borderTop: '1px solid #e5e7eb',
           display: 'flex',
           gap: '12px',
           flexWrap: 'wrap'
@@ -338,7 +338,7 @@ const MealCard = ({ meal, pillarNames = [], onClick }) => {
               alignItems: 'center',
               gap: '4px',
               fontSize: '12px',
-              color: '#ffffff',
+              color: '#6b7280',
               fontWeight: '500'
             }}>
               <span>👥</span>
@@ -351,7 +351,7 @@ const MealCard = ({ meal, pillarNames = [], onClick }) => {
               alignItems: 'center',
               gap: '4px',
               fontSize: '12px',
-              color: '#ffffff',
+              color: '#6b7280',
               fontWeight: '500'
             }}>
               <span>⏱️</span>
@@ -360,6 +360,50 @@ const MealCard = ({ meal, pillarNames = [], onClick }) => {
           )}
         </div>
       )}
+
+      {/* Log Meal Button Section */}
+      <div style={{ marginTop: '16px' }}>
+        {meal.id && onLogMeal && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent card click
+              onLogMeal(meal);
+            }}
+            style={{
+              width: '100%',
+              padding: '10px 16px',
+              background: isLogged ? '#f3f4f6' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+              color: isLogged ? '#6b7280' : '#ffffff',
+              border: isLogged ? '1px solid #e5e7eb' : 'none',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all 0.2s',
+              boxShadow: isLogged ? 'none' : '0 2px 4px rgba(34, 197, 94, 0.3)'
+            }}
+            onMouseEnter={(e) => {
+              if (!isLogged) {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 6px rgba(34, 197, 94, 0.4)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isLogged) {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 4px rgba(34, 197, 94, 0.3)';
+              }
+            }}
+          >
+            {isLogged ? <CheckCircle2 width={16} height={16} /> : <Flame width={16} height={16} />}
+            {isLogged ? 'Logged ✔️' : 'Log Meal'}
+          </button>
+        )}
+      </div>
 
       {/* Click Hint */}
       <div

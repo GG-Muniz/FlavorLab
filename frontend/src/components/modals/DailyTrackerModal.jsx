@@ -122,13 +122,18 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
 
   const handleAddIntake = async () => {
     if (calorieInput && !isNaN(calorieInput) && mealName.trim()) {
-      await addLog(mealName, Number(calorieInput));
-      setSuccessMessage('Meal logged successfully!');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      try {
+        await addLog(mealName, Number(calorieInput));
+        setSuccessMessage('Meal logged successfully!');
+        setTimeout(() => setSuccessMessage(''), 3000);
 
-      // Reset inputs
-      setCalorieInput('');
-      setMealName('');
+        // Reset inputs
+        setCalorieInput('');
+        setMealName('');
+      } catch (error) {
+        console.error('❌ [DailyTrackerModal] Failed to log meal:', error);
+        alert(`Failed to log meal: ${error.message || 'Unknown error'}`);
+      }
     }
   };
 

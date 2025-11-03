@@ -528,7 +528,7 @@ const MealHistory = () => {
                           margin: 0,
                         }}
                       >
-                        {meal.meal_name}
+                        {meal.name}
                       </p>
                       <span
                         style={{
@@ -556,7 +556,7 @@ const MealHistory = () => {
                           margin: 0,
                         }}
                       >
-                        Protein: {meal.protein}g
+                        Protein: {meal.protein_g || 0}g
                       </p>
                       <p
                         style={{
@@ -565,7 +565,7 @@ const MealHistory = () => {
                           margin: 0,
                         }}
                       >
-                        Carbs: {meal.carbs}g
+                        Carbs: {meal.carbs_g || 0}g
                       </p>
                       <p
                         style={{
@@ -574,7 +574,7 @@ const MealHistory = () => {
                           margin: 0,
                         }}
                       >
-                        Fat: {meal.fat}g
+                        Fat: {meal.fat_g || 0}g
                       </p>
                     </div>
 

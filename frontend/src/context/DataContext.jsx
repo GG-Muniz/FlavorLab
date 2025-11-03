@@ -32,12 +32,17 @@ export const DataProvider = ({ children }) => {
         }),
         getMeals('generated') // Get meal plans
       ]);
+
+      // DEBUG: Log API response to inspect macro goals
+      console.log('🔍 [DataContext] daily-summary API response:', JSON.stringify(summaryResponse, null, 2));
+
       setLoggedMeals(summaryResponse.logged_meals_today || []);
       setMealPlans(plansResponse || []);
       setSummary(summaryResponse); // Store full summary
       setCurrentStreak(summaryResponse.current_streak || 0);
     } catch (error) {
-      console.error("Failed to fetch data", error);
+      console.error("❌ [DataContext] Failed to fetch data", error);
+      console.log('⚠️ [DataContext] Using fallback data with default macro goals');
       // Set fallback data to prevent infinite loading
       setLoggedMeals([]);
       setMealPlans([]);
@@ -47,10 +52,22 @@ export const DataProvider = ({ children }) => {
         remaining: 2000,
         logged_meals_today: [],
         macros: {
-          protein: 0,
-          carbs: 0,
-          fat: 0,
-          fiber: 0
+          protein: {
+            consumed: 0,
+            goal: 150
+          },
+          carbs: {
+            consumed: 0,
+            goal: 250
+          },
+          fat: {
+            consumed: 0,
+            goal: 67
+          },
+          fiber: {
+            consumed: 0,
+            goal: 25
+          }
         }
       });
     } finally {
@@ -80,11 +97,14 @@ export const DataProvider = ({ children }) => {
 
   const addLog = async (mealName, calories) => {
     try {
+      console.log('📝 [DataContext] Logging meal:', { mealName, calories: Math.round(calories) });
       // CRITICAL FIX: Round calories to integer to prevent Pydantic validation errors
-      await logManualCalories(mealName, Math.round(calories));
+      const result = await logManualCalories(mealName, Math.round(calories));
+      console.log('✅ [DataContext] Meal logged successfully:', result);
       await fetchData(); // Re-sync
     } catch (error) {
-      console.error("Error logging meal:", error);
+      console.error("❌ [DataContext] Error logging meal:", error);
+      throw error; // Re-throw so UI can show error
     }
   };
 

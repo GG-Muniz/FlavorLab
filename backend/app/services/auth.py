@@ -38,27 +38,27 @@ ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 
 class AuthService:
     """Authentication service class."""
-    
+
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
         """
         Verify a password against its hash.
-        
+
         Args:
             plain_password: Plain text password
             hashed_password: Hashed password from database
-            
+
         Returns:
             bool: True if password matches, False otherwise
         """
         return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
-    
+
     @staticmethod
     def get_password_hash(password: str) -> str:
         """Hash a password."""
         hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         return hashed.decode('utf-8')
-    
+
     @staticmethod
     def create_access_token(data: dict, expires_delta: Optional[datetime.timedelta] = None) -> str:
         """
@@ -91,15 +91,15 @@ class AuthService:
         to_encode = {**data, "exp": expire_ts}
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
         return encoded_jwt
-    
+
     @staticmethod
     def verify_token(token: str) -> Optional[TokenData]:
         """
         Verify and decode a JWT token.
-        
+
         Args:
             token: JWT token to verify
-            
+
         Returns:
             TokenData: Decoded token data or None if invalid
         """
@@ -119,17 +119,17 @@ class AuthService:
             return TokenData(user_id=user_id_int, email=email)
         except JWTError:
             return None
-    
+
     @staticmethod
     def authenticate_user(db: Session, email: str, password: str) -> Optional[models.User]:
         """
         Authenticate a user with email and password.
-        
+
         Args:
             db: Database session
             email: User email
             password: User password
-            
+
         Returns:
             User: Authenticated user or None if authentication fails
         """
@@ -139,79 +139,95 @@ class AuthService:
         if not AuthService.verify_password(password, user.hashed_password):
             return None
         return user
-    
+
     @staticmethod
     def get_user_by_email(db: Session, email: str) -> Optional[models.User]:
         """
         Get user by email address.
-        
+
         Args:
             db: Database session
             email: User email
-            
+
         Returns:
             User: User object or None if not found
         """
         return db.query(models.User).filter(models.User.email == email).first()
-    
+
     @staticmethod
     def get_user_by_id(db: Session, user_id: int) -> Optional[models.User]:
         """
         Get user by ID.
-        
+
         Args:
             db: Database session
             user_id: User ID
-            
+
         Returns:
             User: User object or None if not found
         """
         return db.query(models.User).filter(models.User.id == user_id).first()
-    
+
     @staticmethod
     def create_user(db: Session, email: str, password: str, **kwargs) -> models.User:
         """
-        Create a new user.
-        
+        Create a new user with default calorie goals.
+
         Args:
             db: Database session
             email: User email
             password: User password
             **kwargs: Additional user fields
-            
+
         Returns:
             User: Created user object
         """
+        from ..models.calorie_tracking import DailyCalorieGoal
+
         hashed_password = AuthService.get_password_hash(password)
-        
+
         user = models.User(
             email=email,
             hashed_password=hashed_password,
             **kwargs
         )
-        
+
         db.add(user)
         db.commit()
         db.refresh(user)
+
+        # Create default calorie goal for new user
+        # Using standard 2000 calorie diet with balanced macros
+        default_goal = DailyCalorieGoal(
+            user_id=user.id,
+            goal_calories=2000.0,
+            goal_protein_g=150.0,  # 30% of calories (150g * 4 cal/g = 600 cal)
+            goal_carbs_g=200.0,     # 40% of calories (200g * 4 cal/g = 800 cal)
+            goal_fat_g=67.0,        # 30% of calories (67g * 9 cal/g = 603 cal)
+            goal_fiber_g=25.0       # Recommended daily fiber intake
+        )
+        db.add(default_goal)
+        db.commit()
+
         return user
-    
+
     @staticmethod
     def update_user_last_login(db: Session, user: models.User) -> None:
         """
         Update user's last login timestamp.
-        
+
         Args:
             db: Database session
             user: User object to update
         """
         user.update_last_login()
         db.commit()
-    
+
     @staticmethod
     def change_password(db: Session, user: models.User, new_password: str) -> None:
         """
         Change user's password.
-        
+
         Args:
             db: Database session
             user: User object
@@ -219,24 +235,24 @@ class AuthService:
         """
         user.hashed_password = AuthService.get_password_hash(new_password)
         db.commit()
-    
+
     @staticmethod
     def deactivate_user(db: Session, user: models.User) -> None:
         """
         Deactivate a user account.
-        
+
         Args:
             db: Database session
             user: User object
         """
         user.is_active = False
         db.commit()
-    
+
     @staticmethod
     def activate_user(db: Session, user: models.User) -> None:
         """
         Activate a user account.
-        
+
         Args:
             db: Database session
             user: User object
@@ -318,14 +334,14 @@ class AuthService:
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> models.User:
     """
     Get the current authenticated user.
-    
+
     Args:
         token: JWT token from request
         db: Database session
-        
+
     Returns:
         User: Current authenticated user
-        
+
     Raises:
         HTTPException: If authentication fails
     """
@@ -334,34 +350,34 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    
+
     token_data = AuthService.verify_token(token)
     if token_data is None:
         raise credentials_exception
-    
+
     user = AuthService.get_user_by_id(db, user_id=token_data.user_id)
     if user is None:
         raise credentials_exception
-    
+
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Inactive user"
         )
-    
+
     return user
 
 
 async def get_current_active_user(current_user: models.User = Depends(get_current_user)) -> models.User:
     """
     Get the current active user.
-    
+
     Args:
         current_user: Current authenticated user
-        
+
     Returns:
         User: Current active user
-        
+
     Raises:
         HTTPException: If user is inactive
     """
@@ -376,13 +392,13 @@ async def get_current_active_user(current_user: models.User = Depends(get_curren
 async def get_current_verified_user(current_user: models.User = Depends(get_current_active_user)) -> models.User:
     """
     Get the current verified user.
-    
+
     Args:
         current_user: Current active user
-        
+
     Returns:
         User: Current verified user
-        
+
     Raises:
         HTTPException: If user is not verified
     """
@@ -398,10 +414,10 @@ async def get_current_verified_user(current_user: models.User = Depends(get_curr
 def create_token_for_user(user: models.User) -> str:
     """
     Create an access token for a user.
-    
+
     Args:
         user: User object
-        
+
     Returns:
         str: JWT access token
     """
@@ -416,7 +432,7 @@ def create_token_for_user(user: models.User) -> str:
 def get_token_expiration_time() -> datetime:
     """
     Get the token expiration time.
-    
+
     Returns:
         datetime: Token expiration time
     """

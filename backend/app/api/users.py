@@ -20,6 +20,7 @@ from typing import List, Optional
 
 from .. import models
 from ..models.entity import IngredientEntity
+from ..models.meal import Meal, MealSource
 from ..models.health_pillars import HEALTH_PILLARS, get_pillar_name
 from ..schemas.user import (
     UserCreate,
@@ -60,14 +61,14 @@ async def register_user(
 ) -> UserResponse:
     """
     Register a new user.
-    
+
     Args:
         user_data: User registration data
         db: Database session
-        
+
     Returns:
         UserResponse: Created user information
-        
+
     Raises:
         HTTPException: If registration fails
     """
@@ -108,7 +109,7 @@ async def register_user(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Email already registered"
                 )
-        
+
         # Check if username is taken (if provided)
         if user_data.username:
             existing_username = db.query(models.User).filter(models.User.username == user_data.username).first()
@@ -117,7 +118,7 @@ async def register_user(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Username already taken"
                 )
-        
+
         # Create user
         user = AuthService.create_user(
             db=db,
@@ -128,9 +129,9 @@ async def register_user(
             last_name=user_data.last_name,
             is_active=user_data.is_active
         )
-        
+
         return UserResponse.model_validate(user)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -195,6 +196,34 @@ async def get_current_user_profile(
         )
 
 
+@router.get("/me/daily-summary", response_model=DailyCaloriesSummaryResponse)
+async def get_daily_summary(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+) -> DailyCaloriesSummaryResponse:
+    """
+    Get the current day's nutrition summary for dashboard hydration.
+
+    Returns:
+        Complete dashboard state with daily_goal, total_consumed,
+        remaining, logged_meals_today, and current_streak
+    """
+    from ..services.daily_summary_service import create_daily_summary
+    from ..services.streak_service import calculate_current_streak
+
+    # Use authenticated user's ID
+    user_id = current_user.id
+
+    # Get authoritative dashboard state
+    summary = create_daily_summary(user_id, db)
+
+    # Add streak calculation
+    current_streak = calculate_current_streak(db, user_id)
+    summary["current_streak"] = current_streak
+
+    return DailyCaloriesSummaryResponse(**summary)
+
+
 @router.put("/me", response_model=UserProfileResponse)
 async def update_current_user_profile(
     user_data: UserUpdate,
@@ -203,12 +232,12 @@ async def update_current_user_profile(
 ):
     """
     Update current user's profile information.
-    
+
     Args:
         user_data: User update data
         db: Database session
         current_user: Current authenticated user
-        
+
     Returns:
         UserResponse: Updated user information
     """
@@ -221,7 +250,7 @@ async def update_current_user_profile(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Username already taken"
                 )
-        
+
         # Update fields
         if user_data.username is not None:
             current_user.username = user_data.username
@@ -265,7 +294,7 @@ async def update_current_user_profile(
 
         logger.info(f"User {current_user.id} profile updated. Final preferences: {current_user.preferences}")
         return UserProfileResponse.model_validate(current_user)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -481,6 +510,83 @@ async def generate_llm_meal_plan_endpoint(
             db=db
         )
 
+        # Save generated meals to database as templates (GENERATED source) for logging
+        saved_plan = []
+        for day_plan in daily_plans:
+            saved_meals = []
+            for meal_item in day_plan.meals:
+                # Extract macro nutrients from nutrition dict if available
+                nutrition = meal_item.nutrition or {}
+                protein_g = None
+                carbs_g = None
+                fat_g = None
+                fiber_g = None
+
+                # Parse nutrition values (e.g., "25g" -> 25.0)
+                def parse_nutrient(value):
+                    if not value:
+                        return None
+                    try:
+                        return float(str(value).replace("g", "").replace("g", "").strip())
+                    except (ValueError, TypeError):
+                        return None
+
+                if nutrition:
+                    protein_g = parse_nutrient(nutrition.get("protein"))
+                    carbs_g = parse_nutrient(nutrition.get("carbs"))
+                    fat_g = parse_nutrient(nutrition.get("fat"))
+                    fiber_g = parse_nutrient(nutrition.get("fiber"))
+
+                # Create meal in database
+                meal = Meal(
+                    user_id=current_user.id,
+                    name=meal_item.name,
+                    meal_type=meal_item.type,  # Convert 'type' to 'meal_type'
+                    calories=float(meal_item.calories),
+                    protein_g=protein_g,
+                    carbs_g=carbs_g,
+                    fat_g=fat_g,
+                    fiber_g=fiber_g,
+                    description=meal_item.description,
+                    servings=meal_item.servings,
+                    prep_time_minutes=meal_item.prep_time_minutes,
+                    cook_time_minutes=meal_item.cook_time_minutes,
+                    ingredients=meal_item.ingredients,
+                    instructions=meal_item.instructions,
+                    nutrition_info=nutrition,
+                    source=MealSource.GENERATED,  # Save as template
+                    date_logged=None,  # Templates don't have a date
+                )
+                db.add(meal)
+                db.flush()
+                db.refresh(meal)
+
+                # Convert back to schema with added ID
+                from ..schemas.meal_plan import MealItem as MealItemSchema
+                saved_meals.append(MealItemSchema(
+                    id=meal.id,  # Add database ID
+                    type=meal_item.type,
+                    name=meal_item.name,
+                    calories=meal_item.calories,
+                    description=meal_item.description,
+                    tags=meal_item.tags,
+                    ingredients=meal_item.ingredients,
+                    servings=meal_item.servings,
+                    prep_time_minutes=meal_item.prep_time_minutes,
+                    cook_time_minutes=meal_item.cook_time_minutes,
+                    instructions=meal_item.instructions,
+                    nutrition=meal_item.nutrition,
+                ))
+
+            # Update the plan with saved meals (now with IDs)
+            saved_plan.append(DailyMealPlan(
+                day=day_plan.day,
+                meals=saved_meals
+            ))
+
+        # Commit all saved meals
+        db.commit()
+
         # Construct health goal summary
         health_goal_summary = None
         if current_user.preferences and "health_goals" in current_user.preferences:
@@ -495,23 +601,26 @@ async def generate_llm_meal_plan_endpoint(
             )
 
         return LLMMealPlanResponse(
-            plan=daily_plans,
+            plan=saved_plan,
             health_goal_summary=health_goal_summary
         )
 
     except llm_service.LLMResponseError as e:
+        db.rollback()
         logger.error(f"LLM meal plan generation failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Could not generate meal plan at this time."
         )
     except ValueError as e:
+        db.rollback()
         logger.error(f"User survey data missing: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Please complete the user survey before generating a meal plan."
         )
     except Exception as e:
+        db.rollback()
         logger.error(f"Unexpected error generating LLM meal plan: {e}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -684,21 +793,21 @@ async def deactivate_account(
 ):
     """
     Deactivate current user's account.
-    
+
     Args:
         db: Database session
         current_user: Current authenticated user
-        
+
     Returns:
         Dict with success message
     """
     try:
         AuthService.deactivate_user(db, current_user)
-        
+
         return {
             "message": "Account deactivated successfully"
         }
-        
+
     except Exception as e:
         db.rollback()
         raise HTTPException(
@@ -826,36 +935,36 @@ async def get_user_statistics(
 ):
     """
     Get user statistics (requires verified user).
-    
+
     Args:
         db: Database session
         current_user: Current verified user
-        
+
     Returns:
         UserStatsResponse: User statistics
     """
     try:
         from sqlalchemy import func
         from datetime import timedelta
-        
+
         # Total users
         total_users = db.query(models.User).count()
-        
+
         # Active users
         active_users = db.query(models.User).filter(models.User.is_active == True).count()
-        
+
         # Verified users
         verified_users = db.query(models.User).filter(models.User.is_verified == True).count()
-        
+
         # Recent registrations (last 30 days)
         thirty_days_ago = datetime.datetime.now(datetime.timezone.utc) - timedelta(days=30)
         recent_registrations = db.query(models.User).filter(
             models.User.created_at >= thirty_days_ago
         ).count()
-        
+
         # Last updated
         last_updated = db.query(func.max(models.User.updated_at)).scalar()
-        
+
         return UserStatsResponse(
             total_users=total_users,
             active_users=active_users,
@@ -863,7 +972,7 @@ async def get_user_statistics(
             recent_registrations=recent_registrations,
             last_updated=last_updated
         )
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -880,26 +989,26 @@ async def get_user_by_id(
 ):
     """
     Get user by ID (requires verified user).
-    
+
     Args:
         user_id: User ID
         db: Database session
         current_user: Current verified user
-        
+
     Returns:
         UserResponse: User information
     """
     try:
         user = AuthService.get_user_by_id(db, user_id)
-        
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User with ID '{user_id}' not found"
             )
-        
+
         return UserResponse.model_validate(user)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -917,30 +1026,30 @@ async def activate_user_account(
 ):
     """
     Activate a user account (requires verified user).
-    
+
     Args:
         user_id: User ID
         db: Database session
         current_user: Current verified user
-        
+
     Returns:
         Dict with success message
     """
     try:
         user = AuthService.get_user_by_id(db, user_id)
-        
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User with ID '{user_id}' not found"
             )
-        
+
         AuthService.activate_user(db, user)
-        
+
         return {
             "message": f"User account '{user_id}' activated successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -959,31 +1068,31 @@ async def verify_user_account(
 ):
     """
     Verify a user account (requires verified user).
-    
+
     Args:
         user_id: User ID
         db: Database session
         current_user: Current verified user
-        
+
     Returns:
         Dict with success message
     """
     try:
         user = AuthService.get_user_by_id(db, user_id)
-        
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User with ID '{user_id}' not found"
             )
-        
+
         user.is_verified = True
         db.commit()
-        
+
         return {
             "message": f"User account '{user_id}' verified successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:

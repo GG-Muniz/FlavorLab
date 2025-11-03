@@ -36,10 +36,10 @@ Base = declarative_base()
 def get_db() -> Generator[Session, None, None]:
     """
     Dependency function to get database session.
-    
+
     This function provides a database session for FastAPI dependency injection.
     It ensures the session is properly closed after use.
-    
+
     Yields:
         Session: SQLAlchemy database session
     """
@@ -53,13 +53,13 @@ def get_db() -> Generator[Session, None, None]:
 def create_tables() -> None:
     """
     Create all database tables.
-    
+
     This function creates all tables defined in the models.
     Should be called during application startup or database initialization.
     """
     # Import all models to ensure they are registered with Base
     from .models import Entity, IngredientEntity, NutrientEntity, CompoundEntity, RelationshipEntity, User
-    
+
     # Create all tables
     Base.metadata.create_all(bind=engine)
 
@@ -125,16 +125,38 @@ def ensure_entity_columns() -> None:
         print(f"ensure_entity_columns error: {e}")
 
 
+def ensure_calorie_goal_columns() -> None:
+    """
+    Lightweight migration helper for SQLite: ensure newly added calorie goal columns exist.
+    Safe to run repeatedly.
+    """
+    try:
+        with engine.begin() as conn:
+            result = conn.execute(text("PRAGMA table_info(daily_calorie_goals)"))
+            existing = {row[1] for row in result.fetchall()}
+
+            if "goal_protein_g" not in existing:
+                conn.execute(text("ALTER TABLE daily_calorie_goals ADD COLUMN goal_protein_g FLOAT"))
+            if "goal_carbs_g" not in existing:
+                conn.execute(text("ALTER TABLE daily_calorie_goals ADD COLUMN goal_carbs_g FLOAT"))
+            if "goal_fat_g" not in existing:
+                conn.execute(text("ALTER TABLE daily_calorie_goals ADD COLUMN goal_fat_g FLOAT"))
+            if "goal_fiber_g" not in existing:
+                conn.execute(text("ALTER TABLE daily_calorie_goals ADD COLUMN goal_fiber_g FLOAT DEFAULT 25.0"))
+    except Exception as e:
+        print(f"ensure_calorie_goal_columns error: {e}")
+
+
 def drop_tables() -> None:
     """
     Drop all database tables.
-    
+
     WARNING: This will delete all data in the database!
     Use with caution, typically only for development/testing.
     """
     # Import all models to ensure they are registered with Base
     from .models import Entity, IngredientEntity, NutrientEntity, CompoundEntity, RelationshipEntity, User
-    
+
     # Drop all tables
     Base.metadata.drop_all(bind=engine)
 
@@ -142,7 +164,7 @@ def drop_tables() -> None:
 def get_database_url() -> str:
     """
     Get the database URL.
-    
+
     Returns:
         str: Database connection URL
     """
@@ -152,7 +174,7 @@ def get_database_url() -> str:
 def check_database_connection() -> bool:
     """
     Check if the database connection is working.
-    
+
     Returns:
         bool: True if connection is successful, False otherwise
     """
@@ -168,7 +190,7 @@ def check_database_connection() -> bool:
 def get_database_info() -> dict:
     """
     Get database information.
-    
+
     Returns:
         dict: Database information including URL, tables, etc.
     """
@@ -177,7 +199,7 @@ def get_database_info() -> dict:
         "database_name": settings.database_name,
         "connection_working": check_database_connection()
     }
-    
+
     try:
         with engine.connect() as connection:
             # Get list of tables
@@ -187,5 +209,5 @@ def get_database_info() -> dict:
             info["table_count"] = len(tables)
     except Exception as e:
         info["error"] = str(e)
-    
+
     return info

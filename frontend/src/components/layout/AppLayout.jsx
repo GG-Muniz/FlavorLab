@@ -42,9 +42,9 @@ export default function AppLayout() {
           </Link>
 
           <nav style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Link to="/ingredients" style={navLinkStyle('/ingredients')}>
+            <Link to="/app/ingredients" style={navLinkStyle('/app/ingredients')}>
               <BookOpen width={18} height={18} color="#111827" />
-              <span style={navLabelStyle('/ingredients')}>Ingredients</span>
+              <span style={navLabelStyle('/app/ingredients')}>Ingredients</span>
             </Link>
           </nav>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

@@ -51,6 +51,10 @@ class MealResponse(BaseModel):
     name: str
     meal_type: Optional[str] = None
     calories: float
+    protein_g: Optional[float] = None
+    carbs_g: Optional[float] = None
+    fat_g: Optional[float] = None
+    fiber_g: Optional[float] = None
     description: Optional[str] = None
     ingredients: Optional[List[str]] = None
     servings: Optional[int] = None

@@ -23,11 +23,99 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Clock, Users, Flame, ChefHat } from 'lucide-react';
+import { X, Clock, Users, Flame, ChefHat, Calendar, CheckCircle2, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { logMealForToday, getCalendarLinks } from '../../services/mealsApi';
+import { useData } from '../../context/DataContext';
 import './MealDetailModal.css';
 
 const MealDetailModal = ({ meal, isOpen, onClose }) => {
+  const { refetchAll, loggedMeals } = useData();
+  const [isLogging, setIsLogging] = useState(false);
+  const [isLogged, setIsLogged] = useState(false);
+  const [calendarLinks, setCalendarLinks] = useState(null);
+  const [loadingCalendarLinks, setLoadingCalendarLinks] = useState(false);
+
+  // Check if meal is already logged today
+  useEffect(() => {
+    if (meal && loggedMeals) {
+      const today = new Date().toISOString().slice(0, 10);
+      const mealType = meal.type || meal.meal_type;
+      const mealNameMatch = loggedMeals.some(
+        loggedMeal => loggedMeal.name === meal.name &&
+                     loggedMeal.meal_type?.toLowerCase() === mealType?.toLowerCase() &&
+                     loggedMeal.date_logged === today
+      );
+      setIsLogged(mealNameMatch);
+    }
+  }, [meal, loggedMeals]);
+
+  // Load calendar links when meal has an ID
+  useEffect(() => {
+    if (meal?.id && isOpen) {
+      setLoadingCalendarLinks(true);
+      getCalendarLinks(meal.id)
+        .then(links => {
+          setCalendarLinks(links);
+        })
+        .catch(err => {
+          console.error('Failed to load calendar links:', err);
+          setCalendarLinks(null);
+        })
+        .finally(() => {
+          setLoadingCalendarLinks(false);
+        });
+    } else {
+      setCalendarLinks(null);
+    }
+  }, [meal?.id, isOpen]);
+
+  // Reset states when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsLogging(false);
+      setCalendarLinks(null);
+    }
+  }, [isOpen]);
+
+  const handleLogMeal = async () => {
+    setIsLogging(true);
+    try {
+      // If meal has an ID, use the template logging endpoint
+      if (meal?.id) {
+        await logMealForToday(meal.id);
+        setIsLogged(true);
+        await refetchAll(); // Refresh data to show updated logged meals
+        return;
+      }
+
+      // If no ID, try to find a matching generated meal by name and type
+      // Otherwise, we'll need to save the meal plan first or use manual logging
+      // For now, show a helpful message
+      alert('Meal plans need to be saved to the database first. This feature will be enhanced to automatically save generated meals.');
+    } catch (error) {
+      console.error('Failed to log meal:', error);
+      alert(`Failed to log meal: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsLogging(false);
+    }
+  };
+
+  const handleCalendarExport = (provider) => {
+    if (!calendarLinks) {
+      alert('Calendar links not available yet. Please wait a moment.');
+      return;
+    }
+
+    const link = provider === 'google' ? calendarLinks.google : calendarLinks.outlook;
+    if (link) {
+      window.open(link, '_blank');
+    } else {
+      alert(`${provider === 'google' ? 'Google' : 'Outlook'} calendar link not available.`);
+    }
+  };
+
   // Don't render anything if modal is closed or no meal selected
   if (!isOpen || !meal) return null;
 
@@ -112,13 +200,15 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
               overflowY: 'auto'
             }}
           >
-            {/* Modal Content */}
+              {/* Modal Content */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
               style={{
+                display: 'flex',
+                flexDirection: 'column',
                 background: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
@@ -126,10 +216,10 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                 maxWidth: '800px',
                 width: '100%',
                 maxHeight: '90vh',
-                overflowY: 'auto',
                 boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
                 border: '2px solid #f3f4f6',
-                position: 'relative'
+                position: 'relative',
+                overflow: 'hidden'
               }}
             >
               {/* Close Button */}
@@ -163,128 +253,119 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                 <X width={20} height={20} color="#374151" />
               </button>
 
-              {/* Modal Header */}
+              {/* === HEADER (Fixed) === */}
               <div style={{
-                padding: '32px 32px 24px',
-                borderBottom: '2px solid #f3f4f6'
+                padding: '24px',
+                borderBottom: '1px solid #e5e7eb'
               }}>
-                {/* Meal Type Badge */}
-                <div
-                  style={{
-                    display: 'inline-block',
-                    padding: '6px 12px',
-                    background: colors.bg,
-                    borderRadius: '8px',
-                    marginBottom: '12px',
-                    border: `1px solid ${colors.border}`
-                  }}
-                >
-                  <span style={{
-                    fontSize: '11px',
-                    fontWeight: '600',
-                    color: colors.text,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}>
-                    {formatMealType(meal.type)}
-                  </span>
-                </div>
-
                 {/* Meal Name */}
                 <h2 style={{
-                  fontSize: '28px',
+                  fontSize: '24px',
                   fontWeight: '700',
                   color: '#111827',
-                  marginBottom: '16px',
+                  marginBottom: '12px',
                   lineHeight: '1.2'
                 }}>
                   {meal.name}
                 </h2>
 
-                {/* Meal Description */}
-                <p style={{
-                  fontSize: '16px',
-                  color: '#6b7280',
-                  lineHeight: '1.6',
-                  marginBottom: '20px'
-                }}>
-                  {meal.description}
-                </p>
+                {/* Meal Type Badge - Journal Style */}
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: '#f9fafb',
+                    color: '#374151',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    borderLeft: '3px solid #22c55e',
+                    marginBottom: '12px'
+                  }}
+                >
+                  <span style={{ fontSize: '12px', textTransform: 'capitalize', color: '#22c55e', fontWeight: '600' }}>
+                    {formatMealType(meal.type)}
+                  </span>
+                </div>
 
-                {/* Meta Information Row */}
-                <div style={{
-                  display: 'flex',
-                  gap: '16px',
-                  flexWrap: 'wrap'
-                }}>
-                  {/* Calories */}
+                {/* Calendar Buttons */}
+                {meal.id && (
                   <div style={{
                     display: 'flex',
-                    alignItems: 'center',
                     gap: '8px',
-                    padding: '10px 14px',
-                    background: '#fef3c7',
-                    borderRadius: '10px',
-                    border: '1px solid #fde68a'
+                    marginTop: '12px'
                   }}>
-                    <Flame width={18} height={18} color="#d97706" />
-                    <span style={{
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: '#d97706'
-                    }}>
-                      {meal.calories} kcal
-                    </span>
+                    {/* Google Calendar Button */}
+                    <button
+                      onClick={() => handleCalendarExport('google')}
+                      disabled={loadingCalendarLinks || !calendarLinks}
+                      style={{
+                        padding: '6.6px 11px',
+                        background: '#ffffff',
+                        color: '#4285f4',
+                        border: '1px solid #4285f4',
+                        borderRadius: '6.6px',
+                        fontSize: '12.1px',
+                        fontWeight: '600',
+                        cursor: loadingCalendarLinks || !calendarLinks ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s',
+                        opacity: loadingCalendarLinks || !calendarLinks ? 0.6 : 1
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!loadingCalendarLinks && calendarLinks) {
+                          e.currentTarget.style.background = '#f8f9fa';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!loadingCalendarLinks && calendarLinks) {
+                          e.currentTarget.style.background = '#ffffff';
+                        }
+                      }}
+                    >
+                      Google
+                    </button>
+
+                    {/* Outlook Calendar Button */}
+                    <button
+                      onClick={() => handleCalendarExport('outlook')}
+                      disabled={loadingCalendarLinks || !calendarLinks}
+                      style={{
+                        padding: '6.6px 11px',
+                        background: '#ffffff',
+                        color: '#0078d4',
+                        border: '1px solid #0078d4',
+                        borderRadius: '6.6px',
+                        fontSize: '12.1px',
+                        fontWeight: '600',
+                        cursor: loadingCalendarLinks || !calendarLinks ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s',
+                        opacity: loadingCalendarLinks || !calendarLinks ? 0.6 : 1
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!loadingCalendarLinks && calendarLinks) {
+                          e.currentTarget.style.background = '#f8f9fa';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!loadingCalendarLinks && calendarLinks) {
+                          e.currentTarget.style.background = '#ffffff';
+                        }
+                      }}
+                    >
+                      Outlook
+                    </button>
                   </div>
-
-                  {/* Servings */}
-                  {meal.servings && (
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '10px 14px',
-                      background: '#dbeafe',
-                      borderRadius: '10px',
-                      border: '1px solid #bfdbfe'
-                    }}>
-                      <Users width={18} height={18} color="#0284c7" />
-                      <span style={{
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#0284c7'
-                      }}>
-                        {meal.servings} servings
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Prep + Cook Time */}
-                  {meal.prep_time_minutes && (
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '10px 14px',
-                      background: '#f3e8ff',
-                      borderRadius: '10px',
-                      border: '1px solid #e9d5ff'
-                    }}>
-                      <Clock width={18} height={18} color="#9333ea" />
-                      <span style={{
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#9333ea'
-                      }}>
-                        {meal.prep_time_minutes + (meal.cook_time_minutes || 0)} min
-                      </span>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
 
-              {/* Modal Body */}
-              <div style={{ padding: '32px' }}>
+              {/* === CONTENT (Scrollable) === */}
+              <div style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: '24px'
+              }}>
                 {/* Ingredients Section */}
                 {meal.ingredients && meal.ingredients.length > 0 && (
                   <div style={{ marginBottom: '32px' }}>
@@ -306,9 +387,9 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                         <ChefHat width={18} height={18} color="#16a34a" />
                       </div>
                       <h3 style={{
-                        fontSize: '20px',
+                        fontSize: '18px',
                         fontWeight: '600',
-                        color: '#111827',
+                        color: '#374151',
                         margin: 0
                       }}>
                         Ingredients
@@ -484,6 +565,7 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                     <p>Additional recipe details are not available for this meal.</p>
                   </div>
                 )}
+
               </div>
             </motion.div>
           </motion.div>

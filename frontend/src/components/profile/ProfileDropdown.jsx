@@ -71,7 +71,7 @@ export default function ProfileDropdown({ avatarUrl }) {
           <div style={{ height: 8 }} />
           {/* Menu */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: 4 }}>
-            <Link to="/profile" onClick={() => setOpen(false)}
+            <Link to="/app/profile" onClick={() => setOpen(false)}
               style={itemStyle}
               onMouseEnter={(e) => { e.currentTarget.style.background = itemHoverBg; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
@@ -81,7 +81,7 @@ export default function ProfileDropdown({ avatarUrl }) {
               <ChevronRight size={16} color="var(--icon-muted)" />
             </Link>
 
-            <Link to="/settings" onClick={() => setOpen(false)}
+            <Link to="/app/settings" onClick={() => setOpen(false)}
               style={itemStyle}
               onMouseEnter={(e) => { e.currentTarget.style.background = itemHoverBg; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
@@ -91,7 +91,7 @@ export default function ProfileDropdown({ avatarUrl }) {
               <ChevronRight size={16} color="var(--icon-muted)" />
             </Link>
 
-            <Link to="/help" onClick={() => setOpen(false)}
+            <Link to="/app/help" onClick={() => setOpen(false)}
               style={itemStyle}
               onMouseEnter={(e) => { e.currentTarget.style.background = itemHoverBg; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
@@ -101,7 +101,7 @@ export default function ProfileDropdown({ avatarUrl }) {
               <ChevronRight size={16} color="var(--icon-muted)" />
             </Link>
 
-            <Link to="/display" onClick={() => setOpen(false)}
+            <Link to="/app/display" onClick={() => setOpen(false)}
               style={itemStyle}
               onMouseEnter={(e) => { e.currentTarget.style.background = itemHoverBg; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}

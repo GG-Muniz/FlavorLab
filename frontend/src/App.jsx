@@ -19,6 +19,7 @@ import MealPlanShowcase from './components/mealplan/MealPlanShowcase';
 import MealHistory from './components/mealhistory/MealHistory';
 import SmartActionStack from './components/dashboard/SmartActionStack';
 import MacronutrientsCard from './components/dashboard/MacronutrientsCard';
+import ApothecaryPage from './pages/ApothecaryPage';
 import { fetchNutritionGoals, fetchDailySummary } from './services/nutritionApi';
 import { getDailySummary } from './services/mealsApi';
 import { fetchWaterSummary } from './services/waterApi';
@@ -282,7 +283,12 @@ function App() {
       const today = new Date();
       const dateStr = today.toISOString().slice(0, 10);
       const [goals, totals, waterSummary] = await Promise.all([
-        fetchNutritionGoals().catch(() => ({ calories: 2000, proteinTarget: 150, carbsTarget: 250, fatTarget: 67 })),
+        // NOTE: fetchNutritionGoals returns 400 if user has no biometric data
+        // We use fallback defaults to avoid console errors
+        fetchNutritionGoals().catch((err) => {
+          console.warn('⚠️ [App.jsx] fetchNutritionGoals failed (expected if no biometrics):', err.message);
+          return { calories: 2000, proteinTarget: 150, carbsTarget: 250, fatTarget: 67 };
+        }),
         fetchDailySummary(dateStr).catch(() => ({ calories: 0, protein: 0, carbs: 0, fat: 0 })),
         fetchWaterSummary(dateStr).catch(() => ({ goal_ml: null, total_intake_ml: 0 }))
       ]);
@@ -648,10 +654,12 @@ const HealthTipOfTheDay = () => {
           alignItems: 'center'
         }}>
 
-          {Object.entries(iconConfig.navigation).map(([key, navItem]) => (
+          {Object.entries(iconConfig.navigation)
+            .filter(([key]) => key !== 'recipes') // Remove Recipe Generator tab
+            .map(([key, navItem]) => (
             <button
               key={key}
-              onClick={() => { setActiveTab(key); navigate(`/?tab=${key}`, { replace: true }); }}
+              onClick={() => { setActiveTab(key); navigate(`/app?tab=${key}`, { replace: true }); }}
               onMouseEnter={() => setHoveredNavButton(key)}
               onMouseLeave={() => setHoveredNavButton(null)}
               style={{
@@ -679,7 +687,7 @@ const HealthTipOfTheDay = () => {
                 size="small"
                 color={activeTab === key ? '#ffffff' : undefined}
               />
-              <span>{navItem.label}</span>
+              <span style={{ color: activeTab === key ? '#ffffff' : 'var(--text-secondary)' }}>{navItem.label}</span>
             </button>
           ))}
         </div>

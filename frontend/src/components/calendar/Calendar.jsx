@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import DayDetailModal from './DayDetailModal';
+import { useData } from '../../context/DataContext';
 
 const Calendar = () => {
+  const { getMealsForDate, getNutritionSummaryForDate } = useData();
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [showDayDetail, setShowDayDetail] = useState(false);
   const [monthData, setMonthData] = useState({});
   const [selectedDayData, setSelectedDayData] = useState(null);
+  const [isLoadingDayData, setIsLoadingDayData] = useState(false);
 
   // Get the first day of the month
   const getFirstDayOfMonth = (date) => {
@@ -58,67 +62,71 @@ const Calendar = () => {
     return isSameDay(date, new Date());
   };
 
-  // Fetch month data (mock for now - will connect to API later)
+  // Fetch month data from API
   useEffect(() => {
-    // Mock data - simulating API response
-    const mockMonthData = {};
-    const today = new Date();
+    const fetchMonthData = async () => {
+      const monthDataMap = {};
+      const firstDay = getFirstDayOfMonth(currentDate);
+      const lastDay = getLastDayOfMonth(currentDate);
 
-    // Add mock data for last 7 days
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-      mockMonthData[dateKey] = { hasLog: true };
-    }
+      // Fetch data for each day in the current month
+      for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+        const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-    setMonthData(mockMonthData);
-  }, [currentDate]);
+        try {
+          const meals = await getMealsForDate(dateKey);
+          if (meals && meals.length > 0) {
+            monthDataMap[dateKey] = { hasLog: true };
+          }
+        } catch (error) {
+          console.error(`Error fetching data for ${dateKey}:`, error);
+        }
+      }
+
+      setMonthData(monthDataMap);
+    };
+
+    fetchMonthData();
+  }, [currentDate, getMealsForDate]);
 
   // Handle day click - open modal with day details
-  const handleDayClick = (day) => {
+  const handleDayClick = async (day) => {
     setSelectedDate(day);
-
-    // Mock day data - simulating API response
-    const dateKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
-    const hasData = monthData[dateKey]?.hasLog;
-
-    if (hasData) {
-      // Mock detailed data
-      setSelectedDayData({
-        date: dateKey,
-        items: [
-          {
-            mealType: 'Breakfast',
-            name: 'Scrambled Eggs & Toast',
-            description: '2 eggs, whole wheat toast, avocado',
-            calories: 420
-          },
-          {
-            mealType: 'Lunch',
-            name: 'Grilled Chicken Salad',
-            description: 'Mixed greens, grilled chicken, olive oil dressing',
-            calories: 380
-          },
-          {
-            mealType: 'Dinner',
-            name: 'Salmon with Vegetables',
-            description: 'Baked salmon, broccoli, quinoa',
-            calories: 520
-          }
-        ],
-        summary: {
-          calories: 1320,
-          protein: 95,
-          carbs: 110,
-          fat: 45
-        }
-      });
-    } else {
-      setSelectedDayData(null);
-    }
-
     setShowDayDetail(true);
+    setIsLoadingDayData(true);
+
+    const dateKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+
+    try {
+      // Fetch real meals and nutrition summary from backend
+      const [meals, nutritionSummary] = await Promise.all([
+        getMealsForDate(dateKey),
+        getNutritionSummaryForDate(dateKey)
+      ]);
+
+      if (meals && meals.length > 0) {
+        // Transform API response to match DayDetailModal expected format
+        setSelectedDayData({
+          date: dateKey,
+          meals: meals, // Array of meal objects with meal_type, name, calories, etc.
+          totals: {
+            calories: nutritionSummary.total_calories || 0,
+            protein: nutritionSummary.total_protein_g || 0,
+            carbs: nutritionSummary.total_carbs_g || 0,
+            fat: nutritionSummary.total_fat_g || 0,
+            fiber: nutritionSummary.total_fiber_g || 0
+          }
+        });
+      } else {
+        // No meals logged for this day
+        setSelectedDayData(null);
+      }
+    } catch (error) {
+      console.error('Error fetching day details:', error);
+      setSelectedDayData(null);
+    } finally {
+      setIsLoadingDayData(false);
+    }
   };
 
   // Check if day has logged meals
@@ -348,6 +356,7 @@ const Calendar = () => {
         onClose={() => setShowDayDetail(false)}
         selectedDate={selectedDate}
         dayData={selectedDayData}
+        isLoading={isLoadingDayData}
       />
     </div>
   );

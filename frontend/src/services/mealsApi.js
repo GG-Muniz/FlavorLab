@@ -90,7 +90,7 @@ export async function logManualCalories(mealType, calories) {
 }
 
 export async function setCalorieGoal(goalCalories) {
-  const res = await fetch(`${API_BASE_URL}/users/me/nutrition-goal`, {
+  const res = await fetch(`${API_BASE_URL}/calorie/goal`, {
     method: 'PUT',
     headers: authHeaders(),
     body: JSON.stringify({ goal_calories: goalCalories })

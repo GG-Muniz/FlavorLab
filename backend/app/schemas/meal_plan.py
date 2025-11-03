@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 
 class MealItem(BaseModel):
     """Schema for a single meal item."""
+    id: Optional[int] = Field(None, description="Database ID for the meal (if saved)")
     type: str = Field(..., description="Type of meal (breakfast, lunch, dinner, snack)")
     name: str = Field(..., description="Name of the meal")
     calories: int = Field(..., description="Estimated calories for this meal")
