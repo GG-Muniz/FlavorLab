@@ -14,10 +14,14 @@
 
 import { useState, useEffect } from 'react';
 import { getMeals } from '../../services/mealsApi';
+import { getHealthPillars } from '../../services/healthPillarsApi';
+import { useData } from '../../context/DataContext';
 import { motion } from 'framer-motion';
-import { History, RefreshCw, AlertCircle, Calendar, Flame } from 'lucide-react';
+import { History, Trash2, AlertCircle, Calendar, Flame, RefreshCw } from 'lucide-react';
 
 const MealHistory = () => {
+  console.log('🔍 [MealHistory] Component rendering...');
+
   // ============================================================================
   // State Management
   // ============================================================================
@@ -25,6 +29,12 @@ const MealHistory = () => {
   const [loggedMeals, setLoggedMeals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pillars, setPillars] = useState([]);
+
+  // Get deleteLog function from DataContext for synchronized deletion
+  const dataContext = useData();
+  console.log('🔍 [MealHistory] DataContext:', dataContext);
+  const { deleteLog, refetchAll } = dataContext || {};
 
   // ============================================================================
   // Data Fetching Logic
@@ -32,23 +42,41 @@ const MealHistory = () => {
 
   const loadLoggedMeals = async () => {
     try {
+      console.log('🔍 [MealHistory] Loading logged meals...');
       setLoading(true);
       setError(null);
 
       // Fetch meals with source=logged filter
       const meals = await getMeals('logged');
+      console.log('🔍 [MealHistory] Fetched meals:', meals);
 
       setLoggedMeals(meals);
     } catch (err) {
+      console.error('❌ [MealHistory] Error loading logged meals:', err);
       setError(err.message);
-      console.error('Error loading logged meals:', err);
     } finally {
       setLoading(false);
+      console.log('🔍 [MealHistory] Loading complete. Meals count:', loggedMeals.length);
     }
   };
 
   useEffect(() => {
     loadLoggedMeals();
+  }, []);
+
+  // Fetch health pillars on mount
+  useEffect(() => {
+    const fetchPillars = async () => {
+      try {
+        const data = await getHealthPillars();
+        setPillars(data);
+      } catch (err) {
+        console.error('Error loading health pillars:', err);
+        // Fail silently - not critical for display
+      }
+    };
+
+    fetchPillars();
   }, []);
 
   // ============================================================================
@@ -143,6 +171,84 @@ const MealHistory = () => {
       .split('_')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
+  };
+
+  /**
+   * Get emoji for health pillar based on pillar name
+   */
+  const getPillarEmoji = (pillarName) => {
+    const emojiMap = {
+      'Increased Energy': '⚡',
+      'Improved Digestion': '🌿',
+      'Enhanced Immunity': '🛡️',
+      'Better Sleep': '😴',
+      'Mental Clarity': '🧠',
+      'Heart Health': '❤️',
+      'Muscle Recovery': '💪',
+      'Inflammation Reduction': '🔥'
+    };
+    return emojiMap[pillarName] || '🎯';
+  };
+
+  /**
+   * Get color for dietary/constraint tags
+   */
+  const getTagColor = (tagName) => {
+    const lowerTag = tagName.toLowerCase();
+
+    // Dietary restrictions - green theme
+    if (lowerTag.includes('gluten-free') || lowerTag.includes('dairy-free') ||
+        lowerTag.includes('vegan') || lowerTag.includes('vegetarian')) {
+      return { bg: '#d1fae5', text: '#065f46', border: '#a7f3d0' };
+    }
+
+    // Keto - purple theme
+    if (lowerTag.includes('keto')) {
+      return { bg: '#e9d5ff', text: '#7e22ce', border: '#d8b4fe' };
+    }
+
+    // Allergy-free tags - red theme
+    if (lowerTag.includes('-free')) {
+      return { bg: '#fee2e2', text: '#991b1b', border: '#fca5a5' };
+    }
+
+    // Default - gray theme
+    return { bg: '#f3f4f6', text: '#374151', border: '#e5e7eb' };
+  };
+
+  // Get all pillar names for tag filtering
+  const allPillarNames = pillars.map(p => p.name);
+
+  /**
+   * Handle deleting a logged meal
+   * Uses DataContext's deleteLog function to ensure all tabs stay synchronized
+   */
+  const handleDeleteMeal = async (mealId, mealName) => {
+    // Confirm deletion with user
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete "${mealName}"? This action cannot be undone.`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      // Delete via DataContext (automatically syncs Dashboard, Journal, etc.)
+      if (deleteLog) {
+        await deleteLog(mealId);
+      } else {
+        // Fallback to direct API call if DataContext not available
+        const { deleteLoggedMeal } = await import('../../services/mealsApi');
+        await deleteLoggedMeal(mealId);
+      }
+
+      // Refresh local meal history view
+      await loadLoggedMeals();
+
+      console.log(`✅ Successfully deleted meal: ${mealName}`);
+    } catch (error) {
+      console.error('❌ Failed to delete meal:', error);
+      alert(`Failed to delete meal: ${error.message || 'Unknown error'}`);
+    }
   };
 
   // ============================================================================
@@ -476,6 +582,11 @@ const MealHistory = () => {
               {meals.map((meal, mealIdx) => {
                 const colors = getMealTypeColor(meal.meal_type);
 
+                // Extract tags from nutrition_info
+                const tags = meal.nutrition_info?.tags || [];
+                const dietaryTags = tags.filter(tag => !allPillarNames.includes(tag));
+                const healthGoalTags = tags.filter(tag => allPillarNames.includes(tag));
+
                 return (
                   <motion.div
                     key={meal.id}
@@ -541,6 +652,76 @@ const MealHistory = () => {
                       </span>
                     </div>
 
+                    {/* Dietary Tags */}
+                    {dietaryTags.length > 0 && (
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: '6px',
+                          marginBottom: '4px'
+                        }}
+                      >
+                        {dietaryTags.map((tag, index) => {
+                          const tagColors = getTagColor(tag);
+                          return (
+                            <span
+                              key={index}
+                              style={{
+                                display: 'inline-block',
+                                padding: '4px 10px',
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                color: tagColors.text,
+                                background: tagColors.bg,
+                                border: `1px solid ${tagColors.border}`,
+                                borderRadius: '6px',
+                                textTransform: 'capitalize',
+                                letterSpacing: '0.3px'
+                              }}
+                            >
+                              {tag}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Health Goal Tags */}
+                    {healthGoalTags.length > 0 && (
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: '6px',
+                          marginBottom: '8px'
+                        }}
+                      >
+                        {healthGoalTags.map((tag, index) => (
+                          <span
+                            key={index}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '5px 12px',
+                              fontSize: '11px',
+                              fontWeight: '600',
+                              color: '#ffffff',
+                              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                              border: 'none',
+                              borderRadius: '6px',
+                              letterSpacing: '0.3px',
+                              boxShadow: '0 1px 2px rgba(59, 130, 246, 0.3)'
+                            }}
+                          >
+                            <span style={{ fontSize: '11px' }}>{getPillarEmoji(tag)}</span>
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
                     <div
                       style={{
                         display: 'flex',
@@ -596,7 +777,7 @@ const MealHistory = () => {
                         {meal.date_logged}
                       </p>
                       <button
-                        onClick={() => loadLoggedMeals()}
+                        onClick={() => handleDeleteMeal(meal.id, meal.name)}
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -612,16 +793,16 @@ const MealHistory = () => {
                           transition: 'all 0.2s',
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.borderColor = '#22c55e';
-                          e.currentTarget.style.color = '#22c55e';
+                          e.currentTarget.style.borderColor = '#ef4444';
+                          e.currentTarget.style.color = '#ef4444';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.borderColor = '#e5e7eb';
                           e.currentTarget.style.color = '#374151';
                         }}
                       >
-                        <RefreshCw width={12} height={12} />
-                        <span>Log Again</span>
+                        <Trash2 width={12} height={12} />
+                        <span>Delete</span>
                       </button>
                     </div>
                   </motion.div>

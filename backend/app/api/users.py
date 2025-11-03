@@ -537,6 +537,11 @@ async def generate_llm_meal_plan_endpoint(
                     fat_g = parse_nutrient(nutrition.get("fat"))
                     fiber_g = parse_nutrient(nutrition.get("fiber"))
 
+                # Build nutrition_info dict with tags included
+                nutrition_info_with_tags = dict(nutrition) if nutrition else {}
+                if meal_item.tags:
+                    nutrition_info_with_tags["tags"] = meal_item.tags
+
                 # Create meal in database
                 meal = Meal(
                     user_id=current_user.id,
@@ -553,7 +558,7 @@ async def generate_llm_meal_plan_endpoint(
                     cook_time_minutes=meal_item.cook_time_minutes,
                     ingredients=meal_item.ingredients,
                     instructions=meal_item.instructions,
-                    nutrition_info=nutrition,
+                    nutrition_info=nutrition_info_with_tags,
                     source=MealSource.GENERATED,  # Save as template
                     date_logged=None,  # Templates don't have a date
                 )

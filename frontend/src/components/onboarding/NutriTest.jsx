@@ -64,7 +64,7 @@ const NutriTest = ({ onComplete }) => {
   };
 
   // Handle final completion
-  const handleComplete = async () => {
+  const handleComplete = async (skipNavigation = false) => {
     const payload = {
       // Map NutriTest data into backend schema
       health_goals: (formData.healthPillars && formData.healthPillars.length)
@@ -81,7 +81,10 @@ const NutriTest = ({ onComplete }) => {
       setIsLoading(true);
       await updateProfile(payload);
       if (onComplete) onComplete(payload);
-      navigate('/profile', { state: { defaultTab: 'goals' } });
+      // Only navigate to profile if not skipping navigation (for meal plan generation flow)
+      if (!skipNavigation) {
+        navigate('/profile', { state: { defaultTab: 'goals' } });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -92,8 +95,10 @@ const NutriTest = ({ onComplete }) => {
     setIsLoading(true);
     try {
       await submitSurvey(formData);
-      await handleComplete();
-      navigate('/?tab=mealplans', { replace: true });
+      // Skip the profile navigation by passing true
+      await handleComplete(true);
+      // Navigate directly to meal plans tab
+      navigate('/app?tab=mealplans', { replace: true });
     } catch (error) {
       console.error('Error submitting survey:', error);
       alert(`Failed to submit survey: ${error?.message || 'Unknown error'}`);

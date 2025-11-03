@@ -127,6 +127,7 @@ const MealPlanShowcase = () => {
 
   /**
    * Load existing generated meals on mount if available
+   * Only shows the most recent meal plan generation
    */
   useEffect(() => {
     const loadExistingMealPlan = async () => {
@@ -137,11 +138,31 @@ const MealPlanShowcase = () => {
         if (existingMeals && existingMeals.length > 0) {
           console.log('📋 [MealPlanShowcase] Found existing generated meals:', existingMeals);
 
+          // Sort meals by created_at descending to get the most recent ones
+          const sortedMeals = [...existingMeals].sort((a, b) =>
+            new Date(b.created_at) - new Date(a.created_at)
+          );
+
+          // Get the most recent creation date
+          const mostRecentDate = sortedMeals[0].created_at;
+
+          // Filter to only show meals from the most recent generation
+          // (all meals created within 5 seconds are considered one generation)
+          const mostRecentMeals = sortedMeals.filter(meal => {
+            const mealDate = new Date(meal.created_at);
+            const recentDate = new Date(mostRecentDate);
+            // Consider meals created within 5 seconds as part of the same generation
+            const timeDiff = Math.abs(recentDate - mealDate);
+            return timeDiff < 5000; // 5 seconds
+          });
+
+          console.log('📋 [MealPlanShowcase] Showing only most recent meal plan generation:', mostRecentMeals);
+
           // Convert MealResponse[] format to LLMMealPlanResponse format
           const convertedPlan = {
             plan: [{
               day: 'Today',
-              meals: existingMeals.map(meal => ({
+              meals: mostRecentMeals.map(meal => ({
                 id: meal.id,
                 type: meal.meal_type || meal.type,
                 name: meal.name,
