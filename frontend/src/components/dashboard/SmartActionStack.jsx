@@ -77,19 +77,6 @@ const SmartActionStack = ({ onAction, mealsLoggedToday = { breakfast: false, lun
         actionColor: '#0891b2',
         cta: 'Add Water',
         priority: allMealsLogged ? 95 : (currentHour >= 21 ? 90 : 50)
-      },
-      // Plan tomorrow - promoted in late evening
-      {
-        id: 'plan-tomorrow',
-        title: 'Plan Tomorrow',
-        subtitle: 'Get a head start on your nutrition',
-        icon: Calendar,
-        gradient: 'linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%)',
-        iconBg: '#f5f3ff',
-        iconColor: '#7c3aed',
-        actionColor: '#7c3aed',
-        cta: 'Plan Meals',
-        priority: currentHour >= 20 ? 85 : 60
       }
     ];
 

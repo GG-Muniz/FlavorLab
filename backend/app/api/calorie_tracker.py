@@ -30,8 +30,7 @@ router = APIRouter(prefix="/calorie", tags=["calorie-tracking"])
 @router.put("/goal", response_model=UserCalorieGoalResponse)
 async def set_daily_calorie_goal(
     goal_data: DailyCalorieGoalSet,
-    # TEMPORARY: Auth disabled for development - Remove this comment when auth is ready
-    # current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -46,9 +45,7 @@ async def set_daily_calorie_goal(
         UserCalorieGoalResponse with updated goal
     """
     try:
-        # TEMPORARY: Hardcoded user_id for development
-        # TODO: Replace with current_user.id when auth is enabled
-        user_id = 1
+        user_id = current_user.id
 
         calorie_goal = set_user_daily_calorie_goal(
             db=db,

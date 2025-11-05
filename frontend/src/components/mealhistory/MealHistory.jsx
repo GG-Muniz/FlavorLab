@@ -17,7 +17,7 @@ import { getMeals } from '../../services/mealsApi';
 import { getHealthPillars } from '../../services/healthPillarsApi';
 import { useData } from '../../context/DataContext';
 import { motion } from 'framer-motion';
-import { History, Trash2, AlertCircle, Calendar, Flame, RefreshCw } from 'lucide-react';
+import { History, Trash2, AlertCircle, Calendar, Flame, RefreshCw, Leaf, Droplets } from 'lucide-react';
 
 const MealHistory = () => {
   console.log('🔍 [MealHistory] Component rendering...');
@@ -147,20 +147,21 @@ const MealHistory = () => {
     });
   };
 
-  /**
-   * Get color scheme based on meal type
-   */
-  const getMealTypeColor = (type) => {
-    const colorMap = {
-      breakfast: { bg: '#fef3c7', text: '#d97706', border: '#fde68a' },
-      morning_snack: { bg: '#fce7f3', text: '#db2777', border: '#fbcfe8' },
-      lunch: { bg: '#dbeafe', text: '#0284c7', border: '#bfdbfe' },
-      afternoon_snack: { bg: '#e0e7ff', text: '#6366f1', border: '#c7d2fe' },
-      dinner: { bg: '#f3e8ff', text: '#9333ea', border: '#e9d5ff' },
-      snack: { bg: '#fce7f3', text: '#db2777', border: '#fbcfe8' },
-    };
-    return colorMap[type] || colorMap.breakfast;
-  };
+     /**
+    * Get color scheme based on meal type - Updated to light orange theme
+    */
+   const getMealTypeColor = (type) => {
+     // Light orange theme
+     const colorMap = {
+       breakfast: { bg: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)', text: '#9a3412', border: '#fed7aa', accent: '#fdba74' },
+       morning_snack: { bg: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)', text: '#c2410c', border: '#fed7aa', accent: '#fdba74' },
+       lunch: { bg: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)', text: '#ea580c', border: '#fed7aa', accent: '#fdba74' },
+       afternoon_snack: { bg: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)', text: '#c2410c', border: '#fed7aa', accent: '#fdba74' },
+       dinner: { bg: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)', text: '#9a3412', border: '#fed7aa', accent: '#fdba74' },
+       snack: { bg: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)', text: '#c2410c', border: '#fed7aa', accent: '#fdba74' },
+     };
+     return colorMap[type] || colorMap.breakfast;
+   };
 
   /**
    * Format meal type for display
@@ -411,19 +412,19 @@ const MealHistory = () => {
           padding: '32px',
         }}
       >
-        <div
-          style={{
-            width: 80,
-            height: 80,
-            background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <History width={40} height={40} color="#16a34a" />
-        </div>
+                 <div
+           style={{
+             width: 80,
+             height: 80,
+             background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
+             borderRadius: '50%',
+             display: 'flex',
+             alignItems: 'center',
+             justifyContent: 'center',
+           }}
+         >
+           <History width={40} height={40} color="#ea580c" />
+         </div>
 
         <div style={{ textAlign: 'center', maxWidth: '500px' }}>
           <h3
@@ -477,53 +478,58 @@ const MealHistory = () => {
           gap: '16px',
         }}
       >
-        <div>
-          <h2
-            style={{
-              fontSize: '32px',
-              fontWeight: '700',
-              color: '#111827',
-              marginBottom: '8px',
-            }}
-          >
-            Meal History
-          </h2>
-          <p
-            style={{
-              fontSize: '16px',
-              color: '#6b7280',
-            }}
-          >
-            {loggedMeals.length} logged meal{loggedMeals.length !== 1 ? 's' : ''}
-          </p>
-        </div>
+                                   <div>
+            <h2
+              style={{
+                fontSize: '32px',
+                fontWeight: '700',
+                color: '#000000',
+                marginBottom: '8px',
+              }}
+            >
+              Meal History
+            </h2>
+                       <p
+              style={{
+                fontSize: '16px',
+                color: '#000000',
+              }}
+            >
+              {loggedMeals.length} logged meal{loggedMeals.length !== 1 ? 's' : ''}
+            </p>
+         </div>
 
-        {/* Refresh Button */}
-        <button
-          onClick={loadLoggedMeals}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 20px',
-            background: '#ffffff',
-            color: '#374151',
-            border: '2px solid #e5e7eb',
-            borderRadius: '12px',
-            fontSize: '14px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = '#22c55e';
-            e.currentTarget.style.color = '#22c55e';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = '#e5e7eb';
-            e.currentTarget.style.color = '#374151';
-          }}
-        >
+         {/* Refresh Button */}
+         <button
+           onClick={loadLoggedMeals}
+           style={{
+             display: 'inline-flex',
+             alignItems: 'center',
+             gap: '8px',
+             padding: '10px 20px',
+             background: '#ffffff',
+             color: '#c2410c',
+             border: '2px solid #fed7aa',
+             borderRadius: '12px',
+             fontSize: '14px',
+             fontWeight: '600',
+             cursor: 'pointer',
+             transition: 'all 0.2s',
+             boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+           }}
+           onMouseEnter={(e) => {
+             e.currentTarget.style.borderColor = '#fdba74';
+             e.currentTarget.style.background = 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)';
+             e.currentTarget.style.transform = 'translateY(-2px)';
+             e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+           }}
+           onMouseLeave={(e) => {
+             e.currentTarget.style.borderColor = '#fed7aa';
+             e.currentTarget.style.background = '#ffffff';
+             e.currentTarget.style.transform = 'translateY(0)';
+             e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)';
+           }}
+         >
           <RefreshCw width={16} height={16} />
           <span>Refresh</span>
         </button>
@@ -538,45 +544,35 @@ const MealHistory = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: groupIdx * 0.1 }}
           >
-            {/* Date Header */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                marginBottom: '16px',
-                paddingBottom: '12px',
-                borderBottom: '2px solid #e5e7eb',
-              }}
-            >
-              <Calendar width={20} height={20} color="#6b7280" />
-              <h3
+                                                   {/* Date Header */}
+              <div
                 style={{
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  color: '#374151',
-                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '20px',
+                  padding: '8px 0',
                 }}
               >
-                {formatDate(date)}
-              </h3>
-              <span
-                style={{
-                  fontSize: '14px',
-                  color: '#9ca3af',
-                  marginLeft: 'auto',
-                }}
-              >
-                {meals.length} meal{meals.length !== 1 ? 's' : ''}
-              </span>
-            </div>
+                <Calendar width={18} height={18} color="#6b7280" />
+                <h3
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#374151',
+                    margin: 0,
+                  }}
+                >
+                  {formatDate(date)}
+                </h3>
+             </div>
 
             {/* Meals Grid */}
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                gap: '16px',
+                gap: '20px',
               }}
             >
               {meals.map((meal, mealIdx) => {
@@ -588,224 +584,190 @@ const MealHistory = () => {
                 const healthGoalTags = tags.filter(tag => allPillarNames.includes(tag));
 
                 return (
-                  <motion.div
-                    key={meal.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3, delay: mealIdx * 0.05 }}
-                    style={{
-                      background: colors.bg,
-                      border: `1px solid ${colors.border}`,
-                      borderRadius: '12px',
-                      padding: '16px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '12px',
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '8px',
-                      }}
-                    >
-                      <h4
-                        style={{
-                          fontSize: '18px',
-                          fontWeight: '600',
-                          color: colors.text,
-                          margin: 0,
-                        }}
-                      >
-                        {formatMealType(meal.meal_type)}
-                      </h4>
-                      <Flame width={20} height={20} color={colors.text} />
-                    </div>
+                                                                                                                                                       <motion.div
+                       key={meal.id}
+                       initial={{ opacity: 0, scale: 0.95 }}
+                       animate={{ opacity: 1, scale: 1 }}
+                       transition={{ duration: 0.3, delay: mealIdx * 0.05 }}
+                       style={{
+                         background: '#ffffff',
+                         border: '1px solid #e5e7eb',
+                         borderRadius: '12px',
+                         overflow: 'hidden',
+                         display: 'flex',
+                         flexDirection: 'column',
+                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                         transition: 'all 0.3s',
+                         minWidth: 0,
+                         width: '100%',
+                       }}
+                     onMouseEnter={(e) => {
+                       e.currentTarget.style.transform = 'translateY(-4px)';
+                       e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.12)';
+                     }}
+                     onMouseLeave={(e) => {
+                       e.currentTarget.style.transform = 'translateY(0)';
+                       e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.08)';
+                     }}
+                   >
+                     {/* Orange Header */}
+                     <div
+                       style={{
+                         background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
+                         borderBottom: '2px solid #fed7aa',
+                         padding: '12px 16px',
+                         display: 'flex',
+                         justifyContent: 'space-between',
+                         alignItems: 'center',
+                       }}
+                     >
+                       <span
+                         style={{
+                           fontSize: '11px',
+                           fontWeight: '700',
+                           color: '#9a3412',
+                           textTransform: 'uppercase',
+                           letterSpacing: '0.5px',
+                         }}
+                       >
+                         {formatMealType(meal.meal_type)}
+                       </span>
+                       <button
+                         onClick={() => handleDeleteMeal(meal.id, meal.name)}
+                         style={{
+                           display: 'inline-flex',
+                           alignItems: 'center',
+                           gap: '4px',
+                           padding: '4px 8px',
+                           background: 'transparent',
+                           color: '#ef4444',
+                           border: 'none',
+                           borderRadius: '6px',
+                           fontSize: '11px',
+                           fontWeight: '600',
+                           cursor: 'pointer',
+                           transition: 'all 0.2s',
+                         }}
+                         onMouseEnter={(e) => {
+                           e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                         }}
+                         onMouseLeave={(e) => {
+                           e.currentTarget.style.background = 'transparent';
+                         }}
+                       >
+                         <Trash2 width={12} height={12} />
+                       </button>
+                     </div>
 
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '8px',
-                      }}
-                    >
-                      <p
-                        style={{
-                          fontSize: '14px',
-                          color: '#4b5563',
-                          margin: 0,
-                        }}
-                      >
-                        {meal.name}
-                      </p>
-                      <span
-                        style={{
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: colors.text,
-                        }}
-                      >
-                        {meal.calories} kcal
-                      </span>
-                    </div>
-
-                    {/* Dietary Tags */}
-                    {dietaryTags.length > 0 && (
+                                           {/* White Body */}
                       <div
                         style={{
+                          padding: '16px',
                           display: 'flex',
-                          flexWrap: 'wrap',
-                          gap: '6px',
-                          marginBottom: '4px'
+                          flexDirection: 'column',
+                          gap: '12px',
+                          minWidth: 0, // Prevent overflow
                         }}
                       >
-                        {dietaryTags.map((tag, index) => {
-                          const tagColors = getTagColor(tag);
-                          return (
-                            <span
-                              key={index}
-                              style={{
-                                display: 'inline-block',
-                                padding: '4px 10px',
-                                fontSize: '11px',
-                                fontWeight: '600',
-                                color: tagColors.text,
-                                background: tagColors.bg,
-                                border: `1px solid ${tagColors.border}`,
-                                borderRadius: '6px',
-                                textTransform: 'capitalize',
-                                letterSpacing: '0.3px'
-                              }}
-                            >
-                              {tag}
-                            </span>
-                          );
-                        })}
+                        {/* Meal Name */}
+                        <h4
+                          style={{
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            color: '#111827',
+                            margin: 0,
+                            lineHeight: '1.3',
+                          }}
+                        >
+                          {meal.name}
+                        </h4>
+
+                        {/* Calories */}
+                        <div style={{
+                          fontSize: '24px',
+                          fontWeight: '700',
+                          color: '#ea580c',
+                        }}>
+                          {meal.calories || 0} <span style={{
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            color: '#9ca3af',
+                          }}>kcal</span>
+                        </div>
+
+                        {/* Macros - Simple horizontal layout */}
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '12px',
+                            paddingTop: '8px',
+                            borderTop: '1px solid #e5e7eb',
+                          }}
+                        >
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            minWidth: 0,
+                            flexShrink: 0,
+                          }}>
+                            <Leaf width={14} height={14} color="#ea580c" />
+                            <span style={{
+                              fontSize: '12px',
+                              color: '#6b7280',
+                              whiteSpace: 'nowrap',
+                            }}>Protein:</span>
+                            <span style={{
+                              fontSize: '13px',
+                              fontWeight: '700',
+                              color: '#374151',
+                              whiteSpace: 'nowrap',
+                            }}>{meal.protein_g || 0}g</span>
+                          </div>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            minWidth: 0,
+                            flexShrink: 0,
+                          }}>
+                            <Droplets width={14} height={14} color="#ea580c" />
+                            <span style={{
+                              fontSize: '12px',
+                              color: '#6b7280',
+                              whiteSpace: 'nowrap',
+                            }}>Carbs:</span>
+                            <span style={{
+                              fontSize: '13px',
+                              fontWeight: '700',
+                              color: '#374151',
+                              whiteSpace: 'nowrap',
+                            }}>{meal.carbs_g || 0}g</span>
+                          </div>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            minWidth: 0,
+                            flexShrink: 0,
+                          }}>
+                            <Flame width={14} height={14} color="#ea580c" />
+                            <span style={{
+                              fontSize: '12px',
+                              color: '#6b7280',
+                              whiteSpace: 'nowrap',
+                            }}>Fat:</span>
+                            <span style={{
+                              fontSize: '13px',
+                              fontWeight: '700',
+                              color: '#374151',
+                              whiteSpace: 'nowrap',
+                            }}>{meal.fat_g || 0}g</span>
+                          </div>
+                        </div>
                       </div>
-                    )}
-
-                    {/* Health Goal Tags */}
-                    {healthGoalTags.length > 0 && (
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexWrap: 'wrap',
-                          gap: '6px',
-                          marginBottom: '8px'
-                        }}
-                      >
-                        {healthGoalTags.map((tag, index) => (
-                          <span
-                            key={index}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              padding: '5px 12px',
-                              fontSize: '11px',
-                              fontWeight: '600',
-                              color: '#ffffff',
-                              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                              border: 'none',
-                              borderRadius: '6px',
-                              letterSpacing: '0.3px',
-                              boxShadow: '0 1px 2px rgba(59, 130, 246, 0.3)'
-                            }}
-                          >
-                            <span style={{ fontSize: '11px' }}>{getPillarEmoji(tag)}</span>
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '8px',
-                      }}
-                    >
-                      <p
-                        style={{
-                          fontSize: '14px',
-                          color: '#4b5563',
-                          margin: 0,
-                        }}
-                      >
-                        Protein: {meal.protein_g || 0}g
-                      </p>
-                      <p
-                        style={{
-                          fontSize: '14px',
-                          color: '#4b5563',
-                          margin: 0,
-                        }}
-                      >
-                        Carbs: {meal.carbs_g || 0}g
-                      </p>
-                      <p
-                        style={{
-                          fontSize: '14px',
-                          color: '#4b5563',
-                          margin: 0,
-                        }}
-                      >
-                        Fat: {meal.fat_g || 0}g
-                      </p>
-                    </div>
-
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginTop: 'auto',
-                      }}
-                    >
-                      <p
-                        style={{
-                          fontSize: '14px',
-                          color: '#6b7280',
-                          margin: 0,
-                        }}
-                      >
-                        {meal.date_logged}
-                      </p>
-                      <button
-                        onClick={() => handleDeleteMeal(meal.id, meal.name)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          padding: '6px 12px',
-                          background: '#ffffff',
-                          color: '#374151',
-                          border: '1px solid #e5e7eb',
-                          borderRadius: '8px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.borderColor = '#ef4444';
-                          e.currentTarget.style.color = '#ef4444';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = '#e5e7eb';
-                          e.currentTarget.style.color = '#374151';
-                        }}
-                      >
-                        <Trash2 width={12} height={12} />
-                        <span>Delete</span>
-                      </button>
-                    </div>
-                  </motion.div>
+                   </motion.div>
                 );
               })}
             </div>

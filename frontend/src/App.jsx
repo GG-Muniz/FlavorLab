@@ -1060,7 +1060,7 @@ const HealthTipOfTheDay = () => {
                 mealsLoggedToday={mealsLoggedToday}
                 onAction={(actionId) => {
                   if (actionId === 'breakfast' || actionId === 'lunch' || actionId === 'dinner') {
-                    setShowLogMealModal(true);
+                    setShowCalorieCounter(true);
                   }
                   if (actionId === 'water') {
                     setShowWaterCounter(true);

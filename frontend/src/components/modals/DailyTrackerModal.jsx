@@ -1,6 +1,21 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { X, Calculator, Target, Flame, TrendingUp, Plus, ChevronDown, Utensils, Edit, Trash2 } from 'lucide-react';
+import { X, Calculator, Target, Flame, TrendingUp, Plus, ChevronDown, Utensils, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useData } from '../../context/DataContext.jsx';
+
+// Inline style tag to force white text on meal plan log buttons
+const logButtonStyles = `
+  .meal-plan-log-button {
+    color: #ffffff !important;
+  }
+  .meal-plan-log-button * {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+  }
+  .meal-plan-log-button span {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+`;
 
 const DailyTrackerModal = ({ isOpen, onClose }) => {
   // Get centralized data from DataContext (includes summary)
@@ -14,6 +29,9 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
 
   // Tab state
   const [activeTab, setActiveTab] = useState('log-intake');
+
+  // Pagination state for meal plans
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Success message state
   const [successMessage, setSuccessMessage] = useState('');
@@ -97,6 +115,20 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
     return new Set(loggedMeals.map(meal => `${meal.name}::${meal.meal_type}`));
   }, [loggedMeals]);
 
+  // Pagination for meal plans
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(mealPlans.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const displayedPlans = mealPlans.slice(startIndex, endIndex);
+
+  // Reset to page 1 when tab changes or modal closes
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentPage(1);
+    }
+  }, [activeTab, isOpen]);
+
   if (!isOpen) return null;
 
   const handleSaveGoal = async () => {
@@ -163,6 +195,7 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
 
   return (
     <>
+      <style>{logButtonStyles}</style>
       {/* Backdrop */}
       <div
         onClick={onClose}
@@ -876,27 +909,29 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
                   </p>
                 </div>
               ) : (
-                <div style={{
-                  background: '#ffffff',
-                  borderRadius: '12px',
-                  border: '2px solid #e2e8f0',
-                  overflow: 'hidden',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-                }}>
-                  {mealPlans.map((plan, index) => {
-                    const isAlreadyLogged = loggedMealKeys.has(`${plan.name}::${plan.meal_type}`);
-                    return (
-                      <div
-                        key={plan.id}
-                        style={{
-                          padding: '20px',
-                          borderBottom: index < mealPlans.length - 1 ? '1px solid #f1f5f9' : 'none',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'flex-start',
-                          gap: '16px'
-                        }}
-                      >
+                <>
+                  <div style={{
+                    background: '#ffffff',
+                    borderRadius: '12px',
+                    border: '2px solid #e2e8f0',
+                    overflow: 'hidden',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                    marginBottom: totalPages > 1 ? '16px' : '0'
+                  }}>
+                    {displayedPlans.map((plan, index) => {
+                      const isAlreadyLogged = loggedMealKeys.has(`${plan.name}::${plan.meal_type}`);
+                      return (
+                        <div
+                          key={plan.id}
+                          style={{
+                            padding: '20px',
+                            borderBottom: index < displayedPlans.length - 1 ? '1px solid #f1f5f9' : 'none',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                            gap: '16px'
+                          }}
+                        >
                         <div style={{ flex: 1, minWidth: 0 }}>
                           {/* Meal Name - Primary */}
                           <h4 style={{
@@ -964,8 +999,12 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
 
                       {/* Log Button */}
                       <button
-                        onClick={() => handleLogMealPlan(plan)}
-                        disabled={isLoading}
+                        className="meal-plan-log-button"
+                        onClick={(e) => {
+                          if (!isLoading) {
+                            handleLogMealPlan(plan);
+                          }
+                        }}
                         style={{
                           padding: '10px 16px',
                           background: isLoading ? '#9ca3af' : '#ea580c',
@@ -981,7 +1020,11 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
                           gap: '6px',
                           opacity: isLoading ? 0.7 : 1,
                           boxShadow: isLoading ? 'none' : '0 2px 4px rgba(234, 88, 12, 0.2)',
-                          flexShrink: 0
+                          flexShrink: 0,
+                          WebkitAppearance: 'none',
+                          MozAppearance: 'none',
+                          appearance: 'none',
+                          pointerEvents: isLoading ? 'none' : 'auto'
                         }}
                         onMouseEnter={(e) => {
                           if (!isLoading) {
@@ -996,13 +1039,113 @@ const DailyTrackerModal = ({ isOpen, onClose }) => {
                           }
                         }}
                       >
-                        <Plus width={14} height={14} />
-                        {isLoading ? 'Logging...' : 'Log'}
+                        <Plus width={14} height={14} color="#ffffff" />
+                        <span>{isLoading ? 'Logging...' : 'Log'}</span>
                       </button>
                     </div>
                   );
                 })}
-                </div>
+                  </div>
+
+                  {/* Pagination Controls */}
+                  {totalPages > 1 && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '12px',
+                      padding: '12px 0'
+                    }}>
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        style={{
+                          padding: '8px 12px',
+                          background: currentPage === 1 ? '#f3f4f6' : '#ffffff',
+                          color: currentPage === 1 ? '#9ca3af' : '#374151',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          opacity: currentPage === 1 ? 0.6 : 1
+                        }}
+                        onMouseEnter={(e) => {
+                          if (currentPage !== 1) {
+                            e.currentTarget.style.background = '#f9fafb';
+                            e.currentTarget.style.borderColor = '#d1d5db';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (currentPage !== 1) {
+                            e.currentTarget.style.background = '#ffffff';
+                            e.currentTarget.style.borderColor = '#e5e7eb';
+                          }
+                        }}
+                      >
+                        <ChevronLeft width={16} height={16} />
+                        <span>Previous</span>
+                      </button>
+
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px 16px',
+                        background: '#f9fafb',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb'
+                      }}>
+                        <span style={{
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: '#374151'
+                        }}>
+                          Page {currentPage} of {totalPages}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        style={{
+                          padding: '8px 12px',
+                          background: currentPage === totalPages ? '#f3f4f6' : '#ffffff',
+                          color: currentPage === totalPages ? '#9ca3af' : '#374151',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          opacity: currentPage === totalPages ? 0.6 : 1
+                        }}
+                        onMouseEnter={(e) => {
+                          if (currentPage !== totalPages) {
+                            e.currentTarget.style.background = '#f9fafb';
+                            e.currentTarget.style.borderColor = '#d1d5db';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (currentPage !== totalPages) {
+                            e.currentTarget.style.background = '#ffffff';
+                            e.currentTarget.style.borderColor = '#e5e7eb';
+                          }
+                        }}
+                      >
+                        <span>Next</span>
+                        <ChevronRight width={16} height={16} />
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}

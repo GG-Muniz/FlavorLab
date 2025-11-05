@@ -316,7 +316,8 @@ const MealCard = ({ meal, pillarNames = [], isLogged = false, onClick, onLogMeal
           color: '#6b7280',
           lineHeight: '1.6',
           margin: 0,
-          minHeight: '64px'
+          minHeight: '64px',
+          flex: '1 1 auto'
         }}
       >
         {meal.description}
@@ -330,7 +331,8 @@ const MealCard = ({ meal, pillarNames = [], isLogged = false, onClick, onLogMeal
           borderTop: '1px solid #e5e7eb',
           display: 'flex',
           gap: '12px',
-          flexWrap: 'wrap'
+          flexWrap: 'wrap',
+          flexShrink: 0
         }}>
           {meal.servings && (
             <div style={{
@@ -362,7 +364,7 @@ const MealCard = ({ meal, pillarNames = [], isLogged = false, onClick, onLogMeal
       )}
 
       {/* Log Meal Button Section */}
-      <div style={{ marginTop: '16px' }}>
+      <div style={{ marginTop: '16px', flexShrink: 0 }}>
         {meal.id && onLogMeal && (
           <button
             onClick={(e) => {
@@ -409,15 +411,16 @@ const MealCard = ({ meal, pillarNames = [], isLogged = false, onClick, onLogMeal
       <div
         className="meal-click-hint"
         style={{
-          marginTop: '16px',
+          marginTop: 'auto',
           paddingTop: '16px',
           borderTop: '1px solid #f3f4f6',
-          textAlign: 'center'
+          textAlign: 'center',
+          flexShrink: 0
         }}
       >
         <span style={{
           fontSize: '12px',
-          color: '#22c55e',
+          color: '#ffffff',
           fontWeight: '600',
           transition: 'color 0.2s'
         }}>
