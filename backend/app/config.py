@@ -43,6 +43,11 @@ class Settings(BaseSettings):
     cloudinary_cloud_name: Optional[str] = Field(default=None, json_schema_extra={"env": "CLOUDINARY_CLOUD_NAME"})
     cloudinary_base_url: Optional[str] = Field(default=None, json_schema_extra={"env": "CLOUDINARY_BASE_URL"})
     cloudinary_folder: str = Field(default="flavorlab/ingredients", json_schema_extra={"env": "CLOUDINARY_FOLDER"})
+    # Ingredient-specific overrides
+    cloudinary_ingredient_folder: Optional[str] = Field(default=None, json_schema_extra={"env": "CLOUDINARY_INGREDIENT_FOLDER"})
+    cloudinary_ingredient_use_unsplash: Optional[bool] = Field(default=None, json_schema_extra={"env": "CLOUDINARY_INGREDIENT_USE_UNSPLASH"})
+    cloudinary_ingredient_proxy_fetch: Optional[bool] = Field(default=None, json_schema_extra={"env": "CLOUDINARY_INGREDIENT_PROXY_FETCH"})
+    cloudinary_ingredient_upload_preset: Optional[str] = Field(default=None, json_schema_extra={"env": "CLOUDINARY_INGREDIENT_UPLOAD_PRESET"})
     # If true, ingestion will generate Cloudinary fetch URLs from Unsplash Source for dev
     cloudinary_use_unsplash_fallback: bool = Field(default=True, json_schema_extra={"env": "CLOUDINARY_USE_UNSPLASH_FALLBACK"})
     # If true, use Cloudinary image/fetch as proxy for Unsplash; if false, use direct Unsplash URLs

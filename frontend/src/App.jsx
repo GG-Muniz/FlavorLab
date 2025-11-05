@@ -219,6 +219,7 @@ function App() {
   const navigate = useNavigate();
   const [isAnimating, setIsAnimating] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [shouldAutoGeneratePlan, setShouldAutoGeneratePlan] = useState(false);
   const user = authUser || { id: '123', name: 'User' };
 
   // Get last logged meal for display
@@ -265,6 +266,16 @@ function App() {
       setActiveTab('dashboard');
     }
   }, [location.search, location.pathname]);
+
+  const { pathname, search, state } = location;
+
+  useEffect(() => {
+    if (state?.autoGenerateMealPlan) {
+      setShouldAutoGeneratePlan(true);
+      const nextState = { ...state, autoGenerateMealPlan: false };
+      navigate(pathname + search, { replace: true, state: nextState });
+    }
+  }, [state?.autoGenerateMealPlan, pathname, search, navigate]);
 
   // Nutrition data state
   const [nutritionDataState, setNutritionDataState] = useState({
@@ -333,6 +344,10 @@ function App() {
 
   const apiService = new ApiService();
   const llmService = new LLMService();
+
+  const handleAutoGenerateConsumed = useCallback(() => {
+    setShouldAutoGeneratePlan(false);
+  }, []);
   // Enhanced Progress Ring with hover effects
 const ProgressRing = ({ percentage, size = 120, strokeWidth = 10, color = '#22c55e', onClick }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -1088,7 +1103,10 @@ const HealthTipOfTheDay = () => {
         )}
 
         {activeTab === 'mealplans' && (
-          <MealPlanShowcase />
+          <MealPlanShowcase
+            autoGenerate={shouldAutoGeneratePlan}
+            onAutoGenerateConsumed={handleAutoGenerateConsumed}
+          />
         )}
 
         {activeTab === 'history' && (

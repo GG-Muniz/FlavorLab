@@ -7,7 +7,7 @@ connections between entities in the FlavorLab database.
 
 from sqlalchemy import Column, String, Text, JSON, DateTime, Integer, ForeignKey
 from sqlalchemy.orm import relationship
-from datetime import datetime, timezone as UTC
+from datetime import datetime, UTC
 from typing import Dict, Any, Optional
 from .entity import Base
 

@@ -4,6 +4,98 @@ import { absoluteUrl } from '../api/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
+const COMPOUND_BENEFITS = [
+  {
+    match: ['monounsaturated', 'oleic'],
+    description: 'Heart-healthy fats that support cholesterol balance and brain function.'
+  },
+  {
+    match: ['polyunsaturated', 'omega-3', 'epa', 'dha'],
+    description: 'Essential fats that help reduce inflammation and protect the heart and brain.'
+  },
+  {
+    match: ['potassium'],
+    description: 'Key electrolyte that keeps blood pressure balanced and supports nerve and muscle function.'
+  },
+  {
+    match: ['magnesium'],
+    description: 'Mineral that supports muscle relaxation, bone health, and energy production.'
+  },
+  {
+    match: ['natural sugars', 'fructose', 'glucose', 'sucrose'],
+    description: 'Naturally occurring sugars that provide quick energy along with fiber and micronutrients.'
+  },
+  {
+    match: ['folate', 'folic'],
+    description: 'B-vitamin essential for healthy blood cells, energy, and prenatal development.'
+  },
+  {
+    match: ['catechin', 'egcg'],
+    description: 'Powerful tea antioxidants that support metabolic health and fight oxidative stress.'
+  },
+  {
+    match: ['curcumin'],
+    description: 'Turmeric compound known for its anti-inflammatory and antioxidant benefits.'
+  },
+  {
+    match: ['gingerol', 'shogaol'],
+    description: 'Ginger actives that soothe digestion and may calm nausea and inflammation.'
+  },
+  {
+    match: ['polyphenol', 'resveratrol', 'anthocyanin', 'tannin'],
+    description: 'Plant antioxidants that defend against cell damage and support circulation.'
+  }
+];
+
+const VITAMIN_MINERAL_BENEFITS = [
+  {
+    match: ['vitamin c', 'ascorbic'],
+    description: 'Immune-supporting antioxidant that promotes collagen production and healing.'
+  },
+  {
+    match: ['vitamin e'],
+    description: 'Protective antioxidant that shields cells and supports healthy skin.'
+  },
+  {
+    match: ['vitamin b6'],
+    description: 'B-vitamin for metabolism, energy production, and healthy nervous system function.'
+  },
+  {
+    match: ['vitamin b12'],
+    description: 'Crucial for red blood cell formation, energy, and brain health.'
+  },
+  {
+    match: ['vitamin d'],
+    description: 'Supports immunity, bone strength, and mood balance.'
+  },
+  {
+    match: ['fiber'],
+    description: 'Supports digestion, gut health, and steady energy by slowing sugar absorption.'
+  },
+  {
+    match: ['iron'],
+    description: 'Carries oxygen in the blood and helps fight fatigue.'
+  },
+  {
+    match: ['zinc'],
+    description: 'Essential for immune function, wound healing, and metabolism.'
+  },
+  {
+    match: ['calcium'],
+    description: 'Important for strong bones, teeth, and proper muscle contraction.'
+  },
+  {
+    match: ['selenium'],
+    description: 'Antioxidant mineral that supports thyroid function and immunity.'
+  }
+];
+
+const resolveBenefit = (name, table, fallback) => {
+  const key = String(name || '').toLowerCase();
+  const entry = table.find(item => item.match.some(m => key.includes(m)));
+  return entry?.description || fallback;
+};
+
 export default function IngredientDetailPage() {
   const { ingredientId } = useParams();
   const navigate = useNavigate();
@@ -18,6 +110,9 @@ export default function IngredientDetailPage() {
   const attrs = ingredient?.attributes || {};
   const unwrap = (v) => (v && typeof v === 'object' && 'value' in v ? v.value : v);
   const servingSizeG = unwrap(attrs?.serving_size_g);
+  const servingSizeSource = unwrap(attrs?.serving_size_g_source);
+  const primaryBenefits = unwrap(attrs?.primary_benefits);
+  const compoundConcentrations = unwrap(attrs?.compound_concentrations) || {};
 
   useEffect(() => {
     let mounted = true;
@@ -94,7 +189,6 @@ export default function IngredientDetailPage() {
   const imgSrc = rawImage ? absoluteUrl(rawImage) : null;
   const keyCompounds = unwrap(attrs?.key_compounds);
   const nutrientRefs = unwrap(attrs?.nutrient_references);
-  const servingSizeSource = unwrap(attrs?.serving_size_g_source);
 
   const displayName = ingredient?.display_name || ingredient?.name;
   const list = (v) => Array.isArray(v) ? v : (v != null ? [v] : []);
@@ -103,47 +197,17 @@ export default function IngredientDetailPage() {
     return String(n);
   };
 
-  // Mini glossaries for brief benefits
-  const compoundBenefit = (name) => {
-    const key = String(name || '').toLowerCase();
-    const map = {
-      'allicin': 'antimicrobial; may support heart health',
-      'quercetin': 'antioxidant; anti-inflammatory support',
-      'catechins': 'antioxidant; metabolic and heart support',
-      'curcumin': 'anti-inflammatory support',
-      'gingerol': 'anti-inflammatory; digestive support',
-      'shogaol': 'anti-nausea; anti-inflammatory support',
-      'omega-3': 'brain and heart support',
-      'melatonin': 'sleep regulation',
-      'pectin': 'soluble fiber; may support cholesterol and gut health',
-    };
-    return map[key] || 'beneficial compound';
-  };
+  const renderCompoundBenefit = (name) => resolveBenefit(name, COMPOUND_BENEFITS, 'Beneficial compound that supports overall wellness.');
+  const renderNutrientBenefit = (name) => resolveBenefit(name, VITAMIN_MINERAL_BENEFITS, 'Supports overall wellness.');
 
-  const vitaminMineralBenefit = (name) => {
+  const maybeConcentration = (name) => {
     const key = String(name || '').toLowerCase();
-    const map = {
-      'vitamin c': 'immune support and antioxidant',
-      'vitamin e': 'antioxidant; skin and cell protection',
-      'vitamin b2': 'energy metabolism (riboflavin)',
-      'vitamin b12': 'red blood cells and nerve health',
-      'vitamin d': 'bone and immune support',
-      'magnesium': 'muscle, nerve, and energy support',
-      'iron': 'oxygen transport and energy',
-      'zinc': 'immune function and wound healing',
-      'selenium': 'antioxidant enzyme support',
-      'potassium': 'fluid balance and heart function',
-      'calcium': 'bone and muscle function',
-    };
-    return map[key] || 'supports overall wellness';
-  };
-  const fmtNutrientRef = (n) => {
-    if (n && typeof n === 'object') {
-      const name = n.nutrient_name || n.name || n.id || 'Nutrient';
-      const conc = n.concentration != null && String(n.concentration).trim() !== '' ? ` — ${n.concentration}` : '';
-      return `${name}${conc}`;
-    }
-    return String(n);
+    const direct = compoundConcentrations[key];
+    if (direct) return ` (${direct})`;
+    // Try normalized key without spaces
+    const norm = key.replace(/\s+/g, '-');
+    if (compoundConcentrations[norm]) return ` (${compoundConcentrations[norm]})`;
+    return '';
   };
 
   return (
@@ -154,8 +218,8 @@ export default function IngredientDetailPage() {
           <button onClick={() => navigate(-1)} style={{ padding: '8px 12px', border: '1px solid var(--color-gray-300)', borderRadius: 8 }}>Back</button>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button disabled={!prevId} onClick={() => prevId && navigate({ pathname: `/ingredients/${prevId}`, search: location.search })} style={{ padding: '8px 12px', border: '1px solid var(--color-gray-300)', borderRadius: 8, opacity: prevId ? 1 : 0.5 }}>Previous</button>
-          <button disabled={!nextId} onClick={() => nextId && navigate({ pathname: `/ingredients/${nextId}`, search: location.search })} style={{ padding: '8px 12px', border: '1px solid var(--color-gray-300)', borderRadius: 8, opacity: nextId ? 1 : 0.5 }}>Next</button>
+          <button disabled={!prevId} onClick={() => prevId && navigate({ pathname: `/app/ingredients/${prevId}`, search: location.search })} style={{ padding: '8px 12px', border: '1px solid var(--color-gray-300)', borderRadius: 8, opacity: prevId ? 1 : 0.5 }}>Previous</button>
+          <button disabled={!nextId} onClick={() => nextId && navigate({ pathname: `/app/ingredients/${nextId}`, search: location.search })} style={{ padding: '8px 12px', border: '1px solid var(--color-gray-300)', borderRadius: 8, opacity: nextId ? 1 : 0.5 }}>Next</button>
         </div>
       </div>
       {isLoading && <div>Loading...</div>}
@@ -170,7 +234,14 @@ export default function IngredientDetailPage() {
                 <div style={{ fontSize: 36, fontWeight: 800, color: '#9ca3af' }}>{displayName?.charAt(0) || '?'}</div>
               )}
             </div>
-            <h2 style={{ margin: 0, fontSize: 28, fontWeight: 800, color: 'var(--color-gray-900)' }}>{displayName}</h2>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 28, fontWeight: 800, color: 'var(--color-gray-900)' }}>{displayName}</h2>
+              {!!list(primaryBenefits).length && (
+                <div style={{ color: 'var(--text-secondary)', marginTop: 4 }}>
+                  {list(primaryBenefits).join(' • ')}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Nutritional Information */}
@@ -190,8 +261,8 @@ export default function IngredientDetailPage() {
               </div>
             </div>
             {!!toNum(servingSizeG) && (
-              <div style={{ marginBottom: 8, color: 'var(--text-secondary)' }}>
-                Serving size: {toNum(servingSizeG)}g
+              <div style={{ marginBottom: 8, color: 'var(--text-secondary)', fontSize: 13 }}>
+                Serving size reference: {toNum(servingSizeG)}g{servingSizeSource ? ` (${servingSizeSource})` : ''}
               </div>
             )}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', rowGap: 8 }}>
@@ -220,14 +291,15 @@ export default function IngredientDetailPage() {
 
           {/* Composition */}
           <div style={{ background: '#fff', border: '1px solid var(--color-gray-200)', borderRadius: 12, padding: 16 }}>
-            <div style={{ display: 'grid', gap: 12 }}>
+            <div style={{ display: 'grid', gap: 16 }}>
               <div>
                 <div style={{ fontWeight: 700, marginBottom: 6 }}>Key Compounds</div>
                 <ul style={{ margin: 0, paddingLeft: 18, listStyle: 'disc' }}>
                   {list(keyCompounds).map((c, idx) => (
                     <li key={idx}>
                       <span style={{ fontWeight: 600 }}>{String(c)}</span>
-                      <span style={{ color: 'var(--text-secondary)' }}> — {compoundBenefit(String(c))}</span>
+                      <span style={{ color: 'var(--text-secondary)' }}>{maybeConcentration(c)}</span>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{renderCompoundBenefit(String(c))}</div>
                     </li>
                   ))}
                 </ul>
@@ -237,13 +309,17 @@ export default function IngredientDetailPage() {
                   <div style={{ fontWeight: 700, marginBottom: 6 }}>Vitamins & Minerals</div>
                   <ul style={{ margin: 0, paddingLeft: 18, listStyle: 'disc' }}>
                     {list(nutrientRefs)
-                      .map((n) => fmtNutrientName(n))
-                      .filter((name) => name && !/^(protein|proteins|fat|fats)$/i.test(String(name)))
-                      .filter((name, idx, arr) => arr.findIndex((x) => String(x).toLowerCase() === String(name).toLowerCase()) === idx)
-                      .map((name, idx) => (
+                      .map((n) => ({
+                        name: fmtNutrientName(n),
+                        concentration: n?.concentration
+                      }))
+                      .filter(({ name }) => name && !/^(protein|proteins|fat|fats)$/i.test(String(name)))
+                      .filter((item, idx, arr) => arr.findIndex(x => String(x.name).toLowerCase() === String(item.name).toLowerCase()) === idx)
+                      .map((item, idx) => (
                         <li key={idx}>
-                          <span style={{ fontWeight: 600 }}>{name}</span>
-                          <span style={{ color: 'var(--text-secondary)' }}> — {vitaminMineralBenefit(name)}</span>
+                          <span style={{ fontWeight: 600 }}>{item.name}</span>
+                          {item.concentration ? <span style={{ color: 'var(--text-secondary)' }}> ({item.concentration})</span> : null}
+                          <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{renderNutrientBenefit(item.name)}</div>
                         </li>
                       ))}
                   </ul>

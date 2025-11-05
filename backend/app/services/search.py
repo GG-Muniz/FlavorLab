@@ -6,6 +6,7 @@ and other data types with complex filtering capabilities.
 """
 
 import time
+from datetime import datetime, timedelta, UTC
 from typing import List, Dict, Any, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, func, desc, asc, case, cast, String
@@ -342,7 +343,6 @@ class SearchService:
         by_classification = {stat.primary_classification: stat.count for stat in classification_stats}
         
         # Recent additions (last 30 days)
-        from datetime import datetime, timedelta, timezone as UTC
         thirty_days_ago = datetime.now(UTC) - timedelta(days=30)
         recent_additions = db.query(Entity).filter(
             Entity.created_at >= thirty_days_ago

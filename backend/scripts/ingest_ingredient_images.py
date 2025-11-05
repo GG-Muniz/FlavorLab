@@ -15,16 +15,13 @@ Environment/config:
   CLOUDINARY_BASE_URL or CLOUDINARY_CLOUD_NAME + constructed base
 """
 
-import os
-import sys
 import argparse
-import re
-from typing import Optional, Dict, List, Set
 import json
+import os
+import re
+import sys
 import urllib.parse
-import hashlib
-import hmac
-import time
+from typing import Dict, List, Optional, Set
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 backend_dir = os.path.dirname(script_dir)
@@ -65,18 +62,29 @@ def cloudinary_base_url(settings) -> Optional[str]:
     return None
 
 
-def build_image_url(base: str, folder: str, slug: str, settings, keyword_override: Optional[str] = None) -> str:
+def _bool_from_env(value: Optional[str], default: bool = False) -> bool:
+    if value is None:
+        return default
+    return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def build_image_url(base: str, folder: str, slug: str, settings, keyword_override: Optional[str] = None, *, use_unsplash: Optional[bool] = None, proxy_fetch: Optional[bool] = None) -> str:
     # Provide a smart default transformation for thumbnails
     # f_auto: automatic format; q_auto: smart quality; c_fill,w_640,h_360 maintains 16:9 crop
     transform = "f_auto,q_auto,c_fill,w_640,h_360"
 
     # If configured, use Cloudinary fetch with Unsplash Source keyword per slug for dev/demo
     # Example: image/fetch/f_auto,q_auto,.../https%3A%2F%2Fsource.unsplash.com%2Ffeatured%2F%3Fblueberries
-    if getattr(settings, "cloudinary_use_unsplash_fallback", False):
+    if use_unsplash is None:
+        use_unsplash = getattr(settings, "cloudinary_use_unsplash_fallback", False)
+    if proxy_fetch is None:
+        proxy_fetch = getattr(settings, "cloudinary_proxy_fetch", False)
+
+    if use_unsplash:
         # Use keywords derived from slug; replace dashes with commas to broaden search
         keywords = (keyword_override or slug).replace("-", ",")
         fetch_url = f"https://source.unsplash.com/featured/?{keywords}"
-        if getattr(settings, "cloudinary_proxy_fetch", False):
+        if proxy_fetch:
             # Use image/fetch as proxy and URL-encode the remote URL
             if base.endswith("/image/upload"):
                 fetch_base = base[:-len("/image/upload")] + "/image/fetch"
@@ -123,8 +131,22 @@ def main() -> None:
     args = parser.parse_args()
 
     settings = get_settings()
+
+    # Ingredient-specific overrides (fallback to legacy single-variable config)
+    env_folder = os.environ.get("CLOUDINARY_INGREDIENT_FOLDER")
+    folder_setting = getattr(settings, "cloudinary_ingredient_folder", None)
+    folder_candidate = env_folder or folder_setting or getattr(settings, "cloudinary_folder", None)
+    if not env_folder and folder_candidate and "apothecary" in folder_candidate and "ingredients" not in folder_candidate:
+        folder_candidate = folder_candidate.replace("apothecary", "ingredients")
+    folder = (folder_candidate or "healthlab/ingredients").strip("/")
+
+    env_use_unsplash = os.environ.get("CLOUDINARY_INGREDIENT_USE_UNSPLASH")
+    ingredient_use_unsplash = _bool_from_env(env_use_unsplash, True)
+
+    env_proxy_fetch = os.environ.get("CLOUDINARY_INGREDIENT_PROXY_FETCH")
+    ingredient_proxy_fetch = _bool_from_env(env_proxy_fetch, getattr(settings, "cloudinary_proxy_fetch", False))
+
     base = cloudinary_base_url(settings)
-    folder = (settings.cloudinary_folder or "flavorlab/ingredients").strip("/")
 
     if not base:
         print("CLOUDINARY_BASE_URL or CLOUDINARY_CLOUD_NAME must be configured.")
@@ -140,6 +162,21 @@ def main() -> None:
                 slug_to_keywords = json.load(f)
     except Exception as e:
         print(f"Warning: failed to load image_keywords.json: {e}")
+
+    # Load serving size data if available
+    serving_sizes_path = os.path.join(script_dir, 'serving_sizes.json')
+    slug_to_serving: Dict[str, Dict[str, any]] = {}
+    try:
+        if os.path.exists(serving_sizes_path):
+            with open(serving_sizes_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                for item in data.get('items', []):
+                    slug = item.get('slug')
+                    if slug:
+                        slug_to_serving[slug] = item
+    except Exception as e:
+        print(f"Warning: failed to load serving_sizes.json: {e}")
+
     db = SessionLocal()
     updated = 0
     cat_assignments = 0
@@ -162,19 +199,34 @@ def main() -> None:
             # Ensure image_url (or update when using keyword overrides or cloud name mismatch)
             override = slug_to_keywords.get(ing.slug or "")
             current_url = getattr(ing, "image_url", None)
-            must_rebuild = False
-            if getattr(settings, "cloudinary_use_unsplash_fallback", False):
-                must_rebuild = True
-            elif current_url:
-                if "res.cloudinary.com/demo" in current_url:
-                    must_rebuild = True
-                elif getattr(settings, "cloudinary_cloud_name", None):
-                    expected_host = f"res.cloudinary.com/{settings.cloudinary_cloud_name}"
-                    if expected_host not in current_url:
-                        must_rebuild = True
-            if must_rebuild or override or not current_url:
-                ing.image_url = build_image_url(base, folder, ing.slug, settings, override)
+            should_set_image = override or not current_url
+            if should_set_image:
+                ing.image_url = build_image_url(
+                    base,
+                    folder,
+                    ing.slug,
+                    settings,
+                    override,
+                    use_unsplash=ingredient_use_unsplash,
+                    proxy_fetch=ingredient_proxy_fetch,
+                )
                 changed = True
+
+            # Ensure serving size metadata
+            serving_info = slug_to_serving.get(ing.slug or "")
+            if serving_info:
+                target_value = serving_info.get("serving_size_g")
+                source_value = serving_info.get("serving_size_g_source")
+                attrs: Dict[str, Dict[str, any]] = ing.attributes or {}
+                current_serving = attrs.get("serving_size_g", {}).get("value") if isinstance(attrs.get("serving_size_g"), dict) else attrs.get("serving_size_g")
+                if target_value and current_serving != target_value:
+                    attrs["serving_size_g"] = {"value": target_value, "source": source_value}
+                    changed = True
+                current_source = attrs.get("serving_size_g_source", {}).get("value") if isinstance(attrs.get("serving_size_g_source"), dict) else attrs.get("serving_size_g_source")
+                if source_value and current_source != source_value:
+                    attrs["serving_size_g_source"] = {"value": source_value}
+                    changed = True
+                ing.attributes = attrs
 
             # Prepare category links
             desired_slugs = _infer_category_slugs(ing.name, getattr(ing, "classifications", []) or [])

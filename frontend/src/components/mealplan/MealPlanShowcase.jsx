@@ -13,7 +13,7 @@
  * - Modal view for detailed recipe information
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateMealPlan } from '../../services/mealPlanApi';
 import { getHealthPillars } from '../../services/healthPillarsApi';
@@ -24,7 +24,7 @@ import { useData } from '../../context/DataContext';
 import MealCard from './MealCard';
 import MealDetailModal from './MealDetailModal';
 
-const MealPlanShowcase = () => {
+const MealPlanShowcase = ({ autoGenerate = false, onAutoGenerateConsumed }) => {
   // ============================================================================
   // State Management
   // ============================================================================
@@ -81,7 +81,7 @@ const MealPlanShowcase = () => {
    * Requests a meal plan with full recipe details (ingredients, instructions, nutrition).
    * Can be called again to retry after an error.
    */
-  const loadMealPlan = async () => {
+  const loadMealPlan = useCallback(async () => {
     try {
       // Exit initial state
       setIsInitialState(false);
@@ -106,7 +106,7 @@ const MealPlanShowcase = () => {
       // Always set loading to false when done
       setLoading(false);
     }
-  };
+  }, []);
 
   /**
    * Fetch health pillars on mount
@@ -192,6 +192,23 @@ const MealPlanShowcase = () => {
 
     loadExistingMealPlan();
   }, []);
+
+  useEffect(() => {
+    if (!autoGenerate) return;
+
+    let isSubscribed = true;
+
+    (async () => {
+      await loadMealPlan();
+      if (isSubscribed) {
+        onAutoGenerateConsumed?.();
+      }
+    })();
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [autoGenerate, loadMealPlan, onAutoGenerateConsumed]);
 
   // ============================================================================
   // Helper - Goal Icons Mapping

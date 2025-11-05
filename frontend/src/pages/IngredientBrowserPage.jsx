@@ -200,7 +200,7 @@ function IngredientCard({ ingredient }) {
   const fallback = 'https://res.cloudinary.com/demo/image/upload/f_auto,q_auto,c_fill,w_640,h_360/sample.jpg';
 
   return (
-    <Link to={{ pathname: `/ingredients/${ingredient.id}`, search: location.search }} style={{
+    <Link to={{ pathname: `/app/ingredients/${ingredient.id}`, search: location.search }} style={{
       display: 'block',
       textDecoration: 'none',
       border: '1px solid var(--color-gray-200)',

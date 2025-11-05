@@ -80,7 +80,7 @@ const NutriTest = ({ onComplete }) => {
     try {
       setIsLoading(true);
       await updateProfile(payload);
-      if (onComplete) onComplete(payload);
+      if (onComplete) onComplete(payload, { skipNavigation });
       // Only navigate to profile if not skipping navigation (for meal plan generation flow)
       if (!skipNavigation) {
         navigate('/profile', { state: { defaultTab: 'goals' } });
@@ -97,8 +97,11 @@ const NutriTest = ({ onComplete }) => {
       await submitSurvey(formData);
       // Skip the profile navigation by passing true
       await handleComplete(true);
-      // Navigate directly to meal plans tab
-      navigate('/app?tab=mealplans', { replace: true });
+      // Navigate directly to meal plans tab and trigger auto-generation
+      navigate('/app?tab=mealplans', {
+        replace: true,
+        state: { autoGenerateMealPlan: true }
+      });
     } catch (error) {
       console.error('Error submitting survey:', error);
       alert(`Failed to submit survey: ${error?.message || 'Unknown error'}`);

@@ -74,6 +74,30 @@ async function parseJson(response) {
   }
 }
 
+function extractErrorMessage(detail, fallback = 'Request failed') {
+  if (!detail) return fallback;
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail)) {
+    const messages = detail
+      .map((item) => {
+        if (!item) return null;
+        if (typeof item === 'string') return item;
+        if (typeof item === 'object') {
+          return item.msg || item.message || item.detail || null;
+        }
+        return null;
+      })
+      .filter(Boolean);
+    if (messages.length) {
+      return messages.join('; ');
+    }
+  }
+  if (typeof detail === 'object') {
+    return detail.msg || detail.message || detail.detail || fallback;
+  }
+  return fallback;
+}
+
 export async function loginUser(email, password) {
   const normalizedEmail = (email || '').trim().toLowerCase();
   const response = await fetchWithProxyFallback('/users/login', {
@@ -87,8 +111,8 @@ export async function loginUser(email, password) {
   const data = await parseJson(response);
 
   if (!response.ok) {
-    const message = data?.detail || 'Login failed';
-    throw new Error(typeof message === 'string' ? message : 'Login failed');
+    const message = extractErrorMessage(data?.detail, 'Login failed');
+    throw new Error(message);
   }
 
   // Expecting { access_token: string, token_type: 'bearer', user?: {...} }
@@ -111,8 +135,8 @@ export async function registerUser(email, password) {
 
   const data = await parseJson(response);
   if (!response.ok) {
-    const message = data?.detail || 'Registration failed';
-    throw new Error(typeof message === 'string' ? message : 'Registration failed');
+    const message = extractErrorMessage(data?.detail, 'Registration failed');
+    throw new Error(message);
   }
   return data;
 }
@@ -126,8 +150,8 @@ export async function getCurrentUser(token) {
   });
   const data = await parseJson(response);
   if (!response.ok) {
-    const message = data?.detail || 'Failed to load user';
-    throw new Error(typeof message === 'string' ? message : 'Failed to load user');
+    const message = extractErrorMessage(data?.detail, 'Failed to load user');
+    throw new Error(message);
   }
   return data;
 }
@@ -143,8 +167,8 @@ export async function updateUserProfile(token, payload) {
   });
   const data = await parseJson(response);
   if (!response.ok) {
-    const message = data?.detail || 'Failed to update profile';
-    throw new Error(typeof message === 'string' ? message : 'Failed to update profile');
+    const message = extractErrorMessage(data?.detail, 'Failed to update profile');
+    throw new Error(message);
   }
   return data;
 }
@@ -168,8 +192,8 @@ export async function requestPasswordReset(email) {
   });
   const data = await parseJson(response);
   if (!response.ok) {
-    const message = data?.detail || 'Failed to request password reset';
-    throw new Error(typeof message === 'string' ? message : 'Failed to request password reset');
+    const message = extractErrorMessage(data?.detail, 'Failed to request password reset');
+    throw new Error(message);
   }
   return data;
 }
@@ -182,8 +206,8 @@ export async function resetPassword(token, newPassword) {
   });
   const data = await parseJson(response);
   if (!response.ok) {
-    const message = data?.detail || 'Failed to reset password';
-    throw new Error(typeof message === 'string' ? message : 'Failed to reset password');
+    const message = extractErrorMessage(data?.detail, 'Failed to reset password');
+    throw new Error(message);
   }
   return data;
 }
@@ -200,8 +224,8 @@ export async function uploadAvatar(token, file) {
   });
   const data = await parseJson(response);
   if (!response.ok) {
-    const message = data?.detail || 'Failed to upload avatar';
-    throw new Error(typeof message === 'string' ? message : 'Failed to upload avatar');
+    const message = extractErrorMessage(data?.detail, 'Failed to upload avatar');
+    throw new Error(message);
   }
   return data;
 }
@@ -217,8 +241,8 @@ export async function changePassword(token, currentPassword, newPassword) {
   });
   const data = await parseJson(response);
   if (!response.ok) {
-    const message = data?.detail || 'Failed to change password';
-    throw new Error(typeof message === 'string' ? message : 'Failed to change password');
+    const message = extractErrorMessage(data?.detail, 'Failed to change password');
+    throw new Error(message);
   }
   return data;
 }
@@ -232,8 +256,8 @@ export async function deleteMyAccount(token) {
   });
   const data = await parseJson(response);
   if (!response.ok) {
-    const message = data?.detail || 'Failed to delete account';
-    throw new Error(typeof message === 'string' ? message : 'Failed to delete account');
+    const message = extractErrorMessage(data?.detail, 'Failed to delete account');
+    throw new Error(message);
   }
   return data;
 }

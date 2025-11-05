@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X, Search, Plus } from 'lucide-react';
 import { searchIngredients, logMeal } from '../../services/mealsApi';
 
@@ -69,12 +69,27 @@ export default function LogMealModal({ isOpen, onClose, onSaved }) {
   return (
     <>
       <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', zIndex:1000 }} />
-      <div style={{ position:'fixed', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:'90%', maxWidth:720, background:'#fff', borderRadius:16, border:'1px solid #e5e7eb', boxShadow:'0 25px 50px -12px rgba(0,0,0,0.25)', zIndex:1001 }}>
+      <div
+        style={{
+          position:'fixed',
+          top:0,
+          left:0,
+          right:0,
+          bottom:0,
+          display:'flex',
+          alignItems:'center',
+          justifyContent:'center',
+          pointerEvents:'none',
+          zIndex:1001,
+          padding:'40px 20px'
+        }}
+      >
+        <div style={{ width:'90%', maxWidth:720, background:'#fff', borderRadius:16, border:'1px solid #e5e7eb', boxShadow:'0 25px 50px -12px rgba(0,0,0,0.25)', pointerEvents:'auto', display:'flex', flexDirection:'column', maxHeight:'85vh' }}>
         <div style={{ padding:16, borderBottom:'1px solid #f3f4f6', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           <div style={{ fontSize:18, fontWeight:700 }}>Log Meal</div>
           <button onClick={onClose} style={{ border:'none', background:'transparent', cursor:'pointer' }}><X width={18} height={18} /></button>
         </div>
-        <div style={{ padding:16, display:'grid', gap:16 }}>
+        <div style={{ padding:16, display:'grid', gap:16, overflowY:'auto' }}>
           {error && <div style={{ color:'#b91c1c', border:'1px solid #fecaca', background:'#fef2f2', padding:8, borderRadius:8 }}>{error}</div>}
 
           <div style={{ display:'flex', gap:12 }}>
@@ -115,6 +130,7 @@ export default function LogMealModal({ isOpen, onClose, onSaved }) {
               <span style={{ marginLeft:8 }}>{loading ? 'Saving...' : 'Save Meal'}</span>
             </button>
           </div>
+        </div>
         </div>
       </div>
     </>

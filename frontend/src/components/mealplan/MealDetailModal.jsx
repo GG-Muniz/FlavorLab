@@ -182,7 +182,6 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
             style={{
               position: 'fixed',
               top: 0,
@@ -192,15 +191,30 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
               background: 'rgba(0, 0, 0, 0.5)',
               backdropFilter: 'blur(4px)',
               WebkitBackdropFilter: 'blur(4px)',
-              zIndex: 1000,
+              zIndex: 1000
+            }}
+            onClick={onClose}
+          >
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 1001,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '20px',
-              overflowY: 'auto'
+              padding: '40px 20px',
+              pointerEvents: 'none'
             }}
           >
-              {/* Modal Content */}
+            {/* Modal Content */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -219,7 +233,8 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                 boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
                 border: '2px solid #f3f4f6',
                 position: 'relative',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                pointerEvents: 'auto'
               }}
             >
               {/* Close Button */}

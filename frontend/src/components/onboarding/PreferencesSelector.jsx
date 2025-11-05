@@ -24,6 +24,7 @@ const mockPreferenceOptions = {
     { id: 'Sesame', name: 'Sesame', icon: '🌿' }
   ],
   diets: [
+    { id: 'balanced', name: 'Balanced', description: 'Whole-food variety', icon: '🍽️' },
     { id: 'vegetarian', name: 'Vegetarian', description: 'No meat', icon: '🥗' },
     { id: 'vegan', name: 'Vegan', description: 'No animal products', icon: '🌱' },
     { id: 'pescatarian', name: 'Pescatarian', description: 'No meat, but fish', icon: '🐟' },

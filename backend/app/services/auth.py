@@ -133,7 +133,14 @@ class AuthService:
         Returns:
             User: Authenticated user or None if authentication fails
         """
-        user = db.query(models.User).filter(models.User.email == email).first()
+        if not email:
+            return None
+        normalized = (email or "").strip().lower()
+        user = (
+            db.query(models.User)
+            .filter(models.User.email == normalized)
+            .first()
+        )
         if not user:
             return None
         if not AuthService.verify_password(password, user.hashed_password):

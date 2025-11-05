@@ -107,7 +107,11 @@ const MacronutrientsCard = ({ macros, isLoading = false }) => {
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
         border: '1px solid rgba(255, 255, 255, 0.3)',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '24px',
+        height: '100%'
       }}
       whileHover={{
         scale: 1.02,
@@ -115,8 +119,8 @@ const MacronutrientsCard = ({ macros, isLoading = false }) => {
       }}
       transition={{ duration: 0.2 }}
     >
-      <div style={{ position: 'relative' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+      <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
             width: 32,
             height: 32,
@@ -138,6 +142,11 @@ const MacronutrientsCard = ({ macros, isLoading = false }) => {
             const macroData = macros?.[macro.key];
             const consumed = macroData?.consumed || 0;
             const goal = macroData?.goal || 0;
+            const percentage = goal > 0 ? Math.round((consumed / goal) * 100) : 0;
+            const remaining = goal - consumed;
+            const remainingLabel = remaining >= 0
+              ? `${remaining.toFixed(1)}g remaining`
+              : `${Math.abs(remaining).toFixed(1)}g over`;
 
             return (
               <div key={macro.key} className="macro-row">
@@ -152,6 +161,10 @@ const MacronutrientsCard = ({ macros, isLoading = false }) => {
                   goal={goal}
                   color={macro.color}
                 />
+                <div className="macro-meta">
+                  <span>{Math.max(percentage, 0)}% of goal</span>
+                  <span style={{ color: remaining >= 0 ? undefined : '#ef4444' }}>{remainingLabel}</span>
+                </div>
               </div>
             );
           })}

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 
 // Static MVP data source (can be moved to backend later)
 import data from '../static/apothecary.json';
+import './ApothecaryPage.css';
 
 export default function ApothecaryPage() {
   const { user } = useAuth();
@@ -54,14 +55,14 @@ export default function ApothecaryPage() {
   };
 
   return (
-    <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '24px 16px' }}>
+    <div className="apothecary-container">
       <h1 style={{ marginTop: 0, marginBottom: 6, fontWeight: 900, fontSize: 32 }}>Your Apothecary</h1>
       <p style={{ color: 'var(--text-secondary)' }}>Personalized remedies based on your HealthLab goals.</p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 16 }}>
+      <div className="apothecary-grid">
         {responses.map((r, idx) => (
-          <div key={idx} style={{ background: '#fff', border: '1px solid var(--color-gray-200)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 10px rgba(0,0,0,0.06)' }}>
-            <div style={{ height: 160, background: '#f3f4f6' }}>
+          <div key={idx} className="apothecary-card">
+            <div className="apothecary-card__image">
               <img
                 src={r.image_url || imageFor(r.remedy, r.health_goal, idx)}
                 alt={r.remedy}
@@ -84,23 +85,23 @@ export default function ApothecaryPage() {
                 }}
               />
             </div>
-            <div style={{ padding: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 6 }}>
-                <span style={{ padding: '6px 10px', borderRadius: 999, background: `${goalTagColor(r.health_goal)}20`, color: goalTagColor(r.health_goal), fontSize: 12, fontWeight: 800 }}>{r.health_goal}</span>
+            <div className="apothecary-card__body">
+              <div className="apothecary-card__goal">
+                <span style={{ background: `${goalTagColor(r.health_goal)}20`, color: goalTagColor(r.health_goal) }}>{r.health_goal}</span>
               </div>
               <h3 style={{ marginTop: 6, marginBottom: 8 }}>{r.remedy}</h3>
               <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 8 }}>Serving size: {r.serving_size}</div>
-              <div style={{ fontWeight: 700, marginTop: 8, marginBottom: 4 }}>Ingredients</div>
-              <ul style={{ margin: 0, paddingLeft: 18 }}>
+              <div className="apothecary-card__section-title">Ingredients</div>
+              <ul className="apothecary-card__list">
                 {Object.entries(r.ingredients || {}).map(([name, qty]) => (
                   <li key={name}><span style={{ fontWeight: 600 }}>{name}</span>: <span>{qty}</span></li>
                 ))}
               </ul>
-              <div style={{ fontWeight: 700, marginTop: 8, marginBottom: 4 }}>Preparation</div>
+              <div className="apothecary-card__section-title">Preparation</div>
               <div>{r.preparation}</div>
-              <div style={{ fontWeight: 700, marginTop: 8, marginBottom: 4 }}>Benefit</div>
+              <div className="apothecary-card__section-title">Benefit</div>
               <div>{r.benefit}</div>
-              <div style={{ fontWeight: 700, marginTop: 8, marginBottom: 4 }}>Timing</div>
+              <div className="apothecary-card__section-title">Timing</div>
               <div>{r.timing}</div>
             </div>
           </div>

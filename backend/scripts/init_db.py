@@ -15,14 +15,51 @@ import sys
 import argparse
 from pathlib import Path
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, UTC
+import re
 
 # Add the parent directory to the path so we can import from app
 sys.path.append(str(Path(__file__).parent.parent))
 
 from app.database import create_tables, drop_tables, SessionLocal, engine
-from app.models import Entity, RelationshipEntity
+from app.models import (
+    Entity,
+    IngredientEntity,
+    NutrientEntity,
+    CompoundEntity,
+    RelationshipEntity,
+)
 from app.config import get_settings
+
+
+def _slugify(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    value = value.lower().strip()
+    value = re.sub(r"[^a-z0-9\s-]", "", value)
+    value = re.sub(r"[\s-]+", "-", value).strip('-')
+    return value or None
+
+
+def _extract_attribute_value(attributes: Optional[Dict[str, Any]], key: str, default=None):
+    if not isinstance(attributes, dict):
+        return default
+    value = attributes.get(key, default)
+    if isinstance(value, dict) and "value" in value:
+        return value.get("value", default)
+    return value if value is not None else default
+
+
+def _parse_datetime(value: Optional[str]):
+    if not value:
+        return None
+    try:
+        dt = datetime.fromisoformat(value)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=UTC)
+        return dt
+    except Exception:
+        return None
 
 
 class DataMigrator:
@@ -120,7 +157,7 @@ class DataMigrator:
         
         for i in range(0, len(entities_data), batch_size):
             batch = entities_data[i:i + batch_size]
-            
+
             batch_added = 0
             for entity_data in batch:
                 try:
@@ -134,24 +171,104 @@ class DataMigrator:
                     if entity_id in seen_ids:
                         continue
 
-                    # Create Entity instance
-                    entity = Entity(
-                        id=entity_id,  # Convert to string for consistency
-                        name=entity_data['name'],
-                        primary_classification=entity_data['primary_classification'],
-                        classifications=entity_data.get('classifications', []),
-                        attributes=entity_data.get('attributes', {})
-                    )
-                    
+                    raw_attributes = entity_data.get('attributes') or {}
+
+                    slug = entity_data.get('slug')
+                    if not slug:
+                        slug = _slugify(entity_data.get('name'))
+
+                    entity_kwargs: Dict[str, Any] = {
+                        'id': entity_id,
+                        'name': entity_data['name'],
+                        'primary_classification': entity_data['primary_classification'],
+                        'classifications': list(entity_data.get('classifications') or []),
+                        'attributes': dict(raw_attributes),
+                        'aliases': entity_data.get('aliases') or entity_data.get('synonyms') or [],
+                        'display_name': entity_data.get('display_name') or entity_data.get('name'),
+                        'slug': slug,
+                        'image_url': entity_data.get('image_url'),
+                        'image_attribution': entity_data.get('image_attribution'),
+                        'is_active': entity_data.get('is_active', True),
+                    }
+
+                    created_at = _parse_datetime(entity_data.get('created_at'))
+                    if created_at:
+                        entity_kwargs['created_at'] = created_at
+                    updated_at = _parse_datetime(entity_data.get('updated_at'))
+                    if updated_at:
+                        entity_kwargs['updated_at'] = updated_at
+
+                    classification = (entity_data.get('primary_classification') or '').lower()
+
+                    if classification == 'ingredient':
+                        entity = IngredientEntity(**entity_kwargs)
+
+                        foodb_priority = _extract_attribute_value(raw_attributes, 'foodb_priority')
+                        if foodb_priority:
+                            entity.foodb_priority = foodb_priority
+
+                        health_outcomes = _extract_attribute_value(raw_attributes, 'health_outcomes') or []
+                        if isinstance(health_outcomes, list):
+                            entity.health_outcomes = []
+                            for outcome in health_outcomes:
+                                if isinstance(outcome, str):
+                                    try:
+                                        entity.add_health_outcome(outcome)
+                                    except Exception:
+                                        continue
+
+                        key_compounds = _extract_attribute_value(raw_attributes, 'key_compounds') or []
+                        if isinstance(key_compounds, list):
+                            entity.compounds = []
+                            for compound in key_compounds:
+                                if isinstance(compound, str):
+                                    try:
+                                        entity.add_compound(compound)
+                                    except Exception:
+                                        continue
+
+                    elif classification == 'nutrient':
+                        entity = NutrientEntity(**entity_kwargs)
+
+                        nutrient_type = _extract_attribute_value(raw_attributes, 'nutrient_type')
+                        if nutrient_type:
+                            entity.nutrient_type = nutrient_type
+
+                        function = _extract_attribute_value(raw_attributes, 'function')
+                        if function:
+                            entity.function = function
+
+                        source = _extract_attribute_value(raw_attributes, 'source')
+                        if source:
+                            entity.source = source
+
+                    elif classification == 'compound':
+                        entity = CompoundEntity(**entity_kwargs)
+
+                        molecular_formula = _extract_attribute_value(raw_attributes, 'molecular_formula')
+                        if molecular_formula:
+                            entity.molecular_formula = molecular_formula
+
+                        molecular_weight = _extract_attribute_value(raw_attributes, 'molecular_weight')
+                        if molecular_weight:
+                            entity.molecular_weight = molecular_weight
+
+                        cas_number = _extract_attribute_value(raw_attributes, 'cas_number')
+                        if cas_number:
+                            entity.cas_number = cas_number
+
+                    else:
+                        entity = Entity(**entity_kwargs)
+
                     # Add to session
                     self.session.add(entity)
                     seen_ids.add(entity_id)
                     batch_added += 1
-                    
+
                 except Exception as e:
                     print(f"Error migrating entity {entity_data.get('id', 'unknown')}: {e}")
                     continue
-            
+
             # Commit batch
             try:
                 self.session.commit()

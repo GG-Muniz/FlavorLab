@@ -14,6 +14,24 @@ export default function SignUp() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const PASSWORD_HELP = 'Password needs 8+ characters, plus uppercase, lowercase, and a number.';
+
+  function validatePasswordComplexity(value) {
+    if ((value || '').length < 8) {
+      return 'Password must be at least 8 characters long';
+    }
+    if (!/[A-Z]/.test(value)) {
+      return 'Password must include at least one uppercase letter';
+    }
+    if (!/[a-z]/.test(value)) {
+      return 'Password must include at least one lowercase letter';
+    }
+    if (!/\d/.test(value)) {
+      return 'Password must include at least one number';
+    }
+    return null;
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
@@ -21,6 +39,10 @@ export default function SignUp() {
     try {
       if (password !== confirmPassword) {
         throw new Error('Passwords do not match');
+      }
+      const passwordIssue = validatePasswordComplexity(password);
+      if (passwordIssue) {
+        throw new Error(passwordIssue);
       }
       await register(email, password);
       // Auto-login and go to onboarding
@@ -61,6 +83,7 @@ export default function SignUp() {
                 {showPassword ? <EyeOff width={18} height={18} color="var(--icon-muted)" /> : <Eye width={18} height={18} color="var(--icon-muted)" />}
               </button>
             </div>
+            <div style={{ marginTop: 6, fontSize: 13, color: '#6b7280' }}>{PASSWORD_HELP}</div>
           </div>
 
           <div style={{ marginBottom: 16 }}>

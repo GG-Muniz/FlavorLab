@@ -6,6 +6,7 @@ and session management for the FlavorLab application.
 """
 
 import os
+from pathlib import Path
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from typing import Generator
@@ -15,9 +16,13 @@ from sqlalchemy.exc import OperationalError
 # Get settings
 settings = get_settings()
 
-# Create SQLAlchemy engine
-# SQLite database file will be created in the backend directory
-DATABASE_URL = f"sqlite:///./{settings.database_name}"
+# Determine database URL (prefer explicit DATABASE_URL, otherwise local SQLite file)
+if settings.database_url:
+    DATABASE_URL = settings.database_url
+else:
+    backend_root = Path(__file__).resolve().parent.parent
+    db_path = backend_root / settings.database_name
+    DATABASE_URL = f"sqlite:///{db_path}"
 
 engine = create_engine(
     DATABASE_URL,

@@ -14,14 +14,72 @@ const DIET_OPTIONS = [
 ];
 const ALLERGENS = ['Dairy', 'Gluten', 'Peanuts', 'Tree Nuts', 'Soy', 'Eggs', 'Shellfish', 'Fish', 'Sesame'];
 
+function normalizeDislikedList(items) {
+  if (!Array.isArray(items)) return [];
+  const normalizedList = [];
+  items.forEach((item) => {
+    if (typeof item === 'string') {
+      const trimmed = item.trim();
+      if (trimmed) normalizedList.push({ name: trimmed });
+      return;
+    }
+    if (item && typeof item === 'object') {
+      const normalized = { ...item };
+      if (typeof normalized.name === 'string') normalized.name = normalized.name.trim();
+      if (!normalized.name && typeof normalized.label === 'string') normalized.name = normalized.label.trim();
+      if (!normalized.name && typeof normalized.value === 'string') normalized.name = normalized.value.trim();
+      if (!normalized.name && normalized.id != null) normalized.name = String(normalized.id).trim();
+      if (normalized.name) normalizedList.push(normalized);
+      return;
+    }
+    const fallback = item ?? '';
+    const fallbackName = typeof fallback === 'string' ? fallback.trim() : String(fallback).trim();
+    if (fallbackName) normalizedList.push({ name: fallbackName });
+  });
+  return normalizedList;
+}
+
+function normalizeMealsValue(value) {
+  if (typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  if (trimmed === '3-meals') return '3';
+  if (trimmed === '5-6-smaller' || trimmed === '5-6' || trimmed === '5-6-meals') return '6';
+  if (trimmed === '3' || trimmed === '6' || trimmed === '3-meals-2-snacks') return trimmed;
+  return trimmed;
+}
+
+function extractPreferenceState(user) {
+  const prefs = user?.preferences || {};
+  const dietaryPrefs = user?.dietary_preferences || prefs?.dietary_preferences || {};
+  const surveyData = prefs?.survey_data || {};
+  const dietFromSurvey = Array.isArray(surveyData?.dietaryRestrictions) ? (surveyData.dietaryRestrictions[0] || '') : '';
+  const allergiesList = prefs?.allergies ?? dietaryPrefs?.allergies ?? surveyData?.allergies ?? [];
+  const dislikedRaw = prefs?.disliked ?? dietaryPrefs?.disliked ?? surveyData?.dislikedIngredients ?? [];
+  const mealsRaw = prefs?.meals_per_day ?? dietaryPrefs?.meals_per_day ?? surveyData?.mealsPerDay ?? '';
+  const dietRaw = prefs?.diet ?? dietaryPrefs?.diet ?? dietFromSurvey ?? '';
+  const dietNormalized = typeof dietRaw === 'string' ? dietRaw.trim().toLowerCase() : '';
+
+  return {
+    surveyData,
+    diet: dietNormalized,
+    allergies: Array.isArray(allergiesList)
+      ? allergiesList
+        .map((item) => (typeof item === 'string' ? item.trim() : item))
+        .filter((item) => typeof item === 'string' && item.length > 0)
+      : [],
+    disliked: normalizeDislikedList(dislikedRaw),
+    mealsPerDay: normalizeMealsValue(mealsRaw)
+  };
+}
+
 export default function GoalsPreferencesForm({ onSaved }) {
   const { user, updateProfile } = useAuth();
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const initialPrefs = user?.preferences || user?.dietary_preferences || {};
-  const initialGoalsRaw = user?.health_goals || initialPrefs?.health_goals || {};
+  const preferenceSnapshot = extractPreferenceState(user);
+  const initialGoalsRaw = user?.health_goals || user?.preferences?.health_goals || {};
 
   // Health pillars list and selection (mirrors NutriTest)
   const [pillars, setPillars] = useState([]);
@@ -31,11 +89,11 @@ export default function GoalsPreferencesForm({ onSaved }) {
     return [];
   });
 
-  const [diet, setDiet] = useState(initialPrefs?.diet || '');
-  const [allergies, setAllergies] = useState(new Set(initialPrefs?.allergies || []));
-  const [disliked, setDisliked] = useState(initialPrefs?.disliked || []);
+  const [diet, setDiet] = useState(preferenceSnapshot.diet || '');
+  const [allergies, setAllergies] = useState(new Set(preferenceSnapshot.allergies || []));
+  const [disliked, setDisliked] = useState(preferenceSnapshot.disliked || []);
   const [tagInput, setTagInput] = useState('');
-  const [mealsPerDay, setMealsPerDay] = useState(initialPrefs?.meals_per_day || '');
+  const [mealsPerDay, setMealsPerDay] = useState(preferenceSnapshot.mealsPerDay || '');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -73,17 +131,31 @@ export default function GoalsPreferencesForm({ onSaved }) {
 
   // Sync local state with user changes from AuthContext
   useEffect(() => {
-    const nextInitialPrefs = user?.preferences || user?.dietary_preferences || {};
-    const nextInitialGoals = user?.health_goals || nextInitialPrefs?.health_goals || {};
+    const prefsState = extractPreferenceState(user);
+    const nextInitialGoals = user?.health_goals || user?.preferences?.health_goals || {};
     const nextSelected = Array.isArray(nextInitialGoals?.selectedGoals)
       ? nextInitialGoals.selectedGoals
       : (Array.isArray(nextInitialGoals) ? nextInitialGoals : []);
     setSelectedPillars(nextSelected);
-    setDiet(nextInitialPrefs?.diet || '');
-    setAllergies(new Set(nextInitialPrefs?.allergies || []));
-    setDisliked(nextInitialPrefs?.disliked || []);
-    setMealsPerDay(nextInitialPrefs?.meals_per_day || '');
+    setDiet(prefsState.diet || '');
+    setAllergies(new Set(prefsState.allergies || []));
+    setDisliked(prefsState.disliked || []);
+    setMealsPerDay(prefsState.mealsPerDay || '');
   }, [user]);
+
+  useEffect(() => {
+    if (!Array.isArray(pillars) || pillars.length === 0) return;
+    if (Array.isArray(selectedPillars) && selectedPillars.length > 0) return;
+    const surveyNames = (user?.preferences?.survey_data?.healthPillars || []).filter(Boolean);
+    if (!surveyNames.length) return;
+    const mappedIds = surveyNames
+      .map((name) => {
+        const match = pillars.find((pillar) => (pillar?.name || pillar?.title) === name);
+        return match?.id;
+      })
+      .filter(Boolean);
+    if (mappedIds.length > 0) setSelectedPillars(mappedIds);
+  }, [pillars, selectedPillars, user]);
 
   // Load pillars to mirror NutriTest labels
   useEffect(() => {
@@ -135,37 +207,66 @@ export default function GoalsPreferencesForm({ onSaved }) {
     setMessage('');
     setError('');
     try {
-      const healthPillarNames = pillars.filter(p => selectedPillars.includes(p.id)).map(p => p.name);
-      const sharedPreferences = {
-        ...(user?.preferences || {}),
-        health_goals: selectedPillars,
-        diet,
-        allergies: Array.from(allergies),
-        disliked: disliked.map(t => (typeof t === 'string' ? { name: t } : t)),
-        meals_per_day: mealsPerDay || undefined
+      const normalizedDiet = (diet || '').trim().toLowerCase();
+      const normalizedAllergies = Array.from(allergies)
+        .map((item) => (typeof item === 'string' ? item.trim() : item))
+        .filter((item) => typeof item === 'string' && item.length > 0);
+      const normalizedDisliked = normalizeDislikedList(disliked);
+      const dislikedNames = normalizedDisliked
+        .map((item) => (typeof item === 'string' ? item : item?.name))
+        .filter(Boolean);
+
+      const existingPreferences = user?.preferences || {};
+      const existingSurvey = existingPreferences?.survey_data || {};
+      const existingDietaryPrefs = user?.dietary_preferences || {};
+
+      const computedPillarNames = pillars
+        .filter((pillar) => selectedPillars.includes(pillar.id))
+        .map((pillar) => pillar?.name || pillar?.title)
+        .filter(Boolean);
+      const fallbackSurveyPillars = Array.isArray(existingSurvey.healthPillars) ? existingSurvey.healthPillars : [];
+      const surveyHealthPillars = computedPillarNames.length > 0 ? computedPillarNames : fallbackSurveyPillars;
+      const nextPrimaryGoal = computedPillarNames.length > 0
+        ? computedPillarNames[0]
+        : (existingSurvey.primaryGoal || fallbackSurveyPillars[0] || undefined);
+
+      const nextSurveyData = {
+        ...existingSurvey,
+        healthPillars: surveyHealthPillars,
+        primaryGoal: nextPrimaryGoal,
+        dietaryRestrictions: normalizedDiet ? [normalizedDiet] : [],
+        allergies: normalizedAllergies,
+        mealsPerDay: mealsPerDay || undefined,
+        dislikedIngredients: dislikedNames
       };
+
+      const sharedPreferences = {
+        ...existingPreferences,
+        health_goals: selectedPillars,
+        allergies: normalizedAllergies,
+        disliked: normalizedDisliked,
+        meals_per_day: mealsPerDay || undefined,
+        survey_data: nextSurveyData,
+        ...(normalizedDiet ? { diet: normalizedDiet } : { diet: undefined })
+      };
+
+      const dietaryPreferencesPayload = {
+        ...existingDietaryPrefs,
+        allergies: normalizedAllergies,
+        disliked: normalizedDisliked,
+        meals_per_day: mealsPerDay || undefined,
+        ...(normalizedDiet ? { diet: normalizedDiet } : { diet: undefined })
+      };
+
       const payload = {
         // Write into both places for compatibility
         health_goals: { selectedGoals: selectedPillars },
-        dietary_preferences: {
-          diet,
-          allergies: Array.from(allergies),
-          disliked: disliked.map(t => (typeof t === 'string' ? { name: t } : t)),
-          meals_per_day: mealsPerDay || undefined
-        },
-        preferences: {
-          ...sharedPreferences,
-          survey_data: {
-            healthPillars: healthPillarNames,
-            dietaryRestrictions: diet ? [diet] : [],
-            allergies: Array.from(allergies),
-            mealsPerDay: mealsPerDay || undefined
-          }
-        }
+        dietary_preferences: dietaryPreferencesPayload,
+        preferences: sharedPreferences
       };
       console.log('GoalsPreferencesForm saving payload:', payload);
       console.log('Selected pillar IDs:', selectedPillars);
-      console.log('Selected pillar names:', healthPillarNames);
+      console.log('Selected pillar names:', surveyHealthPillars);
       await updateProfile(payload);
       setMessage('Goals & preferences saved');
       onSaved && onSaved();
@@ -226,9 +327,9 @@ export default function GoalsPreferencesForm({ onSaved }) {
           <div style={{ fontWeight: 700, margin: '16px 0 8px 0' }}>Meals Per Day</div>
           <select value={mealsPerDay} onChange={(e) => setMealsPerDay(e.target.value)} style={{ width: '100%' }}>
             <option value="">Select</option>
-            <option value="3-meals">3 Meals</option>
+            <option value="3">3 Meals</option>
             <option value="3-meals-2-snacks">3 Meals + 2 Snacks</option>
-            <option value="5-6-smaller">5-6 Smaller Meals</option>
+            <option value="6">5-6 Smaller Meals</option>
           </select>
 
           <div style={{ fontWeight: 700, margin: '16px 0 8px 0' }}>Disliked Ingredients</div>

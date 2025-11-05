@@ -86,6 +86,8 @@ def upload_to_cloudinary(cloud_name: str, preset: str, file_bytes: bytes, public
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--limit', type=int, default=0, help='Process at most N ingredients')
+    parser.add_argument('--preset', type=str, default='', help='Override Cloudinary upload preset')
+    parser.add_argument('--folder', type=str, default='', help='Override Cloudinary folder (no leading slash)')
     parser.add_argument('--only-missing', action='store_true', help='Skip items that already have Cloudinary URLs')
     parser.add_argument('--verbose', action='store_true', help='Print progress per item')
     parser.add_argument('--slugs', type=str, default='', help='Comma-separated slugs to process (only these)')
@@ -94,8 +96,9 @@ def main() -> None:
     args = parser.parse_args()
     settings = get_settings()
     cloud = (settings.cloudinary_cloud_name or '').strip()
-    preset = (settings.cloudinary_upload_preset or '').strip()
-    folder = (getattr(settings, 'cloudinary_folder', '') or 'flavorlab/ingredients').strip('/')
+    preset = (args.preset or getattr(settings, 'cloudinary_ingredient_upload_preset', None) or settings.cloudinary_upload_preset or '').strip()
+    folder_default = getattr(settings, 'cloudinary_ingredient_folder', None) or getattr(settings, 'cloudinary_folder', None) or 'flavorlab/ingredients'
+    folder = (args.folder or folder_default).strip('/')
     unsplash_key = (getattr(settings, 'unsplash_access_key', None) or '').strip() or None
     if not cloud or not preset:
         print('CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET required for this script')

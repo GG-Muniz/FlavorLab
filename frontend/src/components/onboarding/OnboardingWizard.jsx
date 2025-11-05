@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { updateUserProfile, getCurrentUser } from '../../api/auth';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,9 @@ export default function OnboardingWizard({ onComplete }) {
   const [units, setUnits] = useState('metric'); // 'metric' | 'imperial'
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [gender, setGender] = useState('');
+  const [activityLevel, setActivityLevel] = useState('');
   const [age, setAge] = useState('');
   // Metric fields (single input in centimeters)
   const [heightCm, setHeightCm] = useState('');
@@ -21,6 +24,51 @@ export default function OnboardingWizard({ onComplete }) {
   const [weightLb, setWeightLb] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  function calculateAgeFromDob(dob) {
+    if (!dob) return undefined;
+    const birth = new Date(dob);
+    if (Number.isNaN(birth.getTime())) return undefined;
+    const today = new Date();
+    let years = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      years -= 1;
+    }
+    return years < 0 ? undefined : years;
+  }
+
+  useEffect(() => {
+    if (!token) return;
+    let active = true;
+    (async () => {
+      try {
+        const me = await getCurrentUser(token);
+        if (!active || !me) return;
+        setFirstName(me.first_name || '');
+        setLastName(me.last_name || '');
+        setDateOfBirth(me.date_of_birth ? String(me.date_of_birth).slice(0, 10) : '');
+        setGender(me.gender || '');
+        setActivityLevel(me.activity_level || '');
+        setAge(me.age != null ? String(me.age) : '');
+        if (me.height_cm != null && me.height_cm !== undefined) {
+          setHeightCm(String(me.height_cm));
+          const totalInches = me.height_cm / 2.54;
+          const ft = Math.floor(totalInches / 12);
+          const inches = Math.round(totalInches % 12);
+          setHeightFt(String(ft));
+          setHeightIn(String(inches));
+        }
+        if (me.weight_kg != null && me.weight_kg !== undefined) {
+          setWeightKg(String(me.weight_kg));
+          setWeightLb(String(Math.round(me.weight_kg * 2.20462 * 10) / 10));
+        }
+      } catch (err) {
+        console.warn('Failed to preload user profile for onboarding:', err);
+      }
+    })();
+    return () => { active = false; };
+  }, [token]);
 
   function toCmFromImperial(ftStr, inStr) {
     const ft = parseFloat(ftStr || '0');
@@ -43,16 +91,25 @@ export default function OnboardingWizard({ onComplete }) {
       let height_cm;
       let weight_kg;
       if (units === 'metric') {
-        height_cm = heightCm ? parseInt(heightCm, 10) : 0;
-        weight_kg = weightKg ? parseFloat(weightKg) : 0;
+        const parsedHeight = heightCm ? Number.parseInt(heightCm, 10) : undefined;
+        const parsedWeight = weightKg ? Number.parseFloat(weightKg) : undefined;
+        height_cm = Number.isNaN(parsedHeight) ? undefined : parsedHeight;
+        weight_kg = Number.isNaN(parsedWeight) ? undefined : parsedWeight;
       } else {
-        height_cm = toCmFromImperial(heightFt, heightIn);
-        weight_kg = toKgFromLb(weightLb);
+        const convertedHeight = toCmFromImperial(heightFt, heightIn);
+        const convertedWeight = toKgFromLb(weightLb);
+        height_cm = convertedHeight > 0 ? convertedHeight : undefined;
+        weight_kg = convertedWeight > 0 ? convertedWeight : undefined;
       }
+      const parsedAge = age ? Number.parseInt(age, 10) : undefined;
+      const normalizedAge = Number.isNaN(parsedAge) ? undefined : parsedAge;
       const payload = {
         first_name: firstName || undefined,
         last_name: lastName || undefined,
-        age: age ? parseInt(age, 10) : undefined,
+        date_of_birth: dateOfBirth || undefined,
+        gender: gender || undefined,
+        activity_level: activityLevel || undefined,
+        age: normalizedAge ?? calculateAgeFromDob(dateOfBirth),
         height_cm,
         weight_kg
       };
@@ -101,9 +158,39 @@ export default function OnboardingWizard({ onComplete }) {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
               <div>
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>Date of birth</label>
+                <input type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid #e5e7eb' }} />
+              </div>
+              <div>
                 <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>Age (years)</label>
                 <input type="number" min="0" max="130" value={age} onChange={(e) => setAge(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid #e5e7eb' }} />
               </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
+              <div>
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>Gender</label>
+                <select value={gender} onChange={(e) => setGender(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid #e5e7eb', background: '#fff' }}>
+                  <option value="">Select</option>
+                  <option value="female">Female</option>
+                  <option value="male">Male</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>Activity level</label>
+                <select value={activityLevel} onChange={(e) => setActivityLevel(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid #e5e7eb', background: '#fff' }}>
+                  <option value="">Select</option>
+                  <option value="sedentary">Sedentary</option>
+                  <option value="light">Light</option>
+                  <option value="moderate">Moderate</option>
+                  <option value="active">Active</option>
+                  <option value="very_active">Very active</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
               {units === 'metric' ? (
                 <div>
                   <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>Height (cm)</label>
@@ -118,15 +205,14 @@ export default function OnboardingWizard({ onComplete }) {
                   </div>
                 </div>
               )}
-            </div>
-
-            <div style={{ marginTop: 12 }}>
-              <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>Weight</label>
-              {units === 'metric' ? (
-                <input type="number" min="0" value={weightKg} onChange={(e) => setWeightKg(e.target.value)} placeholder="kg" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid #e5e7eb' }} />
-              ) : (
-                <input type="number" min="0" value={weightLb} onChange={(e) => setWeightLb(e.target.value)} placeholder="lb" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid #e5e7eb' }} />
-              )}
+              <div>
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>Weight ({units === 'metric' ? 'kg' : 'lb'})</label>
+                {units === 'metric' ? (
+                  <input type="number" min="0" step="0.1" value={weightKg} onChange={(e) => setWeightKg(e.target.value)} placeholder="kg" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid #e5e7eb' }} />
+                ) : (
+                  <input type="number" min="0" step="0.1" value={weightLb} onChange={(e) => setWeightLb(e.target.value)} placeholder="lb" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid #e5e7eb' }} />
+                )}
+              </div>
             </div>
 
             <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
@@ -142,17 +228,22 @@ export default function OnboardingWizard({ onComplete }) {
 
   // Step 3 - integrate goals selection and persist
   if (step === 3) {
-    async function handleGoalsComplete({ selectedGoals }) {
+    async function handleGoalsComplete(payload = {}, options = {}) {
+      const selectedGoals = payload?.health_goals?.selectedGoals || payload?.selectedGoals || [];
       try {
         let existing = {};
         try {
           const me = await getCurrentUser(token);
           existing = me?.preferences || {};
         } catch {}
-        await updateUserProfile(token, { preferences: { ...existing, health_goals: selectedGoals } });
+        if (selectedGoals.length) {
+          await updateUserProfile(token, { preferences: { ...existing, health_goals: selectedGoals } });
+        }
       } catch {}
       if (onComplete) onComplete();
-      navigate('/');
+      if (!options?.skipNavigation) {
+        navigate('/');
+      }
     }
 
     return (

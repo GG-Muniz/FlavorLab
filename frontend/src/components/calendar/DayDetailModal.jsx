@@ -281,17 +281,28 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
           />
       )}
       {isOpen && (
-          <motion.div
+        <motion.div
           key="modal"
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1200,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '40px 20px',
+            pointerEvents: 'none'
+          }}
+        >
+          <div
             style={{
-              position: 'fixed',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
               width: '90%',
               maxWidth: '700px',
               maxHeight: '85vh',
@@ -299,10 +310,10 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
               borderRadius: '16px',
               boxShadow: '0 10px 25px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.05)',
               border: '1px solid #e5e7eb',
-              zIndex: 1001,
               overflow: 'hidden',
               display: 'flex',
-              flexDirection: 'column'
+              flexDirection: 'column',
+              pointerEvents: 'auto'
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -1059,7 +1070,8 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
                 </>
               )}
             </div>
-          </motion.div>
+          </div>
+        </motion.div>
       )}
 
       {/* Journal Writing Window Modal */}
