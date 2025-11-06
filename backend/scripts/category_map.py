@@ -17,7 +17,14 @@ NAME_TO_CATEGORY_SLUGS: Dict[str, List[str]] = {
 
     # Vegetables / Alliums
     "Garlic": ["vegetables", "alliums"],
-    "Broccoli": ["vegetables"],
+    "Broccoli": ["vegetables", "leafy-greens"],
+    "Red Bell Peppers": ["vegetables"],
+    "Tomatoes": ["vegetables"],
+    "Artichoke": ["vegetables"],
+    "Fennel": ["vegetables"],
+    "Sweet Potato": ["vegetables", "root-vegetables"],
+    "Beets": ["vegetables", "root-vegetables"],
+    "Spinach": ["vegetables", "leafy-greens"],
 
     # Juices / Beverages
     "Tart Cherry Juice": ["juices"],
@@ -41,6 +48,7 @@ NAME_TO_CATEGORY_SLUGS: Dict[str, List[str]] = {
 
     # Fermented / Vegetables
     "Sauerkraut": ["fermented", "vegetables"],
+    "Olive Oil": ["oils"],
 }
 
 
@@ -54,6 +62,8 @@ SUBSTRING_RULES: Dict[str, List[str]] = {
     "fermented": ["sauerkraut", "kimchi", "kombucha", "kefir", "miso", "tempeh"],
     "broths": ["broth", "stock"],
     "alliums": ["garlic", "onion", "leek", "shallot", "chive"],
+    "root-vegetables": ["carrot", "beet", "parsnip", "radish", "tuber", "root"],
+    "leafy-greens": ["spinach", "kale", "swiss chard", "arugula", "greens"],
 }
 
 
@@ -65,15 +75,22 @@ CLASSIFICATION_TO_CATEGORY_SLUGS: Dict[str, str] = {
     "vegetables": "vegetables",
     "veg": "vegetables",
     "leafy greens": "leafy-greens",
+    "leafy_greens": "leafy-greens",
+    "cruciferous": "vegetables",
+    "root vegetables": "root-vegetables",
+    "root_vegetables": "root-vegetables",
     "juices": "juices",
     "juice": "juices",
     "dairy": "dairy",
     "seafood": "seafood",
     "meats": "meats",
+    "legumes": "legumes",
     "nuts seeds": "nuts-seeds",
     "nuts & seeds": "nuts-seeds",
     "herbs spices": "herbs-spices",
     "herbs & spices": "herbs-spices",
+    "herbs": "herbs-spices",
+    "spices": "herbs-spices",
 }
 
 

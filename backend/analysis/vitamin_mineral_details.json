@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Calcium",
+    "summary": "Macro mineral essential for bone structure, nerve transmission, and smooth muscle contraction.",
+    "primary_actions": [
+      "Builds and maintains dense bones and teeth",
+      "Supports normal heart rhythm and neuromuscular signaling"
+    ],
+    "amount_reference": "DV 1,300 mg",
+    "evidence_level": "Established"
+  },
+  {
+    "name": "Iron",
+    "summary": "Trace mineral that enables oxygen transport in hemoglobin and powers mitochondrial enzymes.",
+    "primary_actions": [
+      "Prevents anemia-related fatigue and brain fog",
+      "Supports immune enzyme activity"
+    ],
+    "amount_reference": "DV 18 mg",
+    "evidence_level": "Established"
+  },
+  {
+    "name": "Magnesium",
+    "summary": "Cofactor for hundreds of enzymes influencing metabolism, blood sugar control, and muscle relaxation.",
+    "primary_actions": [
+      "Reduces muscle cramping and supports calm sleep",
+      "Helps regulate insulin sensitivity and blood pressure"
+    ],
+    "amount_reference": "DV 420 mg",
+    "evidence_level": "Established"
+  },
+  {
+    "name": "Potassium",
+    "summary": "Primary intracellular electrolyte balancing sodium to manage fluid status and blood pressure.",
+    "primary_actions": [
+      "Maintains healthy heart rhythm and nerve conduction",
+      "Offsets sodium to lower hypertension risk"
+    ],
+    "amount_reference": "Adequate Intake 4,700 mg",
+    "evidence_level": "Established"
+  },
+  {
+    "name": "Selenium",
+    "summary": "Trace mineral incorporated into antioxidant enzymes and thyroid hormone conversion.",
+    "primary_actions": [
+      "Guards cells from oxidative damage",
+      "Supports thyroid hormone activation and immunity"
+    ],
+    "amount_reference": "DV 55 mcg",
+    "evidence_level": "Established"
+  },
+  {
+    "name": "Vitamin B1 (Thiamine)",
+    "summary": "Coenzyme that enables carbohydrate metabolism and nerve impulse conduction.",
+    "primary_actions": [
+      "Supports steady energy production",
+      "Promotes cardiovascular and nervous system health"
+    ],
+    "amount_reference": "DV 1.2 mg",
+    "evidence_level": "Established"
+  },
+  {
+    "name": "Vitamin B2 (Riboflavin)",
+    "summary": "Flavin cofactor for mitochondrial energy enzymes and antioxidant recycling.",
+    "primary_actions": [
+      "Supports ATP generation and fatty acid oxidation",
+      "Regenerates glutathione and other antioxidants"
+    ],
+    "amount_reference": "DV 1.3 mg",
+    "evidence_level": "Established"
+  },
+  {
+    "name": "Vitamin B6 (Pyridoxine)",
+    "summary": "Coenzyme in amino acid metabolism and neurotransmitter synthesis including serotonin and GABA.",
+    "primary_actions": [
+      "Assists in mood regulation and cognitive function",
+      "Helps manage homocysteine to protect the heart"
+    ],
+    "amount_reference": "DV 1.7 mg",
+    "evidence_level": "Established"
+  },
+  {
+    "name": "Vitamin C",
+    "summary": "Water-soluble antioxidant essential for collagen formation, immunity, and iron absorption.",
+    "primary_actions": [
+      "Shields immune cells from oxidative stress",
+      "Improves uptake of non-heme iron"
+    ],
+    "amount_reference": "DV 90 mg",
+    "evidence_level": "Established"
+  },
+  {
+    "name": "Zinc",
+    "summary": "Trace mineral required for immune defense, DNA synthesis, and wound healing.",
+    "primary_actions": [
+      "Supports production of immune cells and antibodies",
+      "Facilitates collagen synthesis and skin repair"
+    ],
+    "amount_reference": "DV 11 mg",
+    "evidence_level": "Established"
+  }
+]

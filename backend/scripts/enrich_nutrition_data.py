@@ -101,7 +101,7 @@ NUTRITION_MAP: Dict[str, Dict[str, Dict[str, float]]] = {
     "Kefir": v(63, 3.6, 7.0, 2.0),
     "Cottage Cheese": v(98, 11.1, 3.4, 4.3),
     # Oils & sweets
-    "Olive Oil EVOO": v(884, 0.0, 0.0, 100.0),
+    "Olive Oil": v(884, 0.0, 0.0, 100.0),
     "Honey": v(304, 0.3, 82.4, 0.0),
     "Dark Chocolate": v(546, 4.9, 61.0, 31.0),
     # Seafood

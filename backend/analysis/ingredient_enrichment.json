@@ -1,0 +1,3181 @@
+[
+  {
+    "id": "almonds",
+    "name": "Almonds",
+    "key_compounds": [
+      {
+        "name": "Magnesium",
+        "summary": "Major mineral cofactor for over 300 enzymes, affecting metabolism, muscle, and nervous system balance.",
+        "primary_actions": [
+          "Regulates muscle relaxation and heart rhythm",
+          "Supports glucose control and energy production"
+        ],
+        "evidence_level": "Established",
+        "concentration": "270mg/100g"
+      },
+      {
+        "name": "B2",
+        "summary": "Riboflavin that powers mitochondrial enzymes and antioxidant recycling.",
+        "primary_actions": [
+          "Activates flavoproteins for energy metabolism",
+          "Regenerates glutathione and other antioxidants"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Protein",
+        "summary": "Macronutrient providing essential amino acids for tissue repair, immune molecules, and enzymes.",
+        "primary_actions": [
+          "Supports muscle maintenance and recovery",
+          "Regulates satiety and metabolic rate"
+        ],
+        "evidence_level": "Established",
+        "concentration": "6g/100g"
+      },
+      {
+        "name": "Vitamin E",
+        "summary": "Family of tocopherols and tocotrienols that protect cell membranes from oxidative damage.",
+        "primary_actions": [
+          "Preserves lipid integrity in cardiovascular tissues",
+          "Supports immune cell signaling"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Melatonin",
+        "summary": "Sleep hormone and antioxidant produced by the pineal gland and present in some plant foods.",
+        "primary_actions": [
+          "Synchronizes circadian rhythms and sleep onset",
+          "Scavenges free radicals, especially in mitochondria"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Magnesium",
+        "summary": "Cofactor for hundreds of enzymes influencing metabolism, blood sugar control, and muscle relaxation.",
+        "primary_actions": [
+          "Reduces muscle cramping and supports calm sleep",
+          "Helps regulate insulin sensitivity and blood pressure"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 420 mg",
+        "amount_per_100g": "270mg/100g"
+      },
+      {
+        "name": "Vitamin B2 (Riboflavin)",
+        "summary": "Flavin cofactor for mitochondrial energy enzymes and antioxidant recycling.",
+        "primary_actions": [
+          "Supports ATP generation and fatty acid oxidation",
+          "Regenerates glutathione and other antioxidants"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1.3 mg",
+        "amount_per_100g": ""
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "apples",
+    "name": "Apples",
+    "key_compounds": [
+      {
+        "name": "Pectin",
+        "summary": "Soluble fiber in apples and citrus that forms gels, moderates digestion, and feeds gut bacteria.",
+        "primary_actions": [
+          "Helps regulate cholesterol and blood glucose",
+          "Supports short-chain fatty acid production for gut lining"
+        ],
+        "evidence_level": "Established",
+        "concentration": "1-1.5g/100g"
+      },
+      {
+        "name": "Quercetin",
+        "summary": "Widely distributed flavonol that stabilizes mast cells and supports cardiovascular resilience.",
+        "primary_actions": [
+          "Acts as an antihistamine and anti-inflammatory agent",
+          "Supports nitric oxide production and blood vessel health"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "artichoke",
+    "name": "Artichoke",
+    "key_compounds": [
+      {
+        "name": "Inulin",
+        "summary": "Prebiotic fiber from chicory and plants that selectively feeds bifidobacteria.",
+        "primary_actions": [
+          "Enhances gut microbiome diversity",
+          "Improves mineral absorption, especially calcium"
+        ],
+        "evidence_level": "Established",
+        "concentration": "3-10g/100g"
+      },
+      {
+        "name": "Cynarin",
+        "summary": "Artichoke polyphenol that stimulates bile flow and cholesterol metabolism.",
+        "primary_actions": [
+          "Promotes digestion of fats via increased bile secretion",
+          "Supports healthy LDL and triglyceride levels"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "avocado",
+    "name": "Avocado",
+    "key_compounds": [
+      {
+        "name": "Monounsaturated fat",
+        "summary": "Heart-healthy fats dominated by oleic acid that improve lipid profiles and insulin sensitivity.",
+        "primary_actions": [
+          "Lower LDL while preserving HDL cholesterol",
+          "Support anti-inflammatory metabolic signaling"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Potassium",
+        "summary": "Primary intracellular electrolyte balancing sodium to manage fluid status and blood pressure.",
+        "primary_actions": [
+          "Maintains healthy heart rhythm and nerve conduction",
+          "Offsets sodium to lower hypertension risk"
+        ],
+        "evidence_level": "Established",
+        "concentration": "485mg/100g"
+      },
+      {
+        "name": "Folate",
+        "summary": "Vitamin B9 essential for DNA synthesis, red blood cells, and prenatal neural tube development.",
+        "primary_actions": [
+          "Supports methylation and homocysteine control",
+          "Prevents neural tube defects during pregnancy"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Potassium",
+        "summary": "Primary intracellular electrolyte balancing sodium to manage fluid status and blood pressure.",
+        "primary_actions": [
+          "Maintains healthy heart rhythm and nerve conduction",
+          "Offsets sodium to lower hypertension risk"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "Adequate Intake 4,700 mg",
+        "amount_per_100g": "485mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "bananas",
+    "name": "Bananas",
+    "key_compounds": [
+      {
+        "name": "B6",
+        "summary": "Pyridoxine involved in amino acid metabolism, neurotransmitter synthesis, and hormone balance.",
+        "primary_actions": [
+          "Supports serotonin, dopamine, and GABA production",
+          "Helps regulate homocysteine and cardiovascular risk"
+        ],
+        "evidence_level": "Established",
+        "concentration": "0.4mg/100g"
+      },
+      {
+        "name": "Potassium",
+        "summary": "Primary intracellular electrolyte balancing sodium to manage fluid status and blood pressure.",
+        "primary_actions": [
+          "Maintains healthy heart rhythm and nerve conduction",
+          "Offsets sodium to lower hypertension risk"
+        ],
+        "evidence_level": "Established",
+        "concentration": "358mg/100g"
+      },
+      {
+        "name": "Magnesium",
+        "summary": "Major mineral cofactor for over 300 enzymes, affecting metabolism, muscle, and nervous system balance.",
+        "primary_actions": [
+          "Regulates muscle relaxation and heart rhythm",
+          "Supports glucose control and energy production"
+        ],
+        "evidence_level": "Established",
+        "concentration": "27mg/100g"
+      },
+      {
+        "name": "Natural sugars",
+        "summary": "Intrinsic fructose, glucose, and sucrose bundled with fiber, water, and micronutrients in whole foods.",
+        "primary_actions": [
+          "Provide quick energy alongside hydration",
+          "Pair with fiber to limit glycemic spikes"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin B6 (Pyridoxine)",
+        "summary": "Coenzyme in amino acid metabolism and neurotransmitter synthesis including serotonin and GABA.",
+        "primary_actions": [
+          "Assists in mood regulation and cognitive function",
+          "Helps manage homocysteine to protect the heart"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1.7 mg",
+        "amount_per_100g": "0.4mg/100g"
+      },
+      {
+        "name": "Potassium",
+        "summary": "Primary intracellular electrolyte balancing sodium to manage fluid status and blood pressure.",
+        "primary_actions": [
+          "Maintains healthy heart rhythm and nerve conduction",
+          "Offsets sodium to lower hypertension risk"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "Adequate Intake 4,700 mg",
+        "amount_per_100g": "358mg/100g"
+      },
+      {
+        "name": "Magnesium",
+        "summary": "Cofactor for hundreds of enzymes influencing metabolism, blood sugar control, and muscle relaxation.",
+        "primary_actions": [
+          "Reduces muscle cramping and supports calm sleep",
+          "Helps regulate insulin sensitivity and blood pressure"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 420 mg",
+        "amount_per_100g": "27mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "beans/legumes",
+    "name": "Beans/Legumes",
+    "key_compounds": [
+      {
+        "name": "Soluble fiber",
+        "summary": "Fiber fraction that dissolves in water, forming gels that slow digestion and support heart health.",
+        "primary_actions": [
+          "Stabilizes post-meal blood glucose",
+          "Helps reduce LDL cholesterol"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Folate",
+        "summary": "Vitamin B9 essential for DNA synthesis, red blood cells, and prenatal neural tube development.",
+        "primary_actions": [
+          "Supports methylation and homocysteine control",
+          "Prevents neural tube defects during pregnancy"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "beef_liver",
+    "name": "Beef Liver",
+    "key_compounds": [
+      {
+        "name": "B12",
+        "summary": "Cobalamin needed for red blood cell formation, myelin maintenance, and methylation.",
+        "primary_actions": [
+          "Prevents megaloblastic anemia and fatigue",
+          "Supports cognitive health through homocysteine regulation"
+        ],
+        "evidence_level": "Established",
+        "concentration": "70.6\u03bcg/100g"
+      },
+      {
+        "name": "Iron",
+        "summary": "Essential trace mineral required to transport oxygen in hemoglobin and support mitochondrial enzymes.",
+        "primary_actions": [
+          "Prevents anemia-related fatigue",
+          "Supports immune enzyme function"
+        ],
+        "evidence_level": "Established",
+        "concentration": "5mg/100g"
+      },
+      {
+        "name": "CoQ10",
+        "summary": "Ubiquinone antioxidant embedded in mitochondria that drives electron transport and protects lipids.",
+        "primary_actions": [
+          "Supports cellular ATP production and stamina",
+          "Shields LDL particles from oxidative damage"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin B1 (Thiamine)",
+        "summary": "Coenzyme that enables carbohydrate metabolism and nerve impulse conduction.",
+        "primary_actions": [
+          "Supports steady energy production",
+          "Promotes cardiovascular and nervous system health"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1.2 mg",
+        "amount_per_100g": "70.6\u03bcg/100g"
+      },
+      {
+        "name": "Iron",
+        "summary": "Trace mineral that enables oxygen transport in hemoglobin and powers mitochondrial enzymes.",
+        "primary_actions": [
+          "Prevents anemia-related fatigue and brain fog",
+          "Supports immune enzyme activity"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 18 mg",
+        "amount_per_100g": "5mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "beet_juice",
+    "name": "Beet Juice",
+    "key_compounds": [
+      {
+        "name": "Nitrates",
+        "summary": "Naturally occurring vegetable nitrates that convert to nitric oxide for vascular support.",
+        "primary_actions": [
+          "Improve blood flow and exercise endurance",
+          "Support healthy blood pressure regulation"
+        ],
+        "evidence_level": "Established",
+        "concentration": "250mg/serving"
+      },
+      {
+        "name": "Betalains",
+        "summary": "Red and yellow pigments in beets acting as potent detox and vascular-protective antioxidants.",
+        "primary_actions": [
+          "Support nitric oxide availability and blood flow",
+          "Neutralize reactive nitrogen and oxygen species"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "beets",
+    "name": "Beets",
+    "key_compounds": [
+      {
+        "name": "Betalains",
+        "summary": "Red and yellow pigments in beets acting as potent detox and vascular-protective antioxidants.",
+        "primary_actions": [
+          "Support nitric oxide availability and blood flow",
+          "Neutralize reactive nitrogen and oxygen species"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      },
+      {
+        "name": "Nitrates",
+        "summary": "Naturally occurring vegetable nitrates that convert to nitric oxide for vascular support.",
+        "primary_actions": [
+          "Improve blood flow and exercise endurance",
+          "Support healthy blood pressure regulation"
+        ],
+        "evidence_level": "Established",
+        "concentration": "high"
+      },
+      {
+        "name": "Folate",
+        "summary": "Vitamin B9 essential for DNA synthesis, red blood cells, and prenatal neural tube development.",
+        "primary_actions": [
+          "Supports methylation and homocysteine control",
+          "Prevents neural tube defects during pregnancy"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "blueberries",
+    "name": "Blueberries",
+    "key_compounds": [
+      {
+        "name": "Anthocyanins",
+        "summary": "Deeply pigmented flavonoids in berries and purple produce that defend blood vessels and neurons from oxidative stress.",
+        "primary_actions": [
+          "Improve endothelial function and circulation",
+          "Support memory and neuroprotection"
+        ],
+        "evidence_level": "Established",
+        "concentration": "100-200mg/100g"
+      },
+      {
+        "name": "Flavonoids",
+        "summary": "Diverse family of plant polyphenols that modulate inflammation, vascular tone, and detox pathways.",
+        "primary_actions": [
+          "Enhance endothelial nitric oxide availability",
+          "Scavenge reactive oxygen species"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant that supports immunity, collagen synthesis, and iron absorption.",
+        "primary_actions": [
+          "Neutralizes free radicals and regenerates vitamin E",
+          "Improves absorption of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant essential for collagen formation, immunity, and iron absorption.",
+        "primary_actions": [
+          "Shields immune cells from oxidative stress",
+          "Improves uptake of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 90 mg",
+        "amount_per_100g": "10mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "bone_broth",
+    "name": "Bone Broth",
+    "key_compounds": [
+      {
+        "name": "Collagen",
+        "summary": "Structural protein providing amino acids like glycine and proline that rebuild connective tissue.",
+        "primary_actions": [
+          "Supports joint cartilage and skin elasticity",
+          "Provides building blocks for gut lining repair"
+        ],
+        "evidence_level": "Established",
+        "concentration": "variable"
+      },
+      {
+        "name": "Glycine",
+        "summary": "Smallest amino acid with roles in collagen synthesis, neurotransmission, and detoxification.",
+        "primary_actions": [
+          "Supports joint and connective tissue through collagen",
+          "Acts as an inhibitory neurotransmitter promoting restorative sleep"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Glutamine",
+        "summary": "Conditionally essential amino acid that fuels rapidly dividing immune and gut cells.",
+        "primary_actions": [
+          "Supports intestinal barrier integrity",
+          "Feeds lymphocytes during immune response"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "broccoli",
+    "name": "Broccoli",
+    "key_compounds": [
+      {
+        "name": "Sulforaphane",
+        "summary": "Isothiocyanate released from crucifers that activates Nrf2 detox pathways.",
+        "primary_actions": [
+          "Upregulates cellular antioxidant defenses",
+          "Supports detoxification of environmental toxins"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Quercetin",
+        "summary": "Widely distributed flavonol that stabilizes mast cells and supports cardiovascular resilience.",
+        "primary_actions": [
+          "Acts as an antihistamine and anti-inflammatory agent",
+          "Supports nitric oxide production and blood vessel health"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant that supports immunity, collagen synthesis, and iron absorption.",
+        "primary_actions": [
+          "Neutralizes free radicals and regenerates vitamin E",
+          "Improves absorption of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Vitamin K",
+        "summary": "Group of fat-soluble vitamins essential for blood clotting and directing calcium into bones instead of arteries.",
+        "primary_actions": [
+          "Activates clotting factors for proper wound healing",
+          "Supports bone-building osteocalcin activity"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Choline",
+        "summary": "Essential methyl donor and phospholipid precursor crucial for brain and liver function.",
+        "primary_actions": [
+          "Supports acetylcholine production for memory",
+          "Promotes liver fat metabolism and methylation"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant essential for collagen formation, immunity, and iron absorption.",
+        "primary_actions": [
+          "Shields immune cells from oxidative stress",
+          "Improves uptake of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 90 mg",
+        "amount_per_100g": "89mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "brown_rice",
+    "name": "Brown Rice",
+    "key_compounds": [
+      {
+        "name": "Complex carbs",
+        "summary": "Slow-digesting starches and fibers that steady energy release and nurture gut microbes.",
+        "primary_actions": [
+          "Provide sustained glucose for endurance",
+          "Feed microbiota for short-chain fatty acid production"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "B1",
+        "summary": "Thiamine, an essential cofactor for glucose metabolism critical to nerve and cardiac function.",
+        "primary_actions": [
+          "Drives ATP production via the Krebs cycle",
+          "Supports peripheral nerve conduction and heart muscle"
+        ],
+        "evidence_level": "Established",
+        "concentration": "trace"
+      },
+      {
+        "name": "Magnesium",
+        "summary": "Major mineral cofactor for over 300 enzymes, affecting metabolism, muscle, and nervous system balance.",
+        "primary_actions": [
+          "Regulates muscle relaxation and heart rhythm",
+          "Supports glucose control and energy production"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin B1 (Thiamine)",
+        "summary": "Coenzyme that enables carbohydrate metabolism and nerve impulse conduction.",
+        "primary_actions": [
+          "Supports steady energy production",
+          "Promotes cardiovascular and nervous system health"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1.2 mg",
+        "amount_per_100g": "trace"
+      },
+      {
+        "name": "Magnesium",
+        "summary": "Cofactor for hundreds of enzymes influencing metabolism, blood sugar control, and muscle relaxation.",
+        "primary_actions": [
+          "Reduces muscle cramping and supports calm sleep",
+          "Helps regulate insulin sensitivity and blood pressure"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 420 mg",
+        "amount_per_100g": ""
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "chamomile_tea",
+    "name": "Chamomile Tea",
+    "key_compounds": [
+      {
+        "name": "Apigenin",
+        "summary": "Flavone found in chamomile, celery, and parsley that exerts calming and anti-inflammatory effects.",
+        "primary_actions": [
+          "Modulates GABA receptors to promote relaxation",
+          "Downregulates NF-\u03baB\u2013driven inflammatory pathways"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": "variable"
+      },
+      {
+        "name": "Glycine",
+        "summary": "Smallest amino acid with roles in collagen synthesis, neurotransmission, and detoxification.",
+        "primary_actions": [
+          "Supports joint and connective tissue through collagen",
+          "Acts as an inhibitory neurotransmitter promoting restorative sleep"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "cherries",
+    "name": "Cherries",
+    "key_compounds": [
+      {
+        "name": "Melatonin",
+        "summary": "Sleep hormone and antioxidant produced by the pineal gland and present in some plant foods.",
+        "primary_actions": [
+          "Synchronizes circadian rhythms and sleep onset",
+          "Scavenges free radicals, especially in mitochondria"
+        ],
+        "evidence_level": "Established",
+        "concentration": "13ng/g"
+      },
+      {
+        "name": "Tryptophan",
+        "summary": "Essential amino acid used to synthesize serotonin and melatonin for mood and sleep.",
+        "primary_actions": [
+          "Supports restorative sleep and relaxation",
+          "Helps regulate appetite and mood"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Anthocyanins",
+        "summary": "Deeply pigmented flavonoids in berries and purple produce that defend blood vessels and neurons from oxidative stress.",
+        "primary_actions": [
+          "Improve endothelial function and circulation",
+          "Support memory and neuroprotection"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "chia_seeds",
+    "name": "Chia Seeds",
+    "key_compounds": [
+      {
+        "name": "ALA Omega-3",
+        "summary": "Plant-based alpha-linolenic acid that the body converts to EPA and DHA in limited amounts, helping maintain cardiovascular and cognitive health.",
+        "primary_actions": [
+          "Supports heart rhythm and healthy cholesterol balance",
+          "Provides anti-inflammatory precursors for cell membranes"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Soluble fiber",
+        "summary": "Fiber fraction that dissolves in water, forming gels that slow digestion and support heart health.",
+        "primary_actions": [
+          "Stabilizes post-meal blood glucose",
+          "Helps reduce LDL cholesterol"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "chicken_breast",
+    "name": "Chicken Breast",
+    "key_compounds": [
+      {
+        "name": "Protein",
+        "summary": "Macronutrient providing essential amino acids for tissue repair, immune molecules, and enzymes.",
+        "primary_actions": [
+          "Supports muscle maintenance and recovery",
+          "Regulates satiety and metabolic rate"
+        ],
+        "evidence_level": "Established",
+        "concentration": "31g/100g"
+      },
+      {
+        "name": "BCAAs",
+        "summary": "Leucine, isoleucine, and valine\u2014branched-chain amino acids that fuel muscle tissue and recovery.",
+        "primary_actions": [
+          "Provide rapid energy substrate during exercise",
+          "Stimulate mTOR signaling for muscle protein synthesis"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": "6.5g/100g"
+      },
+      {
+        "name": "B6",
+        "summary": "Pyridoxine involved in amino acid metabolism, neurotransmitter synthesis, and hormone balance.",
+        "primary_actions": [
+          "Supports serotonin, dopamine, and GABA production",
+          "Helps regulate homocysteine and cardiovascular risk"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin B6 (Pyridoxine)",
+        "summary": "Coenzyme in amino acid metabolism and neurotransmitter synthesis including serotonin and GABA.",
+        "primary_actions": [
+          "Assists in mood regulation and cognitive function",
+          "Helps manage homocysteine to protect the heart"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1.7 mg",
+        "amount_per_100g": ""
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "citrus_fruits",
+    "name": "Citrus Fruits",
+    "key_compounds": [
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant that supports immunity, collagen synthesis, and iron absorption.",
+        "primary_actions": [
+          "Neutralizes free radicals and regenerates vitamin E",
+          "Improves absorption of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Hesperidin",
+        "summary": "Citrus flavanone that strengthens capillaries and modulates inflammation.",
+        "primary_actions": [
+          "Improves venous tone and reduces leg swelling",
+          "Provides antioxidant protection to vascular walls"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      },
+      {
+        "name": "Limonene",
+        "summary": "Citrus peel terpene with uplifting aroma and gentle detox-supporting properties.",
+        "primary_actions": [
+          "Enhances mood and reduces perceived stress",
+          "Induces hepatic enzymes that aid detoxification"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant essential for collagen formation, immunity, and iron absorption.",
+        "primary_actions": [
+          "Shields immune cells from oxidative stress",
+          "Improves uptake of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 90 mg",
+        "amount_per_100g": "50-90mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "coffee",
+    "name": "Coffee",
+    "key_compounds": [
+      {
+        "name": "Caffeine",
+        "summary": "Central nervous system stimulant that blocks adenosine signaling to promote alertness and performance.",
+        "primary_actions": [
+          "Boosts focus, reaction time, and perceived energy",
+          "Enhances endurance by increasing fatty acid mobilization"
+        ],
+        "evidence_level": "Established",
+        "concentration": "95mg/cup"
+      },
+      {
+        "name": "Antioxidants",
+        "summary": "Broad class of plant compounds and nutrients that neutralize free radicals to limit cellular damage.",
+        "primary_actions": [
+          "Reduce oxidative stress burden",
+          "Protect DNA, lipids, and proteins from peroxidation"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "cottage_cheese",
+    "name": "Cottage Cheese",
+    "key_compounds": [
+      {
+        "name": "Casein protein",
+        "summary": "Slow-digesting dairy protein that provides a steady release of amino acids for muscle repair.",
+        "primary_actions": [
+          "Enhances overnight muscle protein synthesis",
+          "Supports satiety and lean mass maintenance"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "dark_chocolate",
+    "name": "Dark Chocolate",
+    "key_compounds": [
+      {
+        "name": "Flavonoids",
+        "summary": "Diverse family of plant polyphenols that modulate inflammation, vascular tone, and detox pathways.",
+        "primary_actions": [
+          "Enhance endothelial nitric oxide availability",
+          "Scavenge reactive oxygen species"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Caffeine",
+        "summary": "Central nervous system stimulant that blocks adenosine signaling to promote alertness and performance.",
+        "primary_actions": [
+          "Boosts focus, reaction time, and perceived energy",
+          "Enhances endurance by increasing fatty acid mobilization"
+        ],
+        "evidence_level": "Established",
+        "concentration": "variable"
+      },
+      {
+        "name": "Theobromine",
+        "summary": "Gentle stimulant in cacao that improves mood and circulation without strong caffeine effects.",
+        "primary_actions": [
+          "Enhances cerebral blood flow and alertness",
+          "Acts as a mild bronchodilator for airway support"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "dark_leafy_greens",
+    "name": "Dark Leafy Greens",
+    "key_compounds": [
+      {
+        "name": "Nitrates",
+        "summary": "Naturally occurring vegetable nitrates that convert to nitric oxide for vascular support.",
+        "primary_actions": [
+          "Improve blood flow and exercise endurance",
+          "Support healthy blood pressure regulation"
+        ],
+        "evidence_level": "Established",
+        "concentration": "variable"
+      },
+      {
+        "name": "Vitamin K",
+        "summary": "Group of fat-soluble vitamins essential for blood clotting and directing calcium into bones instead of arteries.",
+        "primary_actions": [
+          "Activates clotting factors for proper wound healing",
+          "Supports bone-building osteocalcin activity"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Folate",
+        "summary": "Vitamin B9 essential for DNA synthesis, red blood cells, and prenatal neural tube development.",
+        "primary_actions": [
+          "Supports methylation and homocysteine control",
+          "Prevents neural tube defects during pregnancy"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "eggs",
+    "name": "Eggs",
+    "key_compounds": [
+      {
+        "name": "B12",
+        "summary": "Cobalamin needed for red blood cell formation, myelin maintenance, and methylation.",
+        "primary_actions": [
+          "Prevents megaloblastic anemia and fatigue",
+          "Supports cognitive health through homocysteine regulation"
+        ],
+        "evidence_level": "Established",
+        "concentration": "1.1\u03bcg/100g"
+      },
+      {
+        "name": "Choline",
+        "summary": "Essential methyl donor and phospholipid precursor crucial for brain and liver function.",
+        "primary_actions": [
+          "Supports acetylcholine production for memory",
+          "Promotes liver fat metabolism and methylation"
+        ],
+        "evidence_level": "Established",
+        "concentration": "294mg/100g"
+      },
+      {
+        "name": "B2",
+        "summary": "Riboflavin that powers mitochondrial enzymes and antioxidant recycling.",
+        "primary_actions": [
+          "Activates flavoproteins for energy metabolism",
+          "Regenerates glutathione and other antioxidants"
+        ],
+        "evidence_level": "Established",
+        "concentration": "0.5mg/100g"
+      },
+      {
+        "name": "Leucine",
+        "summary": "Key branched-chain amino acid that triggers muscle anabolism via mTOR signaling.",
+        "primary_actions": [
+          "Stimulates muscle protein synthesis after exercise",
+          "Helps preserve lean mass during calorie deficits"
+        ],
+        "evidence_level": "Established",
+        "concentration": "1.1g/100g"
+      },
+      {
+        "name": "Tryptophan",
+        "summary": "Essential amino acid used to synthesize serotonin and melatonin for mood and sleep.",
+        "primary_actions": [
+          "Supports restorative sleep and relaxation",
+          "Helps regulate appetite and mood"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin B1 (Thiamine)",
+        "summary": "Coenzyme that enables carbohydrate metabolism and nerve impulse conduction.",
+        "primary_actions": [
+          "Supports steady energy production",
+          "Promotes cardiovascular and nervous system health"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1.2 mg",
+        "amount_per_100g": "1.1\u03bcg/100g"
+      },
+      {
+        "name": "Vitamin B2 (Riboflavin)",
+        "summary": "Flavin cofactor for mitochondrial energy enzymes and antioxidant recycling.",
+        "primary_actions": [
+          "Supports ATP generation and fatty acid oxidation",
+          "Regenerates glutathione and other antioxidants"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1.3 mg",
+        "amount_per_100g": "0.5mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "elderberries",
+    "name": "Elderberries",
+    "key_compounds": [
+      {
+        "name": "Anthocyanins",
+        "summary": "Deeply pigmented flavonoids in berries and purple produce that defend blood vessels and neurons from oxidative stress.",
+        "primary_actions": [
+          "Improve endothelial function and circulation",
+          "Support memory and neuroprotection"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant that supports immunity, collagen synthesis, and iron absorption.",
+        "primary_actions": [
+          "Neutralizes free radicals and regenerates vitamin E",
+          "Improves absorption of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant essential for collagen formation, immunity, and iron absorption.",
+        "primary_actions": [
+          "Shields immune cells from oxidative stress",
+          "Improves uptake of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 90 mg",
+        "amount_per_100g": "36mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "fatty_fish",
+    "name": "Fatty Fish",
+    "key_compounds": [
+      {
+        "name": "Vitamin D",
+        "summary": "Fat-soluble hormone-like nutrient that regulates calcium balance and immune readiness.",
+        "primary_actions": [
+          "Supports bone mineralization and muscle function",
+          "Modulates innate and adaptive immunity"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Omega-3",
+        "summary": "Family of essential fatty acids including EPA and DHA vital for heart, brain, and immune modulation.",
+        "primary_actions": [
+          "Resolve inflammation and support cell membrane fluidity",
+          "Lower triglycerides and improve mood"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "DHA",
+        "summary": "Docosahexaenoic acid, a long-chain omega-3 crucial for brain, retina, and anti-inflammatory signaling.",
+        "primary_actions": [
+          "Maintains neuronal membrane fluidity and vision",
+          "Resolves inflammation via specialized mediators"
+        ],
+        "evidence_level": "Established",
+        "concentration": "1.2g/100g"
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "fennel",
+    "name": "Fennel",
+    "key_compounds": [
+      {
+        "name": "Anethole",
+        "summary": "Sweet aromatic compound in fennel and anise that calms smooth muscle and provides antioxidant support.",
+        "primary_actions": [
+          "Soothes digestive spasms and bloating",
+          "Acts as a mild antioxidant supporting liver detox pathways"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      },
+      {
+        "name": "Fiber",
+        "summary": "Indigestible carbohydrates that regulate digestion, cholesterol, and blood sugar dynamics.",
+        "primary_actions": [
+          "Promote satiety and regular bowel movements",
+          "Feed gut microbes for short-chain fatty acid production"
+        ],
+        "evidence_level": "Established",
+        "concentration": "3.1g/100g"
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "flax_seeds",
+    "name": "Flax Seeds",
+    "key_compounds": [
+      {
+        "name": "ALA Omega-3",
+        "summary": "Plant-based alpha-linolenic acid that the body converts to EPA and DHA in limited amounts, helping maintain cardiovascular and cognitive health.",
+        "primary_actions": [
+          "Supports heart rhythm and healthy cholesterol balance",
+          "Provides anti-inflammatory precursors for cell membranes"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Lignans",
+        "summary": "Phytoestrogenic fibers in flax and other seeds metabolized into hormone-balancing enterolignans.",
+        "primary_actions": [
+          "Support estrogen metabolism and menopausal comfort",
+          "Provide antioxidant and anti-inflammatory activity"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      },
+      {
+        "name": "Fiber",
+        "summary": "Indigestible carbohydrates that regulate digestion, cholesterol, and blood sugar dynamics.",
+        "primary_actions": [
+          "Promote satiety and regular bowel movements",
+          "Feed gut microbes for short-chain fatty acid production"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "garlic",
+    "name": "Garlic",
+    "key_compounds": [
+      {
+        "name": "Allicin",
+        "summary": "Sulfur-rich molecule released from crushed garlic with broad antimicrobial, cardiometabolic, and immune benefits.",
+        "primary_actions": [
+          "Promotes vasodilation and supports healthy blood pressure",
+          "Displays antibacterial, antiviral, and antifungal activity"
+        ],
+        "evidence_level": "Established",
+        "concentration": "variable"
+      },
+      {
+        "name": "Selenium",
+        "summary": "Trace mineral incorporated into antioxidant enzymes and thyroid hormone conversion.",
+        "primary_actions": [
+          "Guards cells from oxidative damage",
+          "Supports thyroid hormone activation and immunity"
+        ],
+        "evidence_level": "Established",
+        "concentration": "trace"
+      },
+      {
+        "name": "Sulfur compounds",
+        "summary": "Organosulfur molecules in alliums and crucifers that bolster detoxification and immunity.",
+        "primary_actions": [
+          "Stimulate glutathione production",
+          "Provide antimicrobial support"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Selenium",
+        "summary": "Trace mineral incorporated into antioxidant enzymes and thyroid hormone conversion.",
+        "primary_actions": [
+          "Guards cells from oxidative damage",
+          "Supports thyroid hormone activation and immunity"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 55 mcg",
+        "amount_per_100g": "trace"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "ginger",
+    "name": "Ginger",
+    "key_compounds": [
+      {
+        "name": "Gingerol",
+        "summary": "Pungent phenol in ginger responsible for its warming, anti-inflammatory, and antiemetic effects.",
+        "primary_actions": [
+          "Reduces nausea by modulating serotonin receptors",
+          "Inhibits inflammatory prostaglandin synthesis"
+        ],
+        "evidence_level": "Established",
+        "concentration": "1-3%"
+      },
+      {
+        "name": "Shogaol",
+        "summary": "Heat-transformed ginger compound with potent anti-inflammatory and antiemetic actions.",
+        "primary_actions": [
+          "Relieves nausea and motion sickness",
+          "Modulates inflammatory cytokines"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": "variable"
+      },
+      {
+        "name": "Zingiberene",
+        "summary": "Fragrant sesquiterpene in ginger responsible for its spicy aroma and anti-inflammatory traits.",
+        "primary_actions": [
+          "Acts as an antioxidant protecting lipids",
+          "Contributes to ginger's digestive-soothing effects"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "greek_yogurt",
+    "name": "Greek Yogurt",
+    "key_compounds": [
+      {
+        "name": "B12",
+        "summary": "Cobalamin needed for red blood cell formation, myelin maintenance, and methylation.",
+        "primary_actions": [
+          "Prevents megaloblastic anemia and fatigue",
+          "Supports cognitive health through homocysteine regulation"
+        ],
+        "evidence_level": "Established",
+        "concentration": "0.5\u03bcg/100g"
+      },
+      {
+        "name": "Protein",
+        "summary": "Macronutrient providing essential amino acids for tissue repair, immune molecules, and enzymes.",
+        "primary_actions": [
+          "Supports muscle maintenance and recovery",
+          "Regulates satiety and metabolic rate"
+        ],
+        "evidence_level": "Established",
+        "concentration": "10g/100g"
+      },
+      {
+        "name": "B2",
+        "summary": "Riboflavin that powers mitochondrial enzymes and antioxidant recycling.",
+        "primary_actions": [
+          "Activates flavoproteins for energy metabolism",
+          "Regenerates glutathione and other antioxidants"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Leucine",
+        "summary": "Key branched-chain amino acid that triggers muscle anabolism via mTOR signaling.",
+        "primary_actions": [
+          "Stimulates muscle protein synthesis after exercise",
+          "Helps preserve lean mass during calorie deficits"
+        ],
+        "evidence_level": "Established",
+        "concentration": "1g/100g"
+      },
+      {
+        "name": "Probiotics",
+        "summary": "Live beneficial microorganisms that confer health benefits when consumed in adequate amounts.",
+        "primary_actions": [
+          "Improve gut barrier and immune modulation",
+          "Enhance digestion of lactose and other nutrients"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin B1 (Thiamine)",
+        "summary": "Coenzyme that enables carbohydrate metabolism and nerve impulse conduction.",
+        "primary_actions": [
+          "Supports steady energy production",
+          "Promotes cardiovascular and nervous system health"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1.2 mg",
+        "amount_per_100g": "0.5\u03bcg/100g"
+      },
+      {
+        "name": "Vitamin B2 (Riboflavin)",
+        "summary": "Flavin cofactor for mitochondrial energy enzymes and antioxidant recycling.",
+        "primary_actions": [
+          "Supports ATP generation and fatty acid oxidation",
+          "Regenerates glutathione and other antioxidants"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1.3 mg",
+        "amount_per_100g": ""
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "green_tea",
+    "name": "Green Tea",
+    "key_compounds": [
+      {
+        "name": "EGCG",
+        "summary": "Epigallocatechin gallate, the most studied catechin in green tea with metabolic and anti-cancer effects.",
+        "primary_actions": [
+          "Activates AMPK to enhance fat oxidation",
+          "Protects cells from oxidative DNA damage"
+        ],
+        "evidence_level": "Established",
+        "concentration": "70mg/cup"
+      },
+      {
+        "name": "L-Theanine",
+        "summary": "Green tea amino acid that promotes relaxed alertness by increasing alpha brain waves.",
+        "primary_actions": [
+          "Synergizes with caffeine to improve focus without jitters",
+          "Supports stress resilience by modulating neurotransmitters"
+        ],
+        "evidence_level": "Established",
+        "concentration": "25mg/cup"
+      },
+      {
+        "name": "Caffeine",
+        "summary": "Central nervous system stimulant that blocks adenosine signaling to promote alertness and performance.",
+        "primary_actions": [
+          "Boosts focus, reaction time, and perceived energy",
+          "Enhances endurance by increasing fatty acid mobilization"
+        ],
+        "evidence_level": "Established",
+        "concentration": "25mg/cup"
+      },
+      {
+        "name": "Catechins",
+        "summary": "Green tea flavanols, including EGCG, that confer metabolic and cardioprotective benefits.",
+        "primary_actions": [
+          "Increase antioxidant enzyme expression",
+          "Support thermogenesis and metabolic health"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "honey",
+    "name": "Honey",
+    "key_compounds": [
+      {
+        "name": "Glucose",
+        "summary": "Primary simple sugar used by cells for rapid energy production.",
+        "primary_actions": [
+          "Supplies immediate ATP fuel for brain and muscles",
+          "Stimulates insulin release to store energy"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Tryptophan support",
+        "summary": "Co-factors such as vitamin B6 and magnesium that help convert tryptophan into serotonin.",
+        "primary_actions": [
+          "Facilitate neurotransmitter synthesis",
+          "Enhance mood and sleep quality"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "kefir",
+    "name": "Kefir",
+    "key_compounds": [
+      {
+        "name": "Probiotics",
+        "summary": "Live beneficial microorganisms that confer health benefits when consumed in adequate amounts.",
+        "primary_actions": [
+          "Improve gut barrier and immune modulation",
+          "Enhance digestion of lactose and other nutrients"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Lactase",
+        "summary": "Digestive enzyme that splits milk lactose into absorbable sugars.",
+        "primary_actions": [
+          "Prevents lactose intolerance symptoms",
+          "Improves calcium absorption from dairy"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "kiwi",
+    "name": "Kiwi",
+    "key_compounds": [
+      {
+        "name": "Serotonin",
+        "summary": "Neurotransmitter derived from tryptophan that influences mood, digestion, and sleep.",
+        "primary_actions": [
+          "Regulates gut motility and satiety",
+          "Supports positive mood and sleep cycles"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Folate",
+        "summary": "Vitamin B9 essential for DNA synthesis, red blood cells, and prenatal neural tube development.",
+        "primary_actions": [
+          "Supports methylation and homocysteine control",
+          "Prevents neural tube defects during pregnancy"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant that supports immunity, collagen synthesis, and iron absorption.",
+        "primary_actions": [
+          "Neutralizes free radicals and regenerates vitamin E",
+          "Improves absorption of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant essential for collagen formation, immunity, and iron absorption.",
+        "primary_actions": [
+          "Shields immune cells from oxidative stress",
+          "Improves uptake of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 90 mg",
+        "amount_per_100g": "93mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "lentils",
+    "name": "Lentils",
+    "key_compounds": [
+      {
+        "name": "Iron",
+        "summary": "Essential trace mineral required to transport oxygen in hemoglobin and support mitochondrial enzymes.",
+        "primary_actions": [
+          "Prevents anemia-related fatigue",
+          "Supports immune enzyme function"
+        ],
+        "evidence_level": "Established",
+        "concentration": "3.3mg/100g"
+      },
+      {
+        "name": "Folate",
+        "summary": "Vitamin B9 essential for DNA synthesis, red blood cells, and prenatal neural tube development.",
+        "primary_actions": [
+          "Supports methylation and homocysteine control",
+          "Prevents neural tube defects during pregnancy"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Complex carbs",
+        "summary": "Slow-digesting starches and fibers that steady energy release and nurture gut microbes.",
+        "primary_actions": [
+          "Provide sustained glucose for endurance",
+          "Feed microbiota for short-chain fatty acid production"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Iron",
+        "summary": "Trace mineral that enables oxygen transport in hemoglobin and powers mitochondrial enzymes.",
+        "primary_actions": [
+          "Prevents anemia-related fatigue and brain fog",
+          "Supports immune enzyme activity"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 18 mg",
+        "amount_per_100g": "3.3mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "milk",
+    "name": "Milk",
+    "key_compounds": [
+      {
+        "name": "Tryptophan",
+        "summary": "Essential amino acid used to synthesize serotonin and melatonin for mood and sleep.",
+        "primary_actions": [
+          "Supports restorative sleep and relaxation",
+          "Helps regulate appetite and mood"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Calcium",
+        "summary": "Major mineral that builds bone matrix and drives muscle contraction and nerve signaling.",
+        "primary_actions": [
+          "Supports peak bone density and tooth integrity",
+          "Regulates heartbeat and neuromuscular transmission"
+        ],
+        "evidence_level": "Established",
+        "concentration": "125mg/100g"
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Calcium",
+        "summary": "Macro mineral essential for bone structure, nerve transmission, and smooth muscle contraction.",
+        "primary_actions": [
+          "Builds and maintains dense bones and teeth",
+          "Supports normal heart rhythm and neuromuscular signaling"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1,300 mg",
+        "amount_per_100g": "125mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "mixed_berries",
+    "name": "Mixed Berries",
+    "key_compounds": [
+      {
+        "name": "Anthocyanins",
+        "summary": "Deeply pigmented flavonoids in berries and purple produce that defend blood vessels and neurons from oxidative stress.",
+        "primary_actions": [
+          "Improve endothelial function and circulation",
+          "Support memory and neuroprotection"
+        ],
+        "evidence_level": "Established",
+        "concentration": "variable"
+      },
+      {
+        "name": "Fiber",
+        "summary": "Indigestible carbohydrates that regulate digestion, cholesterol, and blood sugar dynamics.",
+        "primary_actions": [
+          "Promote satiety and regular bowel movements",
+          "Feed gut microbes for short-chain fatty acid production"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant that supports immunity, collagen synthesis, and iron absorption.",
+        "primary_actions": [
+          "Neutralizes free radicals and regenerates vitamin E",
+          "Improves absorption of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant essential for collagen formation, immunity, and iron absorption.",
+        "primary_actions": [
+          "Shields immune cells from oxidative stress",
+          "Improves uptake of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 90 mg",
+        "amount_per_100g": ""
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "mixed_nuts",
+    "name": "Mixed Nuts",
+    "key_compounds": [
+      {
+        "name": "Vitamin E",
+        "summary": "Family of tocopherols and tocotrienols that protect cell membranes from oxidative damage.",
+        "primary_actions": [
+          "Preserves lipid integrity in cardiovascular tissues",
+          "Supports immune cell signaling"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Omega-3",
+        "summary": "Family of essential fatty acids including EPA and DHA vital for heart, brain, and immune modulation.",
+        "primary_actions": [
+          "Resolve inflammation and support cell membrane fluidity",
+          "Lower triglycerides and improve mood"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Antioxidants",
+        "summary": "Broad class of plant compounds and nutrients that neutralize free radicals to limit cellular damage.",
+        "primary_actions": [
+          "Reduce oxidative stress burden",
+          "Protect DNA, lipids, and proteins from peroxidation"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "oats",
+    "name": "Oats",
+    "key_compounds": [
+      {
+        "name": "Complex carbs",
+        "summary": "Slow-digesting starches and fibers that steady energy release and nurture gut microbes.",
+        "primary_actions": [
+          "Provide sustained glucose for endurance",
+          "Feed microbiota for short-chain fatty acid production"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "B1",
+        "summary": "Thiamine, an essential cofactor for glucose metabolism critical to nerve and cardiac function.",
+        "primary_actions": [
+          "Drives ATP production via the Krebs cycle",
+          "Supports peripheral nerve conduction and heart muscle"
+        ],
+        "evidence_level": "Established",
+        "concentration": "0.5mg/100g"
+      },
+      {
+        "name": "Beta-glucan",
+        "summary": "Soluble fiber from oats and barley that forms a viscous gel supporting cholesterol balance and satiety.",
+        "primary_actions": [
+          "Lowers LDL cholesterol by binding bile acids",
+          "Feeds beneficial gut microbes to reinforce immunity"
+        ],
+        "evidence_level": "Established",
+        "concentration": "4g/100g"
+      },
+      {
+        "name": "Fiber",
+        "summary": "Indigestible carbohydrates that regulate digestion, cholesterol, and blood sugar dynamics.",
+        "primary_actions": [
+          "Promote satiety and regular bowel movements",
+          "Feed gut microbes for short-chain fatty acid production"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Melatonin",
+        "summary": "Sleep hormone and antioxidant produced by the pineal gland and present in some plant foods.",
+        "primary_actions": [
+          "Synchronizes circadian rhythms and sleep onset",
+          "Scavenges free radicals, especially in mitochondria"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin B1 (Thiamine)",
+        "summary": "Coenzyme that enables carbohydrate metabolism and nerve impulse conduction.",
+        "primary_actions": [
+          "Supports steady energy production",
+          "Promotes cardiovascular and nervous system health"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1.2 mg",
+        "amount_per_100g": "0.5mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "olive_oil_evoo",
+    "name": "Olive Oil EVOO",
+    "key_compounds": [
+      {
+        "name": "Oleocanthal",
+        "summary": "Peppery phenolic in extra-virgin olive oil with ibuprofen-like COX inhibitory activity.",
+        "primary_actions": [
+          "Provides anti-inflammatory relief for joints",
+          "Offers neuroprotective actions against amyloid aggregation"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      },
+      {
+        "name": "Polyphenols",
+        "summary": "Large group of plant antioxidants that modulate inflammation, microbiota, and detox enzymes.",
+        "primary_actions": [
+          "Enhance endothelial nitric oxide and circulation",
+          "Influence gut microbiome composition"
+        ],
+        "evidence_level": "Established",
+        "concentration": "variable"
+      },
+      {
+        "name": "Oleic acid",
+        "summary": "Main monounsaturated fat in olive oil that supports cardiovascular and metabolic health.",
+        "primary_actions": [
+          "Reduces LDL oxidation and inflammation",
+          "Enhances insulin sensitivity"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "oranges",
+    "name": "Oranges",
+    "key_compounds": [
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant that supports immunity, collagen synthesis, and iron absorption.",
+        "primary_actions": [
+          "Neutralizes free radicals and regenerates vitamin E",
+          "Improves absorption of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Flavonoids",
+        "summary": "Diverse family of plant polyphenols that modulate inflammation, vascular tone, and detox pathways.",
+        "primary_actions": [
+          "Enhance endothelial nitric oxide availability",
+          "Scavenge reactive oxygen species"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant essential for collagen formation, immunity, and iron absorption.",
+        "primary_actions": [
+          "Shields immune cells from oxidative stress",
+          "Improves uptake of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 90 mg",
+        "amount_per_100g": "53mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "oysters",
+    "name": "Oysters",
+    "key_compounds": [
+      {
+        "name": "Zinc",
+        "summary": "Trace mineral required for immune defense, DNA synthesis, and wound healing.",
+        "primary_actions": [
+          "Supports production of immune cells and antibodies",
+          "Facilitates collagen synthesis and skin repair"
+        ],
+        "evidence_level": "Established",
+        "concentration": "16mg/100g"
+      },
+      {
+        "name": "Selenium",
+        "summary": "Trace mineral incorporated into antioxidant enzymes and thyroid hormone conversion.",
+        "primary_actions": [
+          "Guards cells from oxidative damage",
+          "Supports thyroid hormone activation and immunity"
+        ],
+        "evidence_level": "Established",
+        "concentration": "77\u03bcg/100g"
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Zinc",
+        "summary": "Trace mineral required for immune defense, DNA synthesis, and wound healing.",
+        "primary_actions": [
+          "Supports production of immune cells and antibodies",
+          "Facilitates collagen synthesis and skin repair"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 11 mg",
+        "amount_per_100g": "16mg/100g"
+      },
+      {
+        "name": "Selenium",
+        "summary": "Trace mineral incorporated into antioxidant enzymes and thyroid hormone conversion.",
+        "primary_actions": [
+          "Guards cells from oxidative damage",
+          "Supports thyroid hormone activation and immunity"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 55 mcg",
+        "amount_per_100g": "77\u03bcg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "papaya",
+    "name": "Papaya",
+    "key_compounds": [
+      {
+        "name": "Papain",
+        "summary": "Papaya-derived protease that aids digestion and softens inflammatory swelling in tissues.",
+        "primary_actions": [
+          "Assists protein digestion in low-acid stomachs",
+          "May reduce inflammatory edema after injury"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      },
+      {
+        "name": "Fiber",
+        "summary": "Indigestible carbohydrates that regulate digestion, cholesterol, and blood sugar dynamics.",
+        "primary_actions": [
+          "Promote satiety and regular bowel movements",
+          "Feed gut microbes for short-chain fatty acid production"
+        ],
+        "evidence_level": "Established",
+        "concentration": "1.7g/100g"
+      },
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant that supports immunity, collagen synthesis, and iron absorption.",
+        "primary_actions": [
+          "Neutralizes free radicals and regenerates vitamin E",
+          "Improves absorption of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant essential for collagen formation, immunity, and iron absorption.",
+        "primary_actions": [
+          "Shields immune cells from oxidative stress",
+          "Improves uptake of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 90 mg",
+        "amount_per_100g": "61mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "passionflower",
+    "name": "Passion Flower",
+    "key_compounds": [
+      {
+        "name": "Chrysin",
+        "summary": "Flavonoid in passion flower and honeycomb with calming and antioxidant actions.",
+        "primary_actions": [
+          "Modulates GABAergic signaling for relaxation",
+          "Mitigates oxidative stress in vascular tissues"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      },
+      {
+        "name": "GABA compounds",
+        "summary": "Gamma-aminobutyric acid and related phytochemicals that promote calming neurotransmission.",
+        "primary_actions": [
+          "Reduce neuronal excitability for stress relief",
+          "Support healthy sleep onset"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "peppermint",
+    "name": "Peppermint",
+    "key_compounds": [
+      {
+        "name": "Menthol",
+        "summary": "Mint terpene that activates cold-sensing receptors to create a cooling, soothing sensation.",
+        "primary_actions": [
+          "Relieves throat irritation and mild congestion",
+          "Provides topical analgesic effects"
+        ],
+        "evidence_level": "Established",
+        "concentration": "variable"
+      },
+      {
+        "name": "Rosmarinic acid",
+        "summary": "Herbal polyphenol in rosemary and mint with antioxidant and anti-allergy effects.",
+        "primary_actions": [
+          "Neutralizes free radicals in neural tissue",
+          "Reduces allergic inflammation and seasonal symptoms"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "pineapple",
+    "name": "Pineapple",
+    "key_compounds": [
+      {
+        "name": "Bromelain",
+        "summary": "Proteolytic enzyme complex from pineapple stems known for easing inflammation and supporting digestion.",
+        "primary_actions": [
+          "Reduces exercise-related swelling and soreness",
+          "Assists protein digestion in low-acid stomachs"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": "40-60mg/100g"
+      },
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant that supports immunity, collagen synthesis, and iron absorption.",
+        "primary_actions": [
+          "Neutralizes free radicals and regenerates vitamin E",
+          "Improves absorption of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant essential for collagen formation, immunity, and iron absorption.",
+        "primary_actions": [
+          "Shields immune cells from oxidative stress",
+          "Improves uptake of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 90 mg",
+        "amount_per_100g": ""
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "pomegranate",
+    "name": "Pomegranate",
+    "key_compounds": [
+      {
+        "name": "Punicalagins",
+        "summary": "Ellagitannin antioxidants concentrated in pomegranates that support vascular integrity.",
+        "primary_actions": [
+          "Improve endothelial function",
+          "Exert anti-inflammatory and anti-atherogenic effects"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      },
+      {
+        "name": "Anthocyanins",
+        "summary": "Deeply pigmented flavonoids in berries and purple produce that defend blood vessels and neurons from oxidative stress.",
+        "primary_actions": [
+          "Improve endothelial function and circulation",
+          "Support memory and neuroprotection"
+        ],
+        "evidence_level": "Established",
+        "concentration": "high"
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "poultry",
+    "name": "Poultry",
+    "key_compounds": [
+      {
+        "name": "B6",
+        "summary": "Pyridoxine involved in amino acid metabolism, neurotransmitter synthesis, and hormone balance.",
+        "primary_actions": [
+          "Supports serotonin, dopamine, and GABA production",
+          "Helps regulate homocysteine and cardiovascular risk"
+        ],
+        "evidence_level": "Established",
+        "concentration": "0.5mg/100g"
+      },
+      {
+        "name": "Zinc",
+        "summary": "Trace mineral required for immune defense, DNA synthesis, and wound healing.",
+        "primary_actions": [
+          "Supports production of immune cells and antibodies",
+          "Facilitates collagen synthesis and skin repair"
+        ],
+        "evidence_level": "Established",
+        "concentration": "2mg/100g"
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin B6 (Pyridoxine)",
+        "summary": "Coenzyme in amino acid metabolism and neurotransmitter synthesis including serotonin and GABA.",
+        "primary_actions": [
+          "Assists in mood regulation and cognitive function",
+          "Helps manage homocysteine to protect the heart"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1.7 mg",
+        "amount_per_100g": "0.5mg/100g"
+      },
+      {
+        "name": "Zinc",
+        "summary": "Trace mineral required for immune defense, DNA synthesis, and wound healing.",
+        "primary_actions": [
+          "Supports production of immune cells and antibodies",
+          "Facilitates collagen synthesis and skin repair"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 11 mg",
+        "amount_per_100g": "2mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "pumpkin_seeds",
+    "name": "Pumpkin Seeds",
+    "key_compounds": [
+      {
+        "name": "Zinc",
+        "summary": "Trace mineral required for immune defense, DNA synthesis, and wound healing.",
+        "primary_actions": [
+          "Supports production of immune cells and antibodies",
+          "Facilitates collagen synthesis and skin repair"
+        ],
+        "evidence_level": "Established",
+        "concentration": "7.8mg/100g"
+      },
+      {
+        "name": "Magnesium",
+        "summary": "Major mineral cofactor for over 300 enzymes, affecting metabolism, muscle, and nervous system balance.",
+        "primary_actions": [
+          "Regulates muscle relaxation and heart rhythm",
+          "Supports glucose control and energy production"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Iron",
+        "summary": "Essential trace mineral required to transport oxygen in hemoglobin and support mitochondrial enzymes.",
+        "primary_actions": [
+          "Prevents anemia-related fatigue",
+          "Supports immune enzyme function"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Zinc",
+        "summary": "Trace mineral required for immune defense, DNA synthesis, and wound healing.",
+        "primary_actions": [
+          "Supports production of immune cells and antibodies",
+          "Facilitates collagen synthesis and skin repair"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 11 mg",
+        "amount_per_100g": "7.8mg/100g"
+      },
+      {
+        "name": "Magnesium",
+        "summary": "Cofactor for hundreds of enzymes influencing metabolism, blood sugar control, and muscle relaxation.",
+        "primary_actions": [
+          "Reduces muscle cramping and supports calm sleep",
+          "Helps regulate insulin sensitivity and blood pressure"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 420 mg",
+        "amount_per_100g": ""
+      },
+      {
+        "name": "Iron",
+        "summary": "Trace mineral that enables oxygen transport in hemoglobin and powers mitochondrial enzymes.",
+        "primary_actions": [
+          "Prevents anemia-related fatigue and brain fog",
+          "Supports immune enzyme activity"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 18 mg",
+        "amount_per_100g": ""
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "quinoa",
+    "name": "Quinoa",
+    "key_compounds": [
+      {
+        "name": "Complex carbs",
+        "summary": "Slow-digesting starches and fibers that steady energy release and nurture gut microbes.",
+        "primary_actions": [
+          "Provide sustained glucose for endurance",
+          "Feed microbiota for short-chain fatty acid production"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Iron",
+        "summary": "Essential trace mineral required to transport oxygen in hemoglobin and support mitochondrial enzymes.",
+        "primary_actions": [
+          "Prevents anemia-related fatigue",
+          "Supports immune enzyme function"
+        ],
+        "evidence_level": "Established",
+        "concentration": "2.8mg/100g"
+      },
+      {
+        "name": "Magnesium",
+        "summary": "Major mineral cofactor for over 300 enzymes, affecting metabolism, muscle, and nervous system balance.",
+        "primary_actions": [
+          "Regulates muscle relaxation and heart rhythm",
+          "Supports glucose control and energy production"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Complete protein",
+        "summary": "Protein sources supplying all essential amino acids in proportions needed for tissue repair.",
+        "primary_actions": [
+          "Maintains muscle mass and immune proteins",
+          "Supports hormone and enzyme synthesis"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Iron",
+        "summary": "Trace mineral that enables oxygen transport in hemoglobin and powers mitochondrial enzymes.",
+        "primary_actions": [
+          "Prevents anemia-related fatigue and brain fog",
+          "Supports immune enzyme activity"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 18 mg",
+        "amount_per_100g": "2.8mg/100g"
+      },
+      {
+        "name": "Magnesium",
+        "summary": "Cofactor for hundreds of enzymes influencing metabolism, blood sugar control, and muscle relaxation.",
+        "primary_actions": [
+          "Reduces muscle cramping and supports calm sleep",
+          "Helps regulate insulin sensitivity and blood pressure"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 420 mg",
+        "amount_per_100g": ""
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "red_bell_peppers",
+    "name": "Red Bell Peppers",
+    "key_compounds": [
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant that supports immunity, collagen synthesis, and iron absorption.",
+        "primary_actions": [
+          "Neutralizes free radicals and regenerates vitamin E",
+          "Improves absorption of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Beta-carotene",
+        "summary": "Provitamin A carotenoid that the body converts to retinol to support vision and immunity.",
+        "primary_actions": [
+          "Protects skin and ocular tissues from oxidative light damage",
+          "Serves as a vitamin A reserve for immune resilience"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin C",
+        "summary": "Water-soluble antioxidant essential for collagen formation, immunity, and iron absorption.",
+        "primary_actions": [
+          "Shields immune cells from oxidative stress",
+          "Improves uptake of non-heme iron"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 90 mg",
+        "amount_per_100g": "190mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "salmon",
+    "name": "Salmon",
+    "key_compounds": [
+      {
+        "name": "B12",
+        "summary": "Cobalamin needed for red blood cell formation, myelin maintenance, and methylation.",
+        "primary_actions": [
+          "Prevents megaloblastic anemia and fatigue",
+          "Supports cognitive health through homocysteine regulation"
+        ],
+        "evidence_level": "Established",
+        "concentration": "3.2\u03bcg/100g"
+      },
+      {
+        "name": "B6",
+        "summary": "Pyridoxine involved in amino acid metabolism, neurotransmitter synthesis, and hormone balance.",
+        "primary_actions": [
+          "Supports serotonin, dopamine, and GABA production",
+          "Helps regulate homocysteine and cardiovascular risk"
+        ],
+        "evidence_level": "Established",
+        "concentration": "0.8mg/100g"
+      },
+      {
+        "name": "CoQ10",
+        "summary": "Ubiquinone antioxidant embedded in mitochondria that drives electron transport and protects lipids.",
+        "primary_actions": [
+          "Supports cellular ATP production and stamina",
+          "Shields LDL particles from oxidative damage"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "EPA",
+        "summary": "Eicosapentaenoic acid, marine omega-3 that lowers inflammation and supports cardiovascular resilience.",
+        "primary_actions": [
+          "Generates anti-inflammatory eicosanoids",
+          "Reduces triglycerides and supports mood balance"
+        ],
+        "evidence_level": "Established",
+        "concentration": "0.5g/100g"
+      },
+      {
+        "name": "DHA",
+        "summary": "Docosahexaenoic acid, a long-chain omega-3 crucial for brain, retina, and anti-inflammatory signaling.",
+        "primary_actions": [
+          "Maintains neuronal membrane fluidity and vision",
+          "Resolves inflammation via specialized mediators"
+        ],
+        "evidence_level": "Established",
+        "concentration": "1.2g/100g"
+      },
+      {
+        "name": "Omega-3",
+        "summary": "Family of essential fatty acids including EPA and DHA vital for heart, brain, and immune modulation.",
+        "primary_actions": [
+          "Resolve inflammation and support cell membrane fluidity",
+          "Lower triglycerides and improve mood"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Vitamin D",
+        "summary": "Fat-soluble hormone-like nutrient that regulates calcium balance and immune readiness.",
+        "primary_actions": [
+          "Supports bone mineralization and muscle function",
+          "Modulates innate and adaptive immunity"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin B1 (Thiamine)",
+        "summary": "Coenzyme that enables carbohydrate metabolism and nerve impulse conduction.",
+        "primary_actions": [
+          "Supports steady energy production",
+          "Promotes cardiovascular and nervous system health"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1.2 mg",
+        "amount_per_100g": "3.2\u03bcg/100g"
+      },
+      {
+        "name": "Vitamin B6 (Pyridoxine)",
+        "summary": "Coenzyme in amino acid metabolism and neurotransmitter synthesis including serotonin and GABA.",
+        "primary_actions": [
+          "Assists in mood regulation and cognitive function",
+          "Helps manage homocysteine to protect the heart"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1.7 mg",
+        "amount_per_100g": "0.8mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "sauerkraut",
+    "name": "Sauerkraut",
+    "key_compounds": [
+      {
+        "name": "LAB probiotics",
+        "summary": "Lactic acid bacteria such as Lactobacillus that ferment foods and reinforce gut immunity.",
+        "primary_actions": [
+          "Produce lactic acid to suppress pathogens",
+          "Enhance mucosal immune response"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Fiber",
+        "summary": "Indigestible carbohydrates that regulate digestion, cholesterol, and blood sugar dynamics.",
+        "primary_actions": [
+          "Promote satiety and regular bowel movements",
+          "Feed gut microbes for short-chain fatty acid production"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "shellfish",
+    "name": "Shellfish",
+    "key_compounds": [
+      {
+        "name": "Zinc",
+        "summary": "Trace mineral required for immune defense, DNA synthesis, and wound healing.",
+        "primary_actions": [
+          "Supports production of immune cells and antibodies",
+          "Facilitates collagen synthesis and skin repair"
+        ],
+        "evidence_level": "Established",
+        "concentration": "5-7mg/100g"
+      },
+      {
+        "name": "Selenium",
+        "summary": "Trace mineral incorporated into antioxidant enzymes and thyroid hormone conversion.",
+        "primary_actions": [
+          "Guards cells from oxidative damage",
+          "Supports thyroid hormone activation and immunity"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Zinc",
+        "summary": "Trace mineral required for immune defense, DNA synthesis, and wound healing.",
+        "primary_actions": [
+          "Supports production of immune cells and antibodies",
+          "Facilitates collagen synthesis and skin repair"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 11 mg",
+        "amount_per_100g": "5-7mg/100g"
+      },
+      {
+        "name": "Selenium",
+        "summary": "Trace mineral incorporated into antioxidant enzymes and thyroid hormone conversion.",
+        "primary_actions": [
+          "Guards cells from oxidative damage",
+          "Supports thyroid hormone activation and immunity"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 55 mcg",
+        "amount_per_100g": ""
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "shiitake_mushrooms",
+    "name": "Shiitake Mushrooms",
+    "key_compounds": [
+      {
+        "name": "Beta-glucans",
+        "summary": "Immunomodulatory polysaccharides found in mushrooms and grains that prime innate defense cells.",
+        "primary_actions": [
+          "Activate macrophages and NK cells for pathogen surveillance",
+          "Enhance vaccine and antimicrobial responses"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      },
+      {
+        "name": "Vitamin D",
+        "summary": "Fat-soluble hormone-like nutrient that regulates calcium balance and immune readiness.",
+        "primary_actions": [
+          "Supports bone mineralization and muscle function",
+          "Modulates innate and adaptive immunity"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Selenium",
+        "summary": "Trace mineral incorporated into antioxidant enzymes and thyroid hormone conversion.",
+        "primary_actions": [
+          "Guards cells from oxidative damage",
+          "Supports thyroid hormone activation and immunity"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Selenium",
+        "summary": "Trace mineral incorporated into antioxidant enzymes and thyroid hormone conversion.",
+        "primary_actions": [
+          "Guards cells from oxidative damage",
+          "Supports thyroid hormone activation and immunity"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 55 mcg",
+        "amount_per_100g": ""
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "spinach",
+    "name": "Spinach",
+    "key_compounds": [
+      {
+        "name": "Iron",
+        "summary": "Essential trace mineral required to transport oxygen in hemoglobin and support mitochondrial enzymes.",
+        "primary_actions": [
+          "Prevents anemia-related fatigue",
+          "Supports immune enzyme function"
+        ],
+        "evidence_level": "Established",
+        "concentration": "2.7mg/100g"
+      },
+      {
+        "name": "Folate",
+        "summary": "Vitamin B9 essential for DNA synthesis, red blood cells, and prenatal neural tube development.",
+        "primary_actions": [
+          "Supports methylation and homocysteine control",
+          "Prevents neural tube defects during pregnancy"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Magnesium",
+        "summary": "Major mineral cofactor for over 300 enzymes, affecting metabolism, muscle, and nervous system balance.",
+        "primary_actions": [
+          "Regulates muscle relaxation and heart rhythm",
+          "Supports glucose control and energy production"
+        ],
+        "evidence_level": "Established",
+        "concentration": "79mg/100g"
+      },
+      {
+        "name": "Nitrates",
+        "summary": "Naturally occurring vegetable nitrates that convert to nitric oxide for vascular support.",
+        "primary_actions": [
+          "Improve blood flow and exercise endurance",
+          "Support healthy blood pressure regulation"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Vitamin K",
+        "summary": "Group of fat-soluble vitamins essential for blood clotting and directing calcium into bones instead of arteries.",
+        "primary_actions": [
+          "Activates clotting factors for proper wound healing",
+          "Supports bone-building osteocalcin activity"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Iron",
+        "summary": "Trace mineral that enables oxygen transport in hemoglobin and powers mitochondrial enzymes.",
+        "primary_actions": [
+          "Prevents anemia-related fatigue and brain fog",
+          "Supports immune enzyme activity"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 18 mg",
+        "amount_per_100g": "2.7mg/100g"
+      },
+      {
+        "name": "Magnesium",
+        "summary": "Cofactor for hundreds of enzymes influencing metabolism, blood sugar control, and muscle relaxation.",
+        "primary_actions": [
+          "Reduces muscle cramping and supports calm sleep",
+          "Helps regulate insulin sensitivity and blood pressure"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 420 mg",
+        "amount_per_100g": "79mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "sunflower_seeds",
+    "name": "Sunflower Seeds",
+    "key_compounds": [
+      {
+        "name": "Vitamin E",
+        "summary": "Family of tocopherols and tocotrienols that protect cell membranes from oxidative damage.",
+        "primary_actions": [
+          "Preserves lipid integrity in cardiovascular tissues",
+          "Supports immune cell signaling"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Selenium",
+        "summary": "Trace mineral incorporated into antioxidant enzymes and thyroid hormone conversion.",
+        "primary_actions": [
+          "Guards cells from oxidative damage",
+          "Supports thyroid hormone activation and immunity"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Selenium",
+        "summary": "Trace mineral incorporated into antioxidant enzymes and thyroid hormone conversion.",
+        "primary_actions": [
+          "Guards cells from oxidative damage",
+          "Supports thyroid hormone activation and immunity"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 55 mcg",
+        "amount_per_100g": ""
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "sweet_potato",
+    "name": "Sweet Potato",
+    "key_compounds": [
+      {
+        "name": "Complex carbs",
+        "summary": "Slow-digesting starches and fibers that steady energy release and nurture gut microbes.",
+        "primary_actions": [
+          "Provide sustained glucose for endurance",
+          "Feed microbiota for short-chain fatty acid production"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "B6",
+        "summary": "Pyridoxine involved in amino acid metabolism, neurotransmitter synthesis, and hormone balance.",
+        "primary_actions": [
+          "Supports serotonin, dopamine, and GABA production",
+          "Helps regulate homocysteine and cardiovascular risk"
+        ],
+        "evidence_level": "Established",
+        "concentration": "0.3mg/100g"
+      },
+      {
+        "name": "Potassium",
+        "summary": "Primary intracellular electrolyte balancing sodium to manage fluid status and blood pressure.",
+        "primary_actions": [
+          "Maintains healthy heart rhythm and nerve conduction",
+          "Offsets sodium to lower hypertension risk"
+        ],
+        "evidence_level": "Established",
+        "concentration": "337mg/100g"
+      },
+      {
+        "name": "Beta-carotene",
+        "summary": "Provitamin A carotenoid that the body converts to retinol to support vision and immunity.",
+        "primary_actions": [
+          "Protects skin and ocular tissues from oxidative light damage",
+          "Serves as a vitamin A reserve for immune resilience"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin B6 (Pyridoxine)",
+        "summary": "Coenzyme in amino acid metabolism and neurotransmitter synthesis including serotonin and GABA.",
+        "primary_actions": [
+          "Assists in mood regulation and cognitive function",
+          "Helps manage homocysteine to protect the heart"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1.7 mg",
+        "amount_per_100g": "0.3mg/100g"
+      },
+      {
+        "name": "Potassium",
+        "summary": "Primary intracellular electrolyte balancing sodium to manage fluid status and blood pressure.",
+        "primary_actions": [
+          "Maintains healthy heart rhythm and nerve conduction",
+          "Offsets sodium to lower hypertension risk"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "Adequate Intake 4,700 mg",
+        "amount_per_100g": "337mg/100g"
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "tart_cherries",
+    "name": "Tart Cherries",
+    "key_compounds": [
+      {
+        "name": "Melatonin",
+        "summary": "Sleep hormone and antioxidant produced by the pineal gland and present in some plant foods.",
+        "primary_actions": [
+          "Synchronizes circadian rhythms and sleep onset",
+          "Scavenges free radicals, especially in mitochondria"
+        ],
+        "evidence_level": "Established",
+        "concentration": "13ng/g"
+      },
+      {
+        "name": "Tryptophan",
+        "summary": "Essential amino acid used to synthesize serotonin and melatonin for mood and sleep.",
+        "primary_actions": [
+          "Supports restorative sleep and relaxation",
+          "Helps regulate appetite and mood"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Anthocyanins",
+        "summary": "Deeply pigmented flavonoids in berries and purple produce that defend blood vessels and neurons from oxidative stress.",
+        "primary_actions": [
+          "Improve endothelial function and circulation",
+          "Support memory and neuroprotection"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "tart_cherry_juice",
+    "name": "Tart Cherry Juice",
+    "key_compounds": [
+      {
+        "name": "Anthocyanins",
+        "summary": "Deeply pigmented flavonoids in berries and purple produce that defend blood vessels and neurons from oxidative stress.",
+        "primary_actions": [
+          "Improve endothelial function and circulation",
+          "Support memory and neuroprotection"
+        ],
+        "evidence_level": "Established",
+        "concentration": "high concentration"
+      },
+      {
+        "name": "Melatonin",
+        "summary": "Sleep hormone and antioxidant produced by the pineal gland and present in some plant foods.",
+        "primary_actions": [
+          "Synchronizes circadian rhythms and sleep onset",
+          "Scavenges free radicals, especially in mitochondria"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "tomatoes",
+    "name": "Tomatoes",
+    "key_compounds": [
+      {
+        "name": "Lycopene",
+        "summary": "Red carotenoid abundant in tomatoes that concentrates in prostate and cardiovascular tissues.",
+        "primary_actions": [
+          "Protects LDL cholesterol from oxidation",
+          "Supports prostate and skin health against UV damage"
+        ],
+        "evidence_level": "Established",
+        "concentration": "3mg/100g"
+      },
+      {
+        "name": "Potassium",
+        "summary": "Primary intracellular electrolyte balancing sodium to manage fluid status and blood pressure.",
+        "primary_actions": [
+          "Maintains healthy heart rhythm and nerve conduction",
+          "Offsets sodium to lower hypertension risk"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Potassium",
+        "summary": "Primary intracellular electrolyte balancing sodium to manage fluid status and blood pressure.",
+        "primary_actions": [
+          "Maintains healthy heart rhythm and nerve conduction",
+          "Offsets sodium to lower hypertension risk"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "Adequate Intake 4,700 mg",
+        "amount_per_100g": ""
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "tuna",
+    "name": "Tuna",
+    "key_compounds": [
+      {
+        "name": "Protein",
+        "summary": "Macronutrient providing essential amino acids for tissue repair, immune molecules, and enzymes.",
+        "primary_actions": [
+          "Supports muscle maintenance and recovery",
+          "Regulates satiety and metabolic rate"
+        ],
+        "evidence_level": "Established",
+        "concentration": "30g/100g"
+      },
+      {
+        "name": "Omega-3",
+        "summary": "Family of essential fatty acids including EPA and DHA vital for heart, brain, and immune modulation.",
+        "primary_actions": [
+          "Resolve inflammation and support cell membrane fluidity",
+          "Lower triglycerides and improve mood"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "turkey",
+    "name": "Turkey",
+    "key_compounds": [
+      {
+        "name": "Tryptophan",
+        "summary": "Essential amino acid used to synthesize serotonin and melatonin for mood and sleep.",
+        "primary_actions": [
+          "Supports restorative sleep and relaxation",
+          "Helps regulate appetite and mood"
+        ],
+        "evidence_level": "Established",
+        "concentration": "0.24g/100g"
+      },
+      {
+        "name": "B6",
+        "summary": "Pyridoxine involved in amino acid metabolism, neurotransmitter synthesis, and hormone balance.",
+        "primary_actions": [
+          "Supports serotonin, dopamine, and GABA production",
+          "Helps regulate homocysteine and cardiovascular risk"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Vitamin B6 (Pyridoxine)",
+        "summary": "Coenzyme in amino acid metabolism and neurotransmitter synthesis including serotonin and GABA.",
+        "primary_actions": [
+          "Assists in mood regulation and cognitive function",
+          "Helps manage homocysteine to protect the heart"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 1.7 mg",
+        "amount_per_100g": ""
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "turmeric",
+    "name": "Turmeric",
+    "key_compounds": [
+      {
+        "name": "Curcumin",
+        "summary": "Gold pigment from turmeric with strong anti-inflammatory and antioxidant activity.",
+        "primary_actions": [
+          "Downregulates COX-2 and inflammatory cytokines",
+          "Supports joint comfort and metabolic health"
+        ],
+        "evidence_level": "Established",
+        "concentration": "3-5%"
+      },
+      {
+        "name": "Turmerone",
+        "summary": "Aromatic sesquiterpene in turmeric essential oil with neuroprotective and anti-inflammatory potential.",
+        "primary_actions": [
+          "Stimulates neural stem cell activity in animal models",
+          "Synergizes with curcumin for anti-inflammatory benefits"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "walnuts",
+    "name": "Walnuts",
+    "key_compounds": [
+      {
+        "name": "ALA Omega-3",
+        "summary": "Plant-based alpha-linolenic acid that the body converts to EPA and DHA in limited amounts, helping maintain cardiovascular and cognitive health.",
+        "primary_actions": [
+          "Supports heart rhythm and healthy cholesterol balance",
+          "Provides anti-inflammatory precursors for cell membranes"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Ellagic acid",
+        "summary": "Polyphenol in berries and pomegranates that modulates detox enzymes and suppresses tumor growth pathways.",
+        "primary_actions": [
+          "Induces phase II detoxification enzymes",
+          "Inhibits pro-carcinogenic signaling in vitro"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": ""
+      },
+      {
+        "name": "Melatonin",
+        "summary": "Sleep hormone and antioxidant produced by the pineal gland and present in some plant foods.",
+        "primary_actions": [
+          "Synchronizes circadian rhythms and sleep onset",
+          "Scavenges free radicals, especially in mitochondria"
+        ],
+        "evidence_level": "Established",
+        "concentration": "3.5ng/g"
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "watermelon",
+    "name": "Watermelon",
+    "key_compounds": [
+      {
+        "name": "L-citrulline",
+        "summary": "Amino acid from watermelon that converts to arginine to raise nitric oxide levels.",
+        "primary_actions": [
+          "Improves blood flow and exercise performance",
+          "Supports post-exercise recovery by reducing soreness"
+        ],
+        "evidence_level": "Emerging",
+        "concentration": "variable"
+      },
+      {
+        "name": "Potassium",
+        "summary": "Primary intracellular electrolyte balancing sodium to manage fluid status and blood pressure.",
+        "primary_actions": [
+          "Maintains healthy heart rhythm and nerve conduction",
+          "Offsets sodium to lower hypertension risk"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Potassium",
+        "summary": "Primary intracellular electrolyte balancing sodium to manage fluid status and blood pressure.",
+        "primary_actions": [
+          "Maintains healthy heart rhythm and nerve conduction",
+          "Offsets sodium to lower hypertension risk"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "Adequate Intake 4,700 mg",
+        "amount_per_100g": ""
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "whole_grains",
+    "name": "Whole Grains",
+    "key_compounds": [
+      {
+        "name": "Fiber",
+        "summary": "Indigestible carbohydrates that regulate digestion, cholesterol, and blood sugar dynamics.",
+        "primary_actions": [
+          "Promote satiety and regular bowel movements",
+          "Feed gut microbes for short-chain fatty acid production"
+        ],
+        "evidence_level": "Established",
+        "concentration": "variable"
+      },
+      {
+        "name": "B vitamins",
+        "summary": "Group of water-soluble cofactors that drive energy metabolism, neurotransmitter synthesis, and cellular repair.",
+        "primary_actions": [
+          "Support carbohydrate, fat, and protein metabolism",
+          "Maintain healthy nervous system and cognitive function"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Magnesium",
+        "summary": "Major mineral cofactor for over 300 enzymes, affecting metabolism, muscle, and nervous system balance.",
+        "primary_actions": [
+          "Regulates muscle relaxation and heart rhythm",
+          "Supports glucose control and energy production"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [
+      {
+        "name": "Magnesium",
+        "summary": "Cofactor for hundreds of enzymes influencing metabolism, blood sugar control, and muscle relaxation.",
+        "primary_actions": [
+          "Reduces muscle cramping and supports calm sleep",
+          "Helps regulate insulin sensitivity and blood pressure"
+        ],
+        "evidence_level": "Established",
+        "amount_reference": "DV 420 mg",
+        "amount_per_100g": ""
+      }
+    ],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "wild_salmon",
+    "name": "Wild Salmon",
+    "key_compounds": [
+      {
+        "name": "EPA",
+        "summary": "Eicosapentaenoic acid, marine omega-3 that lowers inflammation and supports cardiovascular resilience.",
+        "primary_actions": [
+          "Generates anti-inflammatory eicosanoids",
+          "Reduces triglycerides and supports mood balance"
+        ],
+        "evidence_level": "Established",
+        "concentration": "0.5g/100g"
+      },
+      {
+        "name": "DHA",
+        "summary": "Docosahexaenoic acid, a long-chain omega-3 crucial for brain, retina, and anti-inflammatory signaling.",
+        "primary_actions": [
+          "Maintains neuronal membrane fluidity and vision",
+          "Resolves inflammation via specialized mediators"
+        ],
+        "evidence_level": "Established",
+        "concentration": "1.2g/100g"
+      },
+      {
+        "name": "Omega-3",
+        "summary": "Family of essential fatty acids including EPA and DHA vital for heart, brain, and immune modulation.",
+        "primary_actions": [
+          "Resolve inflammation and support cell membrane fluidity",
+          "Lower triglycerides and improve mood"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  },
+  {
+    "id": "yogurt",
+    "name": "Yogurt",
+    "key_compounds": [
+      {
+        "name": "Lactobacillus",
+        "summary": "Genus of beneficial bacteria common in fermented foods that produce lactic acid and support microbiome balance.",
+        "primary_actions": [
+          "Maintain acidic gut environment to deter pathogens",
+          "Support immune modulation and vitamin synthesis"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      },
+      {
+        "name": "Bifidobacteria",
+        "summary": "Beneficial probiotic genus that ferments fibers into short-chain fatty acids for gut integrity.",
+        "primary_actions": [
+          "Crowd out pathogens and reinforce gut barrier function",
+          "Produce acetate and lactate that feed other microbiota"
+        ],
+        "evidence_level": "Established",
+        "concentration": ""
+      }
+    ],
+    "vitamins_minerals": [],
+    "missing_compounds": [],
+    "missing_vitamins": []
+  }
+]

@@ -75,6 +75,37 @@ def _normalize_entity_for_response(entity: Entity) -> Entity:
                         v = rec.get(k)
                         if v is not None:
                             attrs[k] = v
+
+        if getattr(entity, "primary_classification", "") == "ingredient":
+            enrichment_map = _get_ingredient_enrichment_map()
+            enrichment = None
+            for key in (
+                getattr(entity, "id", "") or "",
+                getattr(entity, "slug", "") or "",
+                _slugify(getattr(entity, "id", "")),
+                _slugify(getattr(entity, "name", "")),
+            ):
+                if key and key in enrichment_map:
+                    enrichment = enrichment_map[key]
+                    break
+
+            if enrichment:
+                compound_details = enrichment.get("key_compounds") or []
+                if compound_details:
+                    attrs["key_compound_details"] = {
+                        "value": compound_details,
+                        "source": "ingredient_enrichment_v20251106",
+                        "confidence": 4,
+                    }
+
+                vitamin_details = enrichment.get("vitamins_minerals") or []
+                if vitamin_details:
+                    attrs["vitamin_mineral_details"] = {
+                        "value": vitamin_details,
+                        "source": "ingredient_enrichment_v20251106",
+                        "confidence": 4,
+                    }
+
         return entity
     except Exception:
         # Be permissive - return as is if anything unexpected
@@ -82,6 +113,7 @@ def _normalize_entity_for_response(entity: Entity) -> Entity:
 
 
 _SEED_CACHE: Optional[dict] = None
+_INGREDIENT_ENRICHMENT_CACHE: Optional[dict] = None
 
 
 def _slugify(value: str) -> str:
@@ -111,6 +143,39 @@ def _get_seed_map() -> dict:
         return _SEED_CACHE
 
 
+def _get_ingredient_enrichment_map() -> dict:
+    global _INGREDIENT_ENRICHMENT_CACHE
+    if _INGREDIENT_ENRICHMENT_CACHE is not None:
+        return _INGREDIENT_ENRICHMENT_CACHE
+
+    try:
+        app_dir = os.path.dirname(os.path.dirname(__file__))
+        enrichment_path = os.path.join(app_dir, "analysis", "ingredient_enrichment.json")
+        if not os.path.exists(enrichment_path):
+            enrichment_path = os.path.join(os.path.dirname(app_dir), "analysis", "ingredient_enrichment.json")
+
+        if not os.path.exists(enrichment_path):
+            _INGREDIENT_ENRICHMENT_CACHE = {}
+            return _INGREDIENT_ENRICHMENT_CACHE
+
+        with open(enrichment_path, "r", encoding="utf-8") as f:
+            data = json.load(f) or []
+        cache: dict[str, dict] = {}
+        for entry in data:
+            key = (entry.get("id") or entry.get("name") or "").strip()
+            if not key:
+                continue
+            cache[key] = entry
+            slug = _slugify(key)
+            if slug and slug not in cache:
+                cache[slug] = entry
+        _INGREDIENT_ENRICHMENT_CACHE = cache
+        return _INGREDIENT_ENRICHMENT_CACHE
+    except Exception:
+        _INGREDIENT_ENRICHMENT_CACHE = {}
+        return _INGREDIENT_ENRICHMENT_CACHE
+
+
 # Slugs considered too generic to show in the ingredient browser
 GENERIC_EXCLUDE_SLUGS = {"beans", "beanslegumes", "mixed-berries"}
 GENERIC_EXCLUDE_IDS = {"beans", "beanslegumes", "mixed-berries"}
@@ -122,6 +187,7 @@ CATEGORY_SLUG_ALIASES = {
     "seeds": ["seeds", "seed"],
     "grains": ["grains", "grain", "whole-grains"],
     "seafood": ["seafood", "fish", "shellfish"],
+    "fruits": ["fruits", "fruit", "citrus", "produce"],
     "berries": ["berries", "fruit-berries", "fruits-berries"],
     "vegetables": ["vegetables", "vegetable"],
     "legumes": ["legumes", "beans", "beanslegumes"],
@@ -289,6 +355,47 @@ async def list_ingredients(
                     patterns += ["%grain%","%quinoa%","%oat%","%rice%","%wheat%","%barley%","%rye%"]
                 if any(x in slugs for x in CATEGORY_SLUG_ALIASES.get('seafood', [])):
                     patterns += ["%seafood%","%fish%","%salmon%","%tuna%","%oyster%","%shellfish%"]
+                if any(x in slugs for x in CATEGORY_SLUG_ALIASES.get('fruits', [])):
+                    patterns += [
+                        "%fruit%",
+                        "%apple%",
+                        "%orange%",
+                        "%banana%",
+                        "%grape%",
+                        "%citrus%",
+                        "%pineapple%",
+                        "%mango%",
+                        "%peach%",
+                        "%pear%",
+                        "%melon%",
+                        "%plum%",
+                    ]
+                if any(x in slugs for x in CATEGORY_SLUG_ALIASES.get('berries', [])):
+                    patterns += [
+                        "%berry%",
+                        "%berries%",
+                        "%cranberry%",
+                        "%strawberry%",
+                        "%blueberry%",
+                        "%raspberry%",
+                        "%blackberry%",
+                        "%boysenberry%",
+                        "%elderberry%",
+                        "%gojiberry%",
+                    ]
+                if any(x in slugs for x in CATEGORY_SLUG_ALIASES.get('legumes', [])):
+                    patterns += [
+                        "%legume%",
+                        "%bean%",
+                        "%lentil%",
+                        "%chickpea%",
+                        "%garbanzo%",
+                        "%soy%",
+                        "%edamame%",
+                        "%black-eyed-pea%",
+                        "%split-pea%",
+                        "%kidney%",
+                    ]
 
                 name_filters = [BaseEnt.slug.ilike(p) for p in patterns] + [BaseEnt.name.ilike(p) for p in patterns]
                 if slugs and patterns:

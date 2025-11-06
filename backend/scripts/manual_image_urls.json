@@ -1,12 +1,27 @@
 {
   "items": [
-    { "slug": "chickpeas", "public_id": "healthlab/ingredients/chickpeas" },
-    { "slug": "black-beans", "public_id": "healthlab/ingredients/black-beans" },
-    { "slug": "oats", "public_id": "healthlab/ingredients/oats-1" },
-    { "slug": "beet-juice", "public_id": "healthlab/ingredients/beet-juice-1" },
-    { "slug": "chia-seeds", "public_id": "healthlab/ingredients/chia-seeds-1" },
+    { "slug": "artichoke", "public_id": "healthlab/ingredients/artichoke" },
+    { "slug": "beef_liver", "public_id": "healthlab/ingredients/beef-liver1" },
+    { "slug": "beets", "public_id": "healthlab/ingredients/beets" },
+    { "slug": "bone_broth", "public_id": "healthlab/ingredients/bone-broth" },
+    { "slug": "brown_rice", "public_id": "healthlab/ingredients/brown-rice" },
+    { "slug": "cherries", "public_id": "healthlab/ingredients/cherry" },
+    { "slug": "chicken_breast", "public_id": "healthlab/ingredients/chicken-breast" },
+    { "slug": "chia_seeds", "public_id": "healthlab/ingredients/chia-seeds-1" },
+    { "slug": "dark_chocolate", "public_id": "healthlab/ingredients/dark-chocolate-1" },
+    { "slug": "eggs", "public_id": "healthlab/ingredients/eggs" },
+    { "slug": "fennel", "public_id": "healthlab/ingredients/fennel-1761244610" },
+    { "slug": "flax_seeds", "public_id": "healthlab/ingredients/flax-seeds-1" },
+    { "slug": "ginger", "public_id": "healthlab/ingredients/ginger" },
     { "slug": "lentils", "public_id": "healthlab/ingredients/lentils-1" },
-    { "slug": "flax-seeds", "public_id": "healthlab/ingredients/flax-seeds-1" },
-    { "slug": "dark-chocolate", "public_id": "healthlab/ingredients/dark-chocolate-1" }
+    { "slug": "milk", "public_id": "healthlab/ingredients/milk" },
+    { "slug": "oysters", "public_id": "healthlab/ingredients/oysters" },
+    { "slug": "pumpkin_seeds", "public_id": "healthlab/ingredients/pumpkin-seeds1" },
+    { "slug": "red_bell_peppers", "public_id": "healthlab/ingredients/red-bell-peppers" },
+    { "slug": "shellfish", "public_id": "healthlab/ingredients/shellfish" },
+    { "slug": "sunflower_seeds", "public_id": "healthlab/ingredients/sunflower-seeds1" },
+    { "slug": "sweet_potato", "public_id": "healthlab/ingredients/sweet-potatoe" },
+    { "slug": "tomatoes", "public_id": "healthlab/ingredients/tomatoes" },
+    { "slug": "turmeric", "public_id": "healthlab/ingredients/turmeric" }
   ]
 }

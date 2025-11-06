@@ -1,0 +1,45 @@
+{
+  "unique_count": 10,
+  "frequency": [
+    [
+      "Calcium",
+      1
+    ],
+    [
+      "Iron",
+      5
+    ],
+    [
+      "Magnesium",
+      7
+    ],
+    [
+      "Potassium",
+      5
+    ],
+    [
+      "Selenium",
+      5
+    ],
+    [
+      "Vitamin B1 (Thiamine)",
+      6
+    ],
+    [
+      "Vitamin B2 (Riboflavin)",
+      3
+    ],
+    [
+      "Vitamin B6 (Pyridoxine)",
+      6
+    ],
+    [
+      "Vitamin C",
+      10
+    ],
+    [
+      "Zinc",
+      4
+    ]
+  ]
+}

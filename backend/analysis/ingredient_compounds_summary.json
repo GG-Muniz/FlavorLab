@@ -1,0 +1,693 @@
+{
+  "total_ingredients": 69,
+  "total_unique_compounds": 88,
+  "compound_frequency": [
+    [
+      "ALA Omega-3",
+      3
+    ],
+    [
+      "Allicin",
+      1
+    ],
+    [
+      "Anethole",
+      1
+    ],
+    [
+      "Anthocyanins",
+      7
+    ],
+    [
+      "Antioxidants",
+      2
+    ],
+    [
+      "Apigenin",
+      1
+    ],
+    [
+      "B vitamins",
+      1
+    ],
+    [
+      "B1",
+      2
+    ],
+    [
+      "B12",
+      4
+    ],
+    [
+      "B2",
+      3
+    ],
+    [
+      "B6",
+      6
+    ],
+    [
+      "BCAAs",
+      1
+    ],
+    [
+      "Beta-carotene",
+      2
+    ],
+    [
+      "Beta-glucan",
+      1
+    ],
+    [
+      "Beta-glucans",
+      1
+    ],
+    [
+      "Betalains",
+      2
+    ],
+    [
+      "Bifidobacteria",
+      1
+    ],
+    [
+      "Bromelain",
+      1
+    ],
+    [
+      "Caffeine",
+      3
+    ],
+    [
+      "Calcium",
+      1
+    ],
+    [
+      "Casein protein",
+      1
+    ],
+    [
+      "Catechins",
+      1
+    ],
+    [
+      "Choline",
+      2
+    ],
+    [
+      "Chrysin",
+      1
+    ],
+    [
+      "Collagen",
+      1
+    ],
+    [
+      "Complete protein",
+      1
+    ],
+    [
+      "Complex carbs",
+      5
+    ],
+    [
+      "CoQ10",
+      2
+    ],
+    [
+      "Curcumin",
+      1
+    ],
+    [
+      "Cynarin",
+      1
+    ],
+    [
+      "DHA",
+      3
+    ],
+    [
+      "EGCG",
+      1
+    ],
+    [
+      "Ellagic acid",
+      1
+    ],
+    [
+      "EPA",
+      2
+    ],
+    [
+      "Fiber",
+      7
+    ],
+    [
+      "Flavonoids",
+      3
+    ],
+    [
+      "Folate",
+      7
+    ],
+    [
+      "GABA compounds",
+      1
+    ],
+    [
+      "Gingerol",
+      1
+    ],
+    [
+      "Glucose",
+      1
+    ],
+    [
+      "Glutamine",
+      1
+    ],
+    [
+      "Glycine",
+      2
+    ],
+    [
+      "Hesperidin",
+      1
+    ],
+    [
+      "Inulin",
+      1
+    ],
+    [
+      "Iron",
+      5
+    ],
+    [
+      "L-citrulline",
+      1
+    ],
+    [
+      "L-Theanine",
+      1
+    ],
+    [
+      "LAB probiotics",
+      1
+    ],
+    [
+      "Lactase",
+      1
+    ],
+    [
+      "Lactobacillus",
+      1
+    ],
+    [
+      "Leucine",
+      2
+    ],
+    [
+      "Lignans",
+      1
+    ],
+    [
+      "Limonene",
+      1
+    ],
+    [
+      "Lycopene",
+      1
+    ],
+    [
+      "Magnesium",
+      7
+    ],
+    [
+      "Melatonin",
+      6
+    ],
+    [
+      "Menthol",
+      1
+    ],
+    [
+      "Monounsaturated fat",
+      1
+    ],
+    [
+      "Natural sugars",
+      1
+    ],
+    [
+      "Nitrates",
+      4
+    ],
+    [
+      "Oleic acid",
+      1
+    ],
+    [
+      "Oleocanthal",
+      1
+    ],
+    [
+      "Omega-3",
+      5
+    ],
+    [
+      "Papain",
+      1
+    ],
+    [
+      "Pectin",
+      1
+    ],
+    [
+      "Polyphenols",
+      1
+    ],
+    [
+      "Potassium",
+      5
+    ],
+    [
+      "Probiotics",
+      2
+    ],
+    [
+      "Protein",
+      4
+    ],
+    [
+      "Punicalagins",
+      1
+    ],
+    [
+      "Quercetin",
+      2
+    ],
+    [
+      "Rosmarinic acid",
+      1
+    ],
+    [
+      "Selenium",
+      5
+    ],
+    [
+      "Serotonin",
+      1
+    ],
+    [
+      "Shogaol",
+      1
+    ],
+    [
+      "Soluble fiber",
+      2
+    ],
+    [
+      "Sulforaphane",
+      1
+    ],
+    [
+      "Sulfur compounds",
+      1
+    ],
+    [
+      "Theobromine",
+      1
+    ],
+    [
+      "Tryptophan",
+      5
+    ],
+    [
+      "Tryptophan support",
+      1
+    ],
+    [
+      "Turmerone",
+      1
+    ],
+    [
+      "Vitamin C",
+      10
+    ],
+    [
+      "Vitamin D",
+      3
+    ],
+    [
+      "Vitamin E",
+      3
+    ],
+    [
+      "Vitamin K",
+      3
+    ],
+    [
+      "Zinc",
+      4
+    ],
+    [
+      "Zingiberene",
+      1
+    ]
+  ],
+  "ingredient_compounds": {
+    "Garlic": [
+      "Allicin",
+      "Selenium",
+      "Sulfur compounds"
+    ],
+    "Blueberries": [
+      "Anthocyanins",
+      "Flavonoids",
+      "Vitamin C"
+    ],
+    "Elderberries": [
+      "Anthocyanins",
+      "Vitamin C"
+    ],
+    "Mixed Berries": [
+      "Anthocyanins",
+      "Fiber",
+      "Vitamin C"
+    ],
+    "Green Tea": [
+      "EGCG",
+      "L-Theanine",
+      "Caffeine",
+      "Catechins"
+    ],
+    "Tart Cherry Juice": [
+      "Anthocyanins",
+      "Melatonin"
+    ],
+    "Beet Juice": [
+      "Nitrates",
+      "Betalains"
+    ],
+    "Coffee": [
+      "Caffeine",
+      "Antioxidants"
+    ],
+    "Bone Broth": [
+      "Collagen",
+      "Glycine",
+      "Glutamine"
+    ],
+    "Broccoli": [
+      "Sulforaphane",
+      "Quercetin",
+      "Vitamin C",
+      "Vitamin K",
+      "Choline"
+    ],
+    "Greek Yogurt": [
+      "B12",
+      "Protein",
+      "B2",
+      "Leucine",
+      "Probiotics"
+    ],
+    "Milk": [
+      "Tryptophan",
+      "Calcium"
+    ],
+    "Cottage Cheese": [
+      "Casein protein"
+    ],
+    "Yogurt": [
+      "Lactobacillus",
+      "Bifidobacteria"
+    ],
+    "Kefir": [
+      "Probiotics",
+      "Lactase"
+    ],
+    "Sauerkraut": [
+      "LAB probiotics",
+      "Fiber"
+    ],
+    "Salmon": [
+      "B12",
+      "B6",
+      "CoQ10",
+      "EPA",
+      "DHA",
+      "Omega-3",
+      "Vitamin D"
+    ],
+    "Wild Salmon": [
+      "EPA",
+      "DHA",
+      "Omega-3"
+    ],
+    "Fatty Fish": [
+      "Vitamin D",
+      "Omega-3",
+      "DHA"
+    ],
+    "Tuna": [
+      "Protein",
+      "Omega-3"
+    ],
+    "Bananas": [
+      "B6",
+      "Potassium",
+      "Magnesium",
+      "Natural sugars"
+    ],
+    "Citrus Fruits": [
+      "Vitamin C",
+      "Hesperidin",
+      "Limonene"
+    ],
+    "Tart Cherries": [
+      "Melatonin",
+      "Tryptophan",
+      "Anthocyanins"
+    ],
+    "Kiwi": [
+      "Serotonin",
+      "Folate",
+      "Vitamin C"
+    ],
+    "Avocado": [
+      "Monounsaturated fat",
+      "Potassium",
+      "Folate"
+    ],
+    "Papaya": [
+      "Papain",
+      "Fiber",
+      "Vitamin C"
+    ],
+    "Cherries": [
+      "Melatonin",
+      "Tryptophan",
+      "Anthocyanins"
+    ],
+    "Pineapple": [
+      "Bromelain",
+      "Vitamin C"
+    ],
+    "Oranges": [
+      "Vitamin C",
+      "Flavonoids"
+    ],
+    "Pomegranate": [
+      "Punicalagins",
+      "Anthocyanins"
+    ],
+    "Watermelon": [
+      "L-citrulline",
+      "Potassium"
+    ],
+    "Apples": [
+      "Pectin",
+      "Quercetin"
+    ],
+    "Shiitake Mushrooms": [
+      "Beta-glucans",
+      "Vitamin D",
+      "Selenium"
+    ],
+    "Oats": [
+      "Complex carbs",
+      "B1",
+      "Beta-glucan",
+      "Fiber",
+      "Melatonin"
+    ],
+    "Quinoa": [
+      "Complex carbs",
+      "Iron",
+      "Magnesium",
+      "Complete protein"
+    ],
+    "Brown Rice": [
+      "Complex carbs",
+      "B1",
+      "Magnesium"
+    ],
+    "Whole Grains": [
+      "Fiber",
+      "B vitamins",
+      "Magnesium"
+    ],
+    "Chamomile Tea": [
+      "Apigenin",
+      "Glycine"
+    ],
+    "Passion Flower": [
+      "Chrysin",
+      "GABA compounds"
+    ],
+    "Peppermint": [
+      "Menthol",
+      "Rosmarinic acid"
+    ],
+    "Spinach": [
+      "Iron",
+      "Folate",
+      "Magnesium",
+      "Nitrates",
+      "Vitamin K"
+    ],
+    "Lentils": [
+      "Iron",
+      "Folate",
+      "Complex carbs"
+    ],
+    "Beans/Legumes": [
+      "Soluble fiber",
+      "Folate"
+    ],
+    "Honey": [
+      "Glucose",
+      "Tryptophan support"
+    ],
+    "Almonds": [
+      "Magnesium",
+      "B2",
+      "Protein",
+      "Vitamin E",
+      "Melatonin"
+    ],
+    "Walnuts": [
+      "ALA Omega-3",
+      "Ellagic acid",
+      "Melatonin"
+    ],
+    "Mixed Nuts": [
+      "Vitamin E",
+      "Omega-3",
+      "Antioxidants"
+    ],
+    "Olive Oil EVOO": [
+      "Oleocanthal",
+      "Polyphenols",
+      "Oleic acid"
+    ],
+    "Beef Liver": [
+      "B12",
+      "Iron",
+      "CoQ10"
+    ],
+    "Turkey": [
+      "Tryptophan",
+      "B6"
+    ],
+    "Chicken Breast": [
+      "Protein",
+      "BCAAs",
+      "B6"
+    ],
+    "Eggs": [
+      "B12",
+      "Choline",
+      "B2",
+      "Leucine",
+      "Tryptophan"
+    ],
+    "Poultry": [
+      "B6",
+      "Zinc"
+    ],
+    "Sweet Potato": [
+      "Complex carbs",
+      "B6",
+      "Potassium",
+      "Beta-carotene"
+    ],
+    "Beets": [
+      "Betalains",
+      "Nitrates",
+      "Folate"
+    ],
+    "Shellfish": [
+      "Zinc",
+      "Selenium"
+    ],
+    "Flax Seeds": [
+      "ALA Omega-3",
+      "Lignans",
+      "Fiber"
+    ],
+    "Sunflower Seeds": [
+      "Vitamin E",
+      "Selenium"
+    ],
+    "Pumpkin Seeds": [
+      "Zinc",
+      "Magnesium",
+      "Iron"
+    ],
+    "Chia Seeds": [
+      "ALA Omega-3",
+      "Soluble fiber"
+    ],
+    "Oysters": [
+      "Zinc",
+      "Selenium"
+    ],
+    "Ginger": [
+      "Gingerol",
+      "Shogaol",
+      "Zingiberene"
+    ],
+    "Turmeric": [
+      "Curcumin",
+      "Turmerone"
+    ],
+    "Dark Chocolate": [
+      "Flavonoids",
+      "Caffeine",
+      "Theobromine"
+    ],
+    "Red Bell Peppers": [
+      "Vitamin C",
+      "Beta-carotene"
+    ],
+    "Tomatoes": [
+      "Lycopene",
+      "Potassium"
+    ],
+    "Dark Leafy Greens": [
+      "Nitrates",
+      "Vitamin K",
+      "Folate"
+    ],
+    "Artichoke": [
+      "Inulin",
+      "Cynarin"
+    ],
+    "Fennel": [
+      "Anethole",
+      "Fiber"
+    ]
+  }
+}

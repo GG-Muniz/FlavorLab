@@ -17,6 +17,7 @@ sys.path.insert(0, backend_dir)
 
 from app.database import SessionLocal
 from app.models.entity import IngredientEntity
+from app.models.entity import Entity as BaseEntity
 
 
 # Rules: list of (matcher, replacement). Matcher is case-insensitive substring.
@@ -36,8 +37,14 @@ def main() -> None:
             nm = (ing.name or "").lower()
             for needle, desired in RULES:
                 if needle in nm:
+                    name_changed = False
+                    if ing.name != desired:
+                        ing.name = desired
+                        name_changed = True
                     if ing.display_name != desired:
                         ing.display_name = desired
+                        name_changed = True
+                    if name_changed:
                         updated += 1
                     break
         if updated:

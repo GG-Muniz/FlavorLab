@@ -115,7 +115,10 @@ def _infer_category_slugs(name: str, classifications: Optional[List[str]]) -> Se
     for cls in (classifications or []):
         key = (cls or "").strip().lower()
         if key in CLASSIFICATION_TO_CATEGORY_SLUGS:
-            slugs.add(CLASSIFICATION_TO_CATEGORY_SLUGS[key])
+            slug = CLASSIFICATION_TO_CATEGORY_SLUGS[key]
+            slugs.add(slug)
+            if slug in {"leafy-greens", "root-vegetables"}:
+                slugs.add("vegetables")
 
     # Substring heuristics
     lname = (name or "").lower()

@@ -1,0 +1,1598 @@
+[
+  {
+    "id": "almonds",
+    "name": "Almonds",
+    "key_compounds": [
+      "Magnesium",
+      "B2",
+      "Protein",
+      "Vitamin E",
+      "Melatonin"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Magnesium",
+        "description": ""
+      },
+      {
+        "name": "B2",
+        "description": ""
+      },
+      {
+        "name": "Protein",
+        "description": ""
+      },
+      {
+        "name": "Vitamin E",
+        "description": ""
+      },
+      {
+        "name": "Melatonin",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "apples",
+    "name": "Apples",
+    "key_compounds": [
+      "Pectin",
+      "Quercetin"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Pectin",
+        "description": ""
+      },
+      {
+        "name": "Quercetin",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "artichoke",
+    "name": "Artichoke",
+    "key_compounds": [
+      "Inulin",
+      "Cynarin"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Inulin",
+        "description": ""
+      },
+      {
+        "name": "Cynarin",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "avocado",
+    "name": "Avocado",
+    "key_compounds": [
+      "Monounsaturated fat",
+      "Potassium",
+      "Folate"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Monounsaturated fat",
+        "description": ""
+      },
+      {
+        "name": "Potassium",
+        "description": ""
+      },
+      {
+        "name": "Folate",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "bananas",
+    "name": "Bananas",
+    "key_compounds": [
+      "B6",
+      "Potassium",
+      "Magnesium",
+      "Natural sugars"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "B6",
+        "description": ""
+      },
+      {
+        "name": "Potassium",
+        "description": ""
+      },
+      {
+        "name": "Magnesium",
+        "description": ""
+      },
+      {
+        "name": "Natural sugars",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "beans/legumes",
+    "name": "Beans/Legumes",
+    "key_compounds": [
+      "Soluble fiber",
+      "Folate"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Soluble fiber",
+        "description": ""
+      },
+      {
+        "name": "Folate",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "beef_liver",
+    "name": "Beef Liver",
+    "key_compounds": [
+      "B12",
+      "Iron",
+      "CoQ10"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "B12",
+        "description": ""
+      },
+      {
+        "name": "Iron",
+        "description": ""
+      },
+      {
+        "name": "CoQ10",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "beet_juice",
+    "name": "Beet Juice",
+    "key_compounds": [
+      "Nitrates",
+      "Betalains"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Nitrates",
+        "description": ""
+      },
+      {
+        "name": "Betalains",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "beets",
+    "name": "Beets",
+    "key_compounds": [
+      "Betalains",
+      "Nitrates",
+      "Folate"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Betalains",
+        "description": ""
+      },
+      {
+        "name": "Nitrates",
+        "description": ""
+      },
+      {
+        "name": "Folate",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "blueberries",
+    "name": "Blueberries",
+    "key_compounds": [
+      "Anthocyanins",
+      "Flavonoids",
+      "Vitamin C"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Anthocyanins",
+        "description": ""
+      },
+      {
+        "name": "Flavonoids",
+        "description": ""
+      },
+      {
+        "name": "Vitamin C",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "bone_broth",
+    "name": "Bone Broth",
+    "key_compounds": [
+      "Collagen",
+      "Glycine",
+      "Glutamine"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Collagen",
+        "description": ""
+      },
+      {
+        "name": "Glycine",
+        "description": ""
+      },
+      {
+        "name": "Glutamine",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "broccoli",
+    "name": "Broccoli",
+    "key_compounds": [
+      "Sulforaphane",
+      "Quercetin",
+      "Vitamin C",
+      "Vitamin K",
+      "Choline"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Sulforaphane",
+        "description": ""
+      },
+      {
+        "name": "Quercetin",
+        "description": ""
+      },
+      {
+        "name": "Vitamin C",
+        "description": ""
+      },
+      {
+        "name": "Vitamin K",
+        "description": ""
+      },
+      {
+        "name": "Choline",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "brown_rice",
+    "name": "Brown Rice",
+    "key_compounds": [
+      "Complex carbs",
+      "B1",
+      "Magnesium"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Complex carbs",
+        "description": ""
+      },
+      {
+        "name": "B1",
+        "description": ""
+      },
+      {
+        "name": "Magnesium",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "chamomile_tea",
+    "name": "Chamomile Tea",
+    "key_compounds": [
+      "Apigenin",
+      "Glycine"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Apigenin",
+        "description": ""
+      },
+      {
+        "name": "Glycine",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "cherries",
+    "name": "Cherries",
+    "key_compounds": [
+      "Melatonin",
+      "Tryptophan",
+      "Anthocyanins"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Melatonin",
+        "description": ""
+      },
+      {
+        "name": "Tryptophan",
+        "description": ""
+      },
+      {
+        "name": "Anthocyanins",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "chia_seeds",
+    "name": "Chia Seeds",
+    "key_compounds": [
+      "ALA Omega-3",
+      "Soluble fiber"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "ALA Omega-3",
+        "description": ""
+      },
+      {
+        "name": "Soluble fiber",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "chicken_breast",
+    "name": "Chicken Breast",
+    "key_compounds": [
+      "Protein",
+      "BCAAs",
+      "B6"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Protein",
+        "description": ""
+      },
+      {
+        "name": "BCAAs",
+        "description": ""
+      },
+      {
+        "name": "B6",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "citrus_fruits",
+    "name": "Citrus Fruits",
+    "key_compounds": [
+      "Vitamin C",
+      "Hesperidin",
+      "Limonene"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Vitamin C",
+        "description": ""
+      },
+      {
+        "name": "Hesperidin",
+        "description": ""
+      },
+      {
+        "name": "Limonene",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "coffee",
+    "name": "Coffee",
+    "key_compounds": [
+      "Caffeine",
+      "Antioxidants"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Caffeine",
+        "description": ""
+      },
+      {
+        "name": "Antioxidants",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "cottage_cheese",
+    "name": "Cottage Cheese",
+    "key_compounds": [
+      "Casein protein"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Casein protein",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "dark_chocolate",
+    "name": "Dark Chocolate",
+    "key_compounds": [
+      "Flavonoids",
+      "Caffeine",
+      "Theobromine"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Flavonoids",
+        "description": ""
+      },
+      {
+        "name": "Caffeine",
+        "description": ""
+      },
+      {
+        "name": "Theobromine",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "dark_leafy_greens",
+    "name": "Dark Leafy Greens",
+    "key_compounds": [
+      "Nitrates",
+      "Vitamin K",
+      "Folate"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Nitrates",
+        "description": ""
+      },
+      {
+        "name": "Vitamin K",
+        "description": ""
+      },
+      {
+        "name": "Folate",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "eggs",
+    "name": "Eggs",
+    "key_compounds": [
+      "B12",
+      "Choline",
+      "B2",
+      "Leucine",
+      "Tryptophan"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "B12",
+        "description": ""
+      },
+      {
+        "name": "Choline",
+        "description": ""
+      },
+      {
+        "name": "B2",
+        "description": ""
+      },
+      {
+        "name": "Leucine",
+        "description": ""
+      },
+      {
+        "name": "Tryptophan",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "elderberries",
+    "name": "Elderberries",
+    "key_compounds": [
+      "Anthocyanins",
+      "Vitamin C"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Anthocyanins",
+        "description": ""
+      },
+      {
+        "name": "Vitamin C",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "fatty_fish",
+    "name": "Fatty Fish",
+    "key_compounds": [
+      "Vitamin D",
+      "Omega-3",
+      "DHA"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Vitamin D",
+        "description": ""
+      },
+      {
+        "name": "Omega-3",
+        "description": ""
+      },
+      {
+        "name": "DHA",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "fennel",
+    "name": "Fennel",
+    "key_compounds": [
+      "Anethole",
+      "Fiber"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Anethole",
+        "description": ""
+      },
+      {
+        "name": "Fiber",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "flax_seeds",
+    "name": "Flax Seeds",
+    "key_compounds": [
+      "ALA Omega-3",
+      "Lignans",
+      "Fiber"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "ALA Omega-3",
+        "description": ""
+      },
+      {
+        "name": "Lignans",
+        "description": ""
+      },
+      {
+        "name": "Fiber",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "garlic",
+    "name": "Garlic",
+    "key_compounds": [
+      "Allicin",
+      "Selenium",
+      "Sulfur compounds"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Allicin",
+        "description": ""
+      },
+      {
+        "name": "Selenium",
+        "description": ""
+      },
+      {
+        "name": "Sulfur compounds",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "ginger",
+    "name": "Ginger",
+    "key_compounds": [
+      "Gingerol",
+      "Shogaol",
+      "Zingiberene"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Gingerol",
+        "description": ""
+      },
+      {
+        "name": "Shogaol",
+        "description": ""
+      },
+      {
+        "name": "Zingiberene",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "greek_yogurt",
+    "name": "Greek Yogurt",
+    "key_compounds": [
+      "B12",
+      "Protein",
+      "B2",
+      "Leucine",
+      "Probiotics"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "B12",
+        "description": ""
+      },
+      {
+        "name": "Protein",
+        "description": ""
+      },
+      {
+        "name": "B2",
+        "description": ""
+      },
+      {
+        "name": "Leucine",
+        "description": ""
+      },
+      {
+        "name": "Probiotics",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "green_tea",
+    "name": "Green Tea",
+    "key_compounds": [
+      "EGCG",
+      "L-Theanine",
+      "Caffeine",
+      "Catechins"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "EGCG",
+        "description": ""
+      },
+      {
+        "name": "L-Theanine",
+        "description": ""
+      },
+      {
+        "name": "Caffeine",
+        "description": ""
+      },
+      {
+        "name": "Catechins",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "honey",
+    "name": "Honey",
+    "key_compounds": [
+      "Glucose",
+      "Tryptophan support"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Glucose",
+        "description": ""
+      },
+      {
+        "name": "Tryptophan support",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "kefir",
+    "name": "Kefir",
+    "key_compounds": [
+      "Probiotics",
+      "Lactase"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Probiotics",
+        "description": ""
+      },
+      {
+        "name": "Lactase",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "kiwi",
+    "name": "Kiwi",
+    "key_compounds": [
+      "Serotonin",
+      "Folate",
+      "Vitamin C"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Serotonin",
+        "description": ""
+      },
+      {
+        "name": "Folate",
+        "description": ""
+      },
+      {
+        "name": "Vitamin C",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "lentils",
+    "name": "Lentils",
+    "key_compounds": [
+      "Iron",
+      "Folate",
+      "Complex carbs"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Iron",
+        "description": ""
+      },
+      {
+        "name": "Folate",
+        "description": ""
+      },
+      {
+        "name": "Complex carbs",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "milk",
+    "name": "Milk",
+    "key_compounds": [
+      "Tryptophan",
+      "Calcium"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Tryptophan",
+        "description": ""
+      },
+      {
+        "name": "Calcium",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "mixed_berries",
+    "name": "Mixed Berries",
+    "key_compounds": [
+      "Anthocyanins",
+      "Fiber",
+      "Vitamin C"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Anthocyanins",
+        "description": ""
+      },
+      {
+        "name": "Fiber",
+        "description": ""
+      },
+      {
+        "name": "Vitamin C",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "mixed_nuts",
+    "name": "Mixed Nuts",
+    "key_compounds": [
+      "Vitamin E",
+      "Omega-3",
+      "Antioxidants"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Vitamin E",
+        "description": ""
+      },
+      {
+        "name": "Omega-3",
+        "description": ""
+      },
+      {
+        "name": "Antioxidants",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "oats",
+    "name": "Oats",
+    "key_compounds": [
+      "Complex carbs",
+      "B1",
+      "Beta-glucan",
+      "Fiber",
+      "Melatonin"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Complex carbs",
+        "description": ""
+      },
+      {
+        "name": "B1",
+        "description": ""
+      },
+      {
+        "name": "Beta-glucan",
+        "description": ""
+      },
+      {
+        "name": "Fiber",
+        "description": ""
+      },
+      {
+        "name": "Melatonin",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "olive_oil_evoo",
+    "name": "Olive Oil EVOO",
+    "key_compounds": [
+      "Oleocanthal",
+      "Polyphenols",
+      "Oleic acid"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Oleocanthal",
+        "description": ""
+      },
+      {
+        "name": "Polyphenols",
+        "description": ""
+      },
+      {
+        "name": "Oleic acid",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "oranges",
+    "name": "Oranges",
+    "key_compounds": [
+      "Vitamin C",
+      "Flavonoids"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Vitamin C",
+        "description": ""
+      },
+      {
+        "name": "Flavonoids",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "oysters",
+    "name": "Oysters",
+    "key_compounds": [
+      "Zinc",
+      "Selenium"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Zinc",
+        "description": ""
+      },
+      {
+        "name": "Selenium",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "papaya",
+    "name": "Papaya",
+    "key_compounds": [
+      "Papain",
+      "Fiber",
+      "Vitamin C"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Papain",
+        "description": ""
+      },
+      {
+        "name": "Fiber",
+        "description": ""
+      },
+      {
+        "name": "Vitamin C",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "passionflower",
+    "name": "Passion Flower",
+    "key_compounds": [
+      "Chrysin",
+      "GABA compounds"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Chrysin",
+        "description": ""
+      },
+      {
+        "name": "GABA compounds",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "peppermint",
+    "name": "Peppermint",
+    "key_compounds": [
+      "Menthol",
+      "Rosmarinic acid"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Menthol",
+        "description": ""
+      },
+      {
+        "name": "Rosmarinic acid",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "pineapple",
+    "name": "Pineapple",
+    "key_compounds": [
+      "Bromelain",
+      "Vitamin C"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Bromelain",
+        "description": ""
+      },
+      {
+        "name": "Vitamin C",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "pomegranate",
+    "name": "Pomegranate",
+    "key_compounds": [
+      "Punicalagins",
+      "Anthocyanins"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Punicalagins",
+        "description": ""
+      },
+      {
+        "name": "Anthocyanins",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "poultry",
+    "name": "Poultry",
+    "key_compounds": [
+      "B6",
+      "Zinc"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "B6",
+        "description": ""
+      },
+      {
+        "name": "Zinc",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "pumpkin_seeds",
+    "name": "Pumpkin Seeds",
+    "key_compounds": [
+      "Zinc",
+      "Magnesium",
+      "Iron"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Zinc",
+        "description": ""
+      },
+      {
+        "name": "Magnesium",
+        "description": ""
+      },
+      {
+        "name": "Iron",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "quinoa",
+    "name": "Quinoa",
+    "key_compounds": [
+      "Complex carbs",
+      "Iron",
+      "Magnesium",
+      "Complete protein"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Complex carbs",
+        "description": ""
+      },
+      {
+        "name": "Iron",
+        "description": ""
+      },
+      {
+        "name": "Magnesium",
+        "description": ""
+      },
+      {
+        "name": "Complete protein",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "red_bell_peppers",
+    "name": "Red Bell Peppers",
+    "key_compounds": [
+      "Vitamin C",
+      "Beta-carotene"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Vitamin C",
+        "description": ""
+      },
+      {
+        "name": "Beta-carotene",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "salmon",
+    "name": "Salmon",
+    "key_compounds": [
+      "B12",
+      "B6",
+      "CoQ10",
+      "EPA",
+      "DHA",
+      "Omega-3",
+      "Vitamin D"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "B12",
+        "description": ""
+      },
+      {
+        "name": "B6",
+        "description": ""
+      },
+      {
+        "name": "CoQ10",
+        "description": ""
+      },
+      {
+        "name": "EPA",
+        "description": ""
+      },
+      {
+        "name": "DHA",
+        "description": ""
+      },
+      {
+        "name": "Omega-3",
+        "description": ""
+      },
+      {
+        "name": "Vitamin D",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "sauerkraut",
+    "name": "Sauerkraut",
+    "key_compounds": [
+      "LAB probiotics",
+      "Fiber"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "LAB probiotics",
+        "description": ""
+      },
+      {
+        "name": "Fiber",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "shellfish",
+    "name": "Shellfish",
+    "key_compounds": [
+      "Zinc",
+      "Selenium"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Zinc",
+        "description": ""
+      },
+      {
+        "name": "Selenium",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "shiitake_mushrooms",
+    "name": "Shiitake Mushrooms",
+    "key_compounds": [
+      "Beta-glucans",
+      "Vitamin D",
+      "Selenium"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Beta-glucans",
+        "description": ""
+      },
+      {
+        "name": "Vitamin D",
+        "description": ""
+      },
+      {
+        "name": "Selenium",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "spinach",
+    "name": "Spinach",
+    "key_compounds": [
+      "Iron",
+      "Folate",
+      "Magnesium",
+      "Nitrates",
+      "Vitamin K"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Iron",
+        "description": ""
+      },
+      {
+        "name": "Folate",
+        "description": ""
+      },
+      {
+        "name": "Magnesium",
+        "description": ""
+      },
+      {
+        "name": "Nitrates",
+        "description": ""
+      },
+      {
+        "name": "Vitamin K",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "sunflower_seeds",
+    "name": "Sunflower Seeds",
+    "key_compounds": [
+      "Vitamin E",
+      "Selenium"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Vitamin E",
+        "description": ""
+      },
+      {
+        "name": "Selenium",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "sweet_potato",
+    "name": "Sweet Potato",
+    "key_compounds": [
+      "Complex carbs",
+      "B6",
+      "Potassium",
+      "Beta-carotene"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Complex carbs",
+        "description": ""
+      },
+      {
+        "name": "B6",
+        "description": ""
+      },
+      {
+        "name": "Potassium",
+        "description": ""
+      },
+      {
+        "name": "Beta-carotene",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "tart_cherries",
+    "name": "Tart Cherries",
+    "key_compounds": [
+      "Melatonin",
+      "Tryptophan",
+      "Anthocyanins"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Melatonin",
+        "description": ""
+      },
+      {
+        "name": "Tryptophan",
+        "description": ""
+      },
+      {
+        "name": "Anthocyanins",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "tart_cherry_juice",
+    "name": "Tart Cherry Juice",
+    "key_compounds": [
+      "Anthocyanins",
+      "Melatonin"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Anthocyanins",
+        "description": ""
+      },
+      {
+        "name": "Melatonin",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "tomatoes",
+    "name": "Tomatoes",
+    "key_compounds": [
+      "Lycopene",
+      "Potassium"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Lycopene",
+        "description": ""
+      },
+      {
+        "name": "Potassium",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "tuna",
+    "name": "Tuna",
+    "key_compounds": [
+      "Protein",
+      "Omega-3"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Protein",
+        "description": ""
+      },
+      {
+        "name": "Omega-3",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "turkey",
+    "name": "Turkey",
+    "key_compounds": [
+      "Tryptophan",
+      "B6"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Tryptophan",
+        "description": ""
+      },
+      {
+        "name": "B6",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "turmeric",
+    "name": "Turmeric",
+    "key_compounds": [
+      "Curcumin",
+      "Turmerone"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Curcumin",
+        "description": ""
+      },
+      {
+        "name": "Turmerone",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "walnuts",
+    "name": "Walnuts",
+    "key_compounds": [
+      "ALA Omega-3",
+      "Ellagic acid",
+      "Melatonin"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "ALA Omega-3",
+        "description": ""
+      },
+      {
+        "name": "Ellagic acid",
+        "description": ""
+      },
+      {
+        "name": "Melatonin",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "watermelon",
+    "name": "Watermelon",
+    "key_compounds": [
+      "L-citrulline",
+      "Potassium"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "L-citrulline",
+        "description": ""
+      },
+      {
+        "name": "Potassium",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "whole_grains",
+    "name": "Whole Grains",
+    "key_compounds": [
+      "Fiber",
+      "B vitamins",
+      "Magnesium"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Fiber",
+        "description": ""
+      },
+      {
+        "name": "B vitamins",
+        "description": ""
+      },
+      {
+        "name": "Magnesium",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "wild_salmon",
+    "name": "Wild Salmon",
+    "key_compounds": [
+      "EPA",
+      "DHA",
+      "Omega-3"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "EPA",
+        "description": ""
+      },
+      {
+        "name": "DHA",
+        "description": ""
+      },
+      {
+        "name": "Omega-3",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "yogurt",
+    "name": "Yogurt",
+    "key_compounds": [
+      "Lactobacillus",
+      "Bifidobacteria"
+    ],
+    "vitamins_minerals": [],
+    "compound_details": [
+      {
+        "name": "Lactobacillus",
+        "description": ""
+      },
+      {
+        "name": "Bifidobacteria",
+        "description": ""
+      }
+    ]
+  }
+]

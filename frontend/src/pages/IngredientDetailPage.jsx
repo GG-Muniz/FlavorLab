@@ -113,6 +113,13 @@ export default function IngredientDetailPage() {
   const servingSizeSource = unwrap(attrs?.serving_size_g_source);
   const primaryBenefits = unwrap(attrs?.primary_benefits);
   const compoundConcentrations = unwrap(attrs?.compound_concentrations) || {};
+  const keyCompounds = unwrap(attrs?.key_compounds);
+  const toArray = (v) => (Array.isArray(v) ? v : (v != null ? [v] : []));
+  const rawCompoundDetails = unwrap(attrs?.key_compound_details);
+  const compoundDetails = toArray(rawCompoundDetails).filter((detail) => detail && typeof detail === 'object');
+  const rawVitaminDetails = unwrap(attrs?.vitamin_mineral_details) || unwrap(attrs?.vitamins_minerals_details) || unwrap(attrs?.vitamins_minerals);
+  const vitaminDetails = toArray(rawVitaminDetails).filter((detail) => detail && typeof detail === 'object');
+  const nutrientRefs = unwrap(attrs?.nutrient_references);
 
   useEffect(() => {
     let mounted = true;
@@ -187,11 +194,7 @@ export default function IngredientDetailPage() {
   const rawAttrImage = unwrap(attrs?.image_url);
   const rawImage = ingredient?.image_url || rawAttrImage;
   const imgSrc = rawImage ? absoluteUrl(rawImage) : null;
-  const keyCompounds = unwrap(attrs?.key_compounds);
-  const nutrientRefs = unwrap(attrs?.nutrient_references);
-
   const displayName = ingredient?.display_name || ingredient?.name;
-  const list = (v) => Array.isArray(v) ? v : (v != null ? [v] : []);
   const fmtNutrientName = (n) => {
     if (n && typeof n === 'object') return n.nutrient_name || n.name || String(n);
     return String(n);
@@ -200,15 +203,111 @@ export default function IngredientDetailPage() {
   const renderCompoundBenefit = (name) => resolveBenefit(name, COMPOUND_BENEFITS, 'Beneficial compound that supports overall wellness.');
   const renderNutrientBenefit = (name) => resolveBenefit(name, VITAMIN_MINERAL_BENEFITS, 'Supports overall wellness.');
 
-  const maybeConcentration = (name) => {
-    const key = String(name || '').toLowerCase();
-    const direct = compoundConcentrations[key];
-    if (direct) return ` (${direct})`;
-    // Try normalized key without spaces
-    const norm = key.replace(/\s+/g, '-');
-    if (compoundConcentrations[norm]) return ` (${compoundConcentrations[norm]})`;
-    return '';
-  };
+  const compoundConcentrationLookup = useMemo(() => {
+    const lookup = {};
+    Object.entries(compoundConcentrations).forEach(([key, value]) => {
+      if (!value) return;
+      lookup[String(key).toLowerCase()] = value;
+    });
+    return lookup;
+  }, [compoundConcentrations]);
+
+  const normalizedCompoundDetails = (() => {
+    const seen = new Set();
+    const result = [];
+
+    const getConcentration = (name) => {
+      const key = String(name || '').toLowerCase();
+      if (compoundConcentrationLookup[key]) return compoundConcentrationLookup[key];
+      const normalized = key.replace(/\s+/g, '-');
+      if (compoundConcentrationLookup[normalized]) return compoundConcentrationLookup[normalized];
+      return '';
+    };
+
+    if (compoundDetails.length) {
+      compoundDetails.forEach((detail) => {
+        const name = detail?.name || detail?.id;
+        if (!name) return;
+        const key = String(name).toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        result.push({
+          name: String(name),
+          summary: detail?.summary || renderCompoundBenefit(name),
+          primary_actions: Array.isArray(detail?.primary_actions) ? detail.primary_actions : [],
+          evidence_level: detail?.evidence_level || 'Emerging',
+          concentration: detail?.concentration || getConcentration(name),
+          amount_reference: detail?.amount_reference || '',
+        });
+      });
+    }
+
+    if (!result.length) {
+      toArray(keyCompounds).forEach((name) => {
+        const key = String(name).toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        result.push({
+          name: String(name),
+          summary: renderCompoundBenefit(name),
+          primary_actions: [],
+          evidence_level: 'Emerging',
+          concentration: getConcentration(name),
+          amount_reference: '',
+        });
+      });
+    }
+
+    return result;
+  })();
+
+  const normalizedVitaminDetails = (() => {
+    const seen = new Set();
+    const result = [];
+
+    if (vitaminDetails.length) {
+      vitaminDetails.forEach((detail) => {
+        const name = detail?.name || detail?.id;
+        if (!name) return;
+        const key = String(name).toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        result.push({
+          name: String(name),
+          summary: detail?.summary || renderNutrientBenefit(name),
+          primary_actions: Array.isArray(detail?.primary_actions) ? detail.primary_actions : [],
+          evidence_level: detail?.evidence_level || 'Established',
+          amount_reference: detail?.amount_reference || '',
+          amount_per_100g: detail?.amount_per_100g || detail?.amount || '',
+        });
+      });
+    }
+
+    if (!result.length) {
+      const dedup = new Map();
+      toArray(nutrientRefs)
+        .map((n) => ({
+          name: fmtNutrientName(n),
+          concentration: n?.concentration,
+        }))
+        .filter(({ name }) => name && !/^(protein|proteins|fat|fats)$/i.test(String(name)))
+        .forEach((item) => {
+          const key = String(item.name).toLowerCase();
+          if (dedup.has(key) || seen.has(key)) return;
+          dedup.set(key, {
+            name: item.name,
+            summary: renderNutrientBenefit(item.name),
+            primary_actions: [],
+            evidence_level: 'Established',
+            amount_reference: '',
+            amount_per_100g: item.concentration || '',
+          });
+        });
+      result.push(...dedup.values());
+    }
+
+    return result;
+  })();
 
   return (
     <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '32px 16px' }}>
@@ -236,9 +335,9 @@ export default function IngredientDetailPage() {
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: 28, fontWeight: 800, color: 'var(--color-gray-900)' }}>{displayName}</h2>
-              {!!list(primaryBenefits).length && (
+              {!!toArray(primaryBenefits).length && (
                 <div style={{ color: 'var(--text-secondary)', marginTop: 4 }}>
-                  {list(primaryBenefits).join(' • ')}
+                  {toArray(primaryBenefits).join(' • ')}
                 </div>
               )}
             </div>
@@ -295,33 +394,51 @@ export default function IngredientDetailPage() {
               <div>
                 <div style={{ fontWeight: 700, marginBottom: 6 }}>Key Compounds</div>
                 <ul style={{ margin: 0, paddingLeft: 18, listStyle: 'disc' }}>
-                  {list(keyCompounds).map((c, idx) => (
-                    <li key={idx}>
-                      <span style={{ fontWeight: 600 }}>{String(c)}</span>
-                      <span style={{ color: 'var(--text-secondary)' }}>{maybeConcentration(c)}</span>
-                      <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{renderCompoundBenefit(String(c))}</div>
+                  {normalizedCompoundDetails.map((detail, idx) => (
+                    <li key={idx} style={{ marginBottom: 12 }}>
+                      <span style={{ fontWeight: 600 }}>{detail.name}</span>
+                      {(detail.concentration || detail.amount_reference) && (
+                        <span style={{ color: 'var(--text-secondary)' }}> ({detail.concentration || detail.amount_reference})</span>
+                      )}
+                      <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>{detail.summary}</div>
+                      {detail.primary_actions?.length ? (
+                        <ul style={{ margin: 8, marginLeft: 18, color: 'var(--text-secondary)', fontSize: 12 }}>
+                          {detail.primary_actions.map((action, actionIdx) => (
+                            <li key={actionIdx} style={{ marginBottom: actionIdx === detail.primary_actions.length - 1 ? 0 : 4 }}>{action}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                      {detail.evidence_level && (
+                        <div style={{ color: 'var(--text-muted, #9ca3af)', fontSize: 12 }}>Evidence: {detail.evidence_level}</div>
+                      )}
                     </li>
                   ))}
                 </ul>
               </div>
-              {!!list(nutrientRefs).length && (
+              {!!normalizedVitaminDetails.length && (
                 <div>
                   <div style={{ fontWeight: 700, marginBottom: 6 }}>Vitamins & Minerals</div>
                   <ul style={{ margin: 0, paddingLeft: 18, listStyle: 'disc' }}>
-                    {list(nutrientRefs)
-                      .map((n) => ({
-                        name: fmtNutrientName(n),
-                        concentration: n?.concentration
-                      }))
-                      .filter(({ name }) => name && !/^(protein|proteins|fat|fats)$/i.test(String(name)))
-                      .filter((item, idx, arr) => arr.findIndex(x => String(x.name).toLowerCase() === String(item.name).toLowerCase()) === idx)
-                      .map((item, idx) => (
-                        <li key={idx}>
-                          <span style={{ fontWeight: 600 }}>{item.name}</span>
-                          {item.concentration ? <span style={{ color: 'var(--text-secondary)' }}> ({item.concentration})</span> : null}
-                          <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{renderNutrientBenefit(item.name)}</div>
+                    {normalizedVitaminDetails.map((detail, idx) => {
+                      const amountLabel = [detail.amount_per_100g, detail.amount_reference].filter(Boolean).join(' • ');
+                      return (
+                        <li key={idx} style={{ marginBottom: 12 }}>
+                          <span style={{ fontWeight: 600 }}>{detail.name}</span>
+                          {amountLabel ? <span style={{ color: 'var(--text-secondary)' }}> ({amountLabel})</span> : null}
+                          <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>{detail.summary}</div>
+                          {detail.primary_actions?.length ? (
+                            <ul style={{ margin: 8, marginLeft: 18, color: 'var(--text-secondary)', fontSize: 12 }}>
+                              {detail.primary_actions.map((action, actionIdx) => (
+                                <li key={actionIdx} style={{ marginBottom: actionIdx === detail.primary_actions.length - 1 ? 0 : 4 }}>{action}</li>
+                              ))}
+                            </ul>
+                          ) : null}
+                          {detail.evidence_level && (
+                            <div style={{ color: 'var(--text-muted, #9ca3af)', fontSize: 12 }}>Evidence: {detail.evidence_level}</div>
+                          )}
                         </li>
-                      ))}
+                      );
+                    })}
                   </ul>
                 </div>
               )}
