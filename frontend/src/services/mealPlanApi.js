@@ -15,7 +15,8 @@
  * Base API URL from environment variable or default to local development server
  * Uses Vite's import.meta.env for environment variables
  */
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
+// Default to the proxied path so local dev stays on the same origin (Vite handles `/api/v1`).
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 // ============================================================================
 // Helper Functions

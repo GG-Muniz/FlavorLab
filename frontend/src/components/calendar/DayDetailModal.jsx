@@ -1091,7 +1091,8 @@ const DayDetailModal = ({ isOpen, onClose, selectedDate, dayData, isNew, onSave,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              zIndex: 1001,
+              zIndex: 1300,
+              zIndex: 1301,
               padding: '20px'
             }}
             onClick={(e) => {
