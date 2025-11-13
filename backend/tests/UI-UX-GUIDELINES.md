@@ -1,4 +1,4 @@
-# UI/UX Design Guidelines - FlavorLab
+# UI/UX Design Guidelines - HealthLab
 
 **Research Date:** 2025
 **Sources:** Apple Human Interface Guidelines, Meta/Facebook Design Patterns, Industry Best Practices

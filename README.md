@@ -1,225 +1,124 @@
-# FlavorLab
+# HealthLab
 
-FlavorLab is a comprehensive full-stack application for managing and analyzing ingredients, nutrients, and their relationships. It combines a powerful backend database system with a modern React frontend for an intuitive user experience.
+HealthLab is a full-stack nutrition intelligence platform that combines data-rich ingredient exploration, guided meal planning, and day-to-day wellness tracking. The application pairs a modular FastAPI backend with a responsive React experience that centers users around actionable insights—dynamic journals, ingredient enrichment, and tailored nutrition plans that stay aligned with their goals.
 
-## Features
+## Product Overview
 
-### Backend
-- **Unified Entity Model**: Centralized representation of ingredients, nutrients, and compounds
-- **Relationship Management**: Track relationships between entities (contains, found_in, etc.)
-- **Flexible Classification**: Multi-level classification system for entities
-- **Attribute System**: Extensible attribute storage with source and confidence tracking
-- **Query API**: Rich query capabilities for entities and relationships
-- **Synonyms & Classes**: Search by synonyms; compound classes modeled explicitly
-- **Context & Uncertainty**: Relationship context (state/mechanisms/params) and uncertainty (mean/sd/min/max)
-- **Data Migration**: Tools to migrate from legacy formats to the unified model
-- **Compatibility Layer**: Adapters for working with legacy data formats
+- **Personalized daily dashboard** with calorie goals, macro progress, health-pillar insights, and an always-on journal.
+- **Meal planning workflow** featuring dynamic recipe exploration, meal logging, and AI-assisted plan generation.
+- **Ingredient intelligence** with curated compound, vitamin, and mineral research surfaced directly inside ingredient profiles.
+- **Goal-driven onboarding** that captures lifestyle, preferences, and targeted outcomes to tune recommendations.
+- **Operational tooling** for enriching ingredient data, running analysis scripts, and verifying the quality of curated datasets.
 
-### Frontend
-- **React + Vite**: Fast development with Hot Module Replacement (HMR)
-- **Modern UI Components**: Authentication, modals, notifications, and onboarding flows
-- **ESLint Integration**: Code quality and consistency
-- **Component-Based Architecture**: Organized, reusable components
+## Architecture at a Glance
 
-## Directory Structure
+- **Frontend (`frontend/`)**  
+  React + Vite single-page app with Context-managed state, modular UI components, Framer Motion animations, and Lucide iconography. Modals and overlays use responsive, self-centering layouts that stay usable while the page scrolls.
 
-```
-FlavorLab/
-├── backend/
-│   ├── config/               # Configuration settings
-│   ├── data/                 # Data storage
-│   │   ├── processed/        # Processed data
-│   │   │   ├── entities/     # Unified entity model data
-│   │   │   ├── ingredients/  # Legacy ingredient data
-│   │   │   ├── nutrients/    # Legacy nutrient data
-│   │   │   └── metadata/     # Summary metadata
-│   │   └── raw/              # Raw scraped data
-│   ├── scripts/              # Command-line scripts
-│   ├── src/                  # Source code
-│   │   ├── api/              # Query and CRUD APIs
-│   │   ├── compatibility/    # Legacy format adapters
-│   │   ├── models/           # Data models
-│   │   ├── processors/       # Data processors
-│   │   ├── scraper/          # Web scraping components
-│   │   └── utils/            # Utility functions
-│   ├── tests/                # Test suite
-│   └── tools/                # Development tools
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── auth/
-│   │   │   │   └── Login.jsx
-│   │   │   ├── modals/
-│   │   │   │   └── CalorieDetailModal.jsx
-│   │   │   ├── notifications/
-│   │   │   │   └── NotificationsPanel.jsx
-│   │   │   └── onboarding/
-│   │   │       └── NutriTest.jsx
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── eslint.config.js
-│   ├── index.html
-│   ├── package.json
-│   └── vite.config.js
-└── README.md
-```
+- **Backend (`backend/`)**  
+  FastAPI service with a service-layer architecture, SQLAlchemy models, bcrypt-secured authentication, and JWT-based session management. Ingredient enrichment pipelines stitch together compound/vitamin research, user data, and meal planning logic.
+
+- **Data Enrichment (`backend/analysis/`)**  
+  Scripts generate detailed compound and micronutrient descriptions, merge enrichment data into ingredient catalogs, and flag any remaining gaps prior to deployment.
+
+## Tech Stack
+
+- **Frontend:** React 18, Vite, Framer Motion, Context API, lucide-react
+- **Backend:** Python 3.12, FastAPI, SQLAlchemy, Pydantic v2, bcrypt, PyJWT
+- **Database:** SQLite (development) with JSON fields, ready to scale to PostgreSQL
+- **Tooling:** ESLint, Jest-ready setup, Pytest, Requests, ResizeObserver-powered UI utilities
 
 ## Getting Started
 
 ### Prerequisites
 
-**Backend:**
-- Python 3.9+
-- Chrome browser (for web scraping)
-- ChromeDriver (for Selenium)
+- Python 3.12+
+- Node.js 18+ and npm
+- (Optional) SQLite CLI for inspecting the local database
 
-**Frontend:**
-- Node.js 16+
-- npm or yarn
+### Backend Setup
 
-### Installation
-
-#### Backend Setup
-
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-
-2. Install Python dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. Set up ChromeDriver:
-   - Download ChromeDriver matching your Chrome version
-   - Place it in the project root or in chromedriver-win64/chromedriver.exe
-
-#### Frontend Setup
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-### Usage
-
-#### Backend
-
-**Scraping Nutrients:**
 ```bash
-python scripts/run_scraper.py
+cd backend
+python -m venv venv
+venv\Scripts\activate      # On macOS/Linux: source venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-**Processing Ingredients:**
+Environment variables are read from `.env` (see `.env.example`). Defaults target `sqlite:///./healthlab.db` and development CORS origins.
+
+### Frontend Setup
+
 ```bash
-python scripts/process_ingredients.py data/ingredients_clean_semicolon.csv
-```
-
-**Migrating to Unified Model:**
-```bash
-# Migrate nutrients
-python scripts/migrate_nutrients.py
-
-# Migrate ingredients
-python scripts/migrate_ingredients.py
-
-# Create relationships
-python scripts/create_relationships.py
-```
-
-**Exporting to Legacy Format:**
-```bash
-python scripts/export_legacy_format.py --nutrients --ingredients
-```
-
-#### Frontend
-
-**Development Server:**
-```bash
+cd frontend
+npm install
 npm run dev
 ```
 
-**Build for Production:**
-```bash
-npm run build
+The Vite dev server runs on `http://localhost:5173` and proxies API requests to `http://localhost:8000/api/v1` (configurable via `VITE_API_BASE_URL`).
+
+### Run Both Services Together
+
+1. Start the backend (`uvicorn app.main:app --reload --port 8000`)
+2. Start the frontend (`npm run dev`)
+3. Visit `http://localhost:5173` and log in using a seeded account or create a new one.
+
+## Key Workflows & Scripts
+
+- `backend/analysis/build_nutrient_descriptions.py` – generates detailed compound and micronutrient reference data.
+- `backend/analysis/build_ingredient_enrichment.py` – fuses enrichment data into ingredient entities and produces `ingredient_enrichment.json`.
+- `backend/scripts/init_db.py` – bootstraps the HealthLab database from curated JSON exports.
+- `backend/tests/run_tests.py` – convenience runner for API, service, and model pytest suites.
+- `frontend/src/context/DataContext.jsx` – centralizes meal plans, logged meals, ingredient details, and summaries for UI consumption.
+
+## Running Tests
+
+- **Backend:** `cd backend && pytest`
+- **Frontend:** `cd frontend && npm run lint` (unit tests can be added via Jest/Vitest as needed)
+
+## Project Structure
+
+```
+HealthLab/
+├── backend/
+│   ├── app/
+│   │   ├── api/               # FastAPI routers (auth, meals, entities, analytics, etc.)
+│   │   ├── models/            # SQLAlchemy models (Entity, User, Relationships, Health Pillars)
+│   │   ├── schemas/           # Pydantic response/request models
+│   │   ├── services/          # Business logic and data access helpers
+│   │   └── main.py            # FastAPI entry point
+│   ├── analysis/              # Data enrichment + reporting scripts
+│   ├── scripts/               # Operational utilities and data ingestion scripts
+│   ├── tests/                 # API, model, and service test suites
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   ├── components/        # Dashboard, modals, onboarding, meal planning, etc.
+│   │   ├── context/           # Auth and data providers
+│   │   ├── pages/             # Ingredient detail, dashboard, authentication views
+│   │   └── services/          # API clients and helper utilities
+│   ├── public/                # Static assets
+│   ├── package.json
+│   └── vite.config.js
+├── README.md                  # You are here
+├── SETUP.md                   # Extended environment notes (updated for HealthLab)
+├── UI-UX-GUIDELINES.md        # Design system and interaction principles
+└── HEALTH_PILLAR_TEST_RESULTS.md
 ```
 
-**Preview Production Build:**
-```bash
-npm run preview
-```
+## Deployment Notes
 
-## Data Model
-
-### Entity
-
-The core of the unified model is the `Entity` class, which represents any item in the database:
-
-```python
-entity = Entity(
-    id="salmon",
-    name="Salmon",
-    primary_classification="ingredient"
-)
-
-# Add classifications
-entity.add_classification("fish")
-entity.add_classification("protein")
-
-# Add attributes
-entity.add_attribute("foodb_priority", "Critical", source="FlavorLab", confidence=5)
-entity.add_attribute("health_outcomes", ["Energy", "Inflammation", "Sleep"], confidence=4)
-```
-
-### Relationship
-
-Relationships connect entities:
-
-```python
-relationship = Relationship(
-    source_id="salmon",
-    relationship_type="contains",
-    target_id="omega_3",
-    quantity="1.2",
-    unit="g/100g",
-    confidence_score=5,
-    context={"state": "raw", "mechanisms": [], "params": {}},
-    uncertainty={"mean": 1.2, "sd": 0.1}
-)
-```
-
-### Utilities & Scripts
-
-- Unit normalization: `src/utils/unit_normalization.py`
-- ND representation: `src/utils/nd.py`
-- ID policy utilities: `src/utils/id_policy.py`
-- Validate entities/relationships: `scripts/validate_entities.py`
-- Migrate IDs and attach external codes: `scripts/migrate_ids.py --mapping mapping.json`
-- Import ingredient→compound mappings: `scripts/import_ingredient_compounds.py --input mapping.json`
-
-See `docs/images/` for visual guides and `docs/DENSITIES.md` for conversion references.
-
-## Frontend Development
-
-### Available Vite Plugins
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) - Uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) - Uses [SWC](https://swc.rs/) for Fast Refresh
-
-### Expanding ESLint Configuration
-
-For production applications, we recommend using TypeScript with type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on integrating TypeScript and [`typescript-eslint`](https://typescript-eslint.io).
+- Build the frontend with `npm run build`; deploy `frontend/dist` to your static host of choice.
+- Package the backend with your preferred ASGI server (e.g., `uvicorn` or `gunicorn`) and configure environment variables for production secrets, database URL, and CORS origins.
+- Update `.env`/infrastructure secrets with the new application name (`HEALTHLAB`) and JWT signing key before production rollout.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Create a feature branch from `main`.
+2. Make your changes with accompanying tests or lint passes.
+3. Submit a PR with a description of the feature or fix.
 
-## License
+---
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+HealthLab is licensed under the MIT License. Crafted with a focus on nutritional insight, data integrity, and a seamless product experience.

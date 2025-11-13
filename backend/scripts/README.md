@@ -1,6 +1,6 @@
-# FlavorLab Scripts
+# HealthLab Scripts
 
-This directory contains utility scripts for FlavorLab backend development and maintenance.
+This directory contains utility scripts for HealthLab backend development and maintenance.
 
 ## Scripts Overview
 
@@ -16,7 +16,7 @@ This directory contains utility scripts for FlavorLab backend development and ma
 
 **Usage**:
 ```bash
-cd /home/holberton/FlavorLab/backend
+cd /home/holberton/HealthLab/backend
 source venv/bin/activate
 python scripts/generate_enriched_ingredients_data.py
 ```
@@ -36,7 +36,7 @@ python scripts/generate_enriched_ingredients_data.py
 
 **Usage**:
 ```bash
-cd /home/holberton/FlavorLab/backend
+cd /home/holberton/HealthLab/backend
 source venv/bin/activate
 python scripts/find_unmatched_ingredients.py
 ```
@@ -58,7 +58,7 @@ python scripts/find_unmatched_ingredients.py
 
 **Usage**:
 ```bash
-cd /home/holberton/FlavorLab/backend
+cd /home/holberton/HealthLab/backend
 source venv/bin/activate
 python scripts/seed_database.py
 ```
@@ -152,7 +152,7 @@ python scripts/seed_database.py
 ## Files Generated
 
 - `health_pillar_ingredients_enriched.json` - Enriched ingredient data
-- `flavorlab.db` - SQLite database (after seeding)
+- `healthlab.db` - SQLite database (after seeding)
 
 ---
 

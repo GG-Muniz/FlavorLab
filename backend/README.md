@@ -1,6 +1,6 @@
-# FlavorLab Backend MVP
+# HealthLab Backend Services
 
-A FastAPI-based backend for the FlavorLab intelligent cooking platform, featuring SQLite database with JSON data migration capabilities.
+A FastAPI-based backend for the HealthLab intelligent nutrition platform, featuring an SQLite database with JSON data migration capabilities.
 
 ## 🚀 Quick Start
 
@@ -75,7 +75,7 @@ Handy options:
 ## 🗄️ Database Models
 
 ### Entity Model
-The core model representing any item in FlavorLab:
+The core model representing any item in HealthLab:
 - **Base Entity**: Generic entity with flexible attributes
 - **IngredientEntity**: Specialized for ingredients with health outcomes
 - **NutrientEntity**: Specialized for nutrients with function descriptions
@@ -102,10 +102,10 @@ The application uses environment variables for configuration:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DATABASE_NAME` | `flavorlab.db` | SQLite database filename |
+| `DATABASE_NAME` | `healthlab.db` | SQLite database filename |
 | `CLOUDINARY_CLOUD_NAME` | — | Your Cloudinary cloud name |
 | `CLOUDINARY_BASE_URL` | — | Optional; overrides base (e.g., https://res.cloudinary.com/<cloud>/image/upload) |
-| `CLOUDINARY_FOLDER` | `flavorlab/ingredients` | Folder path where ingredient images live |
+| `CLOUDINARY_FOLDER` | `healthlab/ingredients` | Folder path where ingredient images live |
 | `DEBUG` | `false` | Enable debug mode |
 | `SECRET_KEY` | `your-secret-key...` | JWT secret key |
 | `BATCH_SIZE` | `100` | Batch size for data migration |

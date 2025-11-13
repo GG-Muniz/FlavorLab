@@ -1,8 +1,8 @@
-# FlavorLab Backend Testing Guide
+# HealthLab Backend Testing Guide
 
 ## 🧪 Comprehensive Test Suite Overview
 
-The FlavorLab backend MVP includes a comprehensive test suite designed to validate every component of the system. This guide provides detailed information about the test structure, how to run tests, and what each test category covers.
+The HealthLab backend MVP includes a comprehensive test suite designed to validate every component of the system. This guide provides detailed information about the test structure, how to run tests, and what each test category covers.
 
 ## 📁 Test Structure
 
@@ -352,7 +352,7 @@ Before running tests, ensure:
 ### Successful Test Run
 
 ```
-FlavorLab Test Suite
+HealthLab Test Suite
 ==================================================
 ✅ All tests passed!
 
@@ -366,7 +366,7 @@ FlavorLab Test Suite
 ### Failed Test Run
 
 ```
-FlavorLab Test Suite
+HealthLab Test Suite
 ==================================================
 ❌ Some tests failed!
 
@@ -394,4 +394,4 @@ The test suite is designed to work with CI/CD pipelines:
 
 ---
 
-The FlavorLab test suite provides comprehensive validation of all backend components, ensuring reliability, security, and performance of the intelligent cooking platform.
+The HealthLab test suite provides comprehensive validation of all backend components, ensuring reliability, security, and performance of the intelligent nutrition platform.

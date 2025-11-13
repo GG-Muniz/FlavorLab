@@ -129,7 +129,7 @@ After reinstalling dependencies and starting servers, verify:
 ## 📁 Final Project Structure
 
 ```
-FlavorLab/
+HealthLab/
 ├── backend/                    # Python FastAPI backend (port 8000)
 │   ├── app/
 │   │   ├── api/

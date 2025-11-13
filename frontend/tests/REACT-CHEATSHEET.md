@@ -1,6 +1,6 @@
-# FlavorLab React Code Patterns - Cheat Sheet
+# HealthLab React Code Patterns - Cheat Sheet
 
-> A reference guide for common React patterns, JavaScript concepts, and coding practices used in the FlavorLab project.
+> A reference guide for common React patterns, JavaScript concepts, and coding practices used in the HealthLab project.
 
 ---
 

@@ -1,11 +1,11 @@
-# FlavorLab Development Setup Guide
+# HealthLab Development Setup Guide
 
-This guide walks you through setting up the FlavorLab development environment after the recent project restructuring.
+This guide walks you through setting up the HealthLab development environment after the recent project restructuring.
 
 ## 📁 New Project Structure
 
 ```
-FlavorLab/
+HealthLab/
 ├── backend/                    # FastAPI backend application
 │   ├── app/
 │   │   ├── api/               # API route handlers
@@ -89,7 +89,7 @@ Create a `.env` file in the `backend/` directory:
 
 ```bash
 # backend/.env
-DATABASE_URL=sqlite:///./flavorlab.db
+DATABASE_URL=sqlite:///./healthlab.db
 SECRET_KEY=your-secret-key-here
 DEBUG=True
 CORS_ORIGINS=["http://localhost:5173", "http://localhost:3000"]
@@ -252,7 +252,7 @@ pip install -r requirements.txt
 
 ### Backend (`backend/.env`)
 ```env
-APP_NAME=FlavorLab
+APP_NAME=HealthLab
 DEBUG=True
 DATABASE_URL=sqlite:///./flavorlab.db
 SECRET_KEY=your-secret-key-change-in-production

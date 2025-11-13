@@ -2,7 +2,7 @@
 
 ## Test Summary
 
-This document contains the comprehensive testing results for the Health Pillar system integration across FlavorLab's backend.
+This document contains the comprehensive testing results for the Health Pillar system integration across HealthLab's backend.
 
 ---
 
@@ -292,7 +292,7 @@ Content-Type: application/json
 
 #### 1. Test Health Pillars Module
 ```bash
-cd /home/holberton/FlavorLab/backend
+cd /home/holberton/HealthLab/backend
 source venv/bin/activate
 python test_health_pillars.py
 ```
@@ -369,6 +369,6 @@ The Health Pillar system is **fully functional** and ready for integration with 
 ---
 
 **Generated**: 2025-10-13
-**Test Environment**: FlavorLab Development Backend
+**Test Environment**: HealthLab Development Backend
 **Backend Status**: Running at http://127.0.0.1:8000
 **API Docs**: http://127.0.0.1:8000/docs
